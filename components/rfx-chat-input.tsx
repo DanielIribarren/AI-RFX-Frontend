@@ -224,7 +224,12 @@ export default function RfxChatInput({ onFileProcessed, onRFXProcessed, isLoadin
       if (error instanceof APIError) {
         switch (error.status) {
           case 400:
-            userMessage = "Los datos no son válidos o faltan campos requeridos. Verifique que los archivos sean PDF, DOCX o TXT válidos."
+            // 🆕 Enhanced error message for file requirement
+            if (error.message?.includes("File upload is required") || error.message?.includes("No file provided")) {
+              userMessage = "❌ El backend requiere un archivo. Adjunte un documento RFX (PDF, DOCX o TXT) para continuar."
+            } else {
+              userMessage = "Los datos no son válidos o faltan campos requeridos. Verifique que los archivos sean PDF, DOCX o TXT válidos."
+            }
             break
           case 413:
             userMessage = "Uno o más archivos son demasiado grandes. El tamaño máximo permitido es 16MB por archivo."

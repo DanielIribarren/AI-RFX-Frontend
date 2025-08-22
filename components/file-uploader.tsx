@@ -8,15 +8,17 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert"
 import { Progress } from "@/components/ui/progress"
+import { Textarea } from "@/components/ui/textarea"
 import { api, type RFXRequest, type RFXResponse, APIError, useAPICall } from "@/lib/api"
 
 interface FileUploaderProps {
   onFileProcessed: (text: string) => void
   onRFXProcessed: (data: RFXResponse) => void
   isLoading: boolean
+  allowTextOnly?: boolean  // 🆕 Allow text-only submissions
 }
 
-export default function FileUploader({ onFileProcessed, onRFXProcessed, isLoading }: FileUploaderProps) {
+export default function FileUploader({ onFileProcessed, onRFXProcessed, isLoading, allowTextOnly = false }: FileUploaderProps) {
   const [fileName, setFileName] = useState<string | null>(null)
   const [fileError, setFileError] = useState<string | null>(null)
   const [uploadProgress, setUploadProgress] = useState(0)
@@ -26,6 +28,8 @@ export default function FileUploader({ onFileProcessed, onRFXProcessed, isLoadin
   const fileInputRef = useRef<HTMLInputElement>(null)
   // NEW: keep selected files in state so we can remove them
   const [selectedFiles, setSelectedFiles] = useState<File[]>([])
+  // 🆕 Add text input support
+  const [textContent, setTextContent] = useState("")
   
   // Use the new API error handler
   const { handleAPIError } = useAPICall()
@@ -74,10 +78,22 @@ export default function FileUploader({ onFileProcessed, onRFXProcessed, isLoadin
     if (fileInputRef.current) fileInputRef.current.value = ""
   }
 
+  // 🆕 Check if we can process (files or text)
+  const canProcess = () => {
+    const hasFiles = selectedFiles && selectedFiles.length > 0
+    const hasText = allowTextOnly && textContent.trim().length > 0
+    return hasFiles || hasText
+  }
+
   const handleProcessFile = async () => {
     console.log("🎯 DEBUG: handleProcessFile called with fileName(s):", fileName)
-    if (!selectedFiles || selectedFiles.length === 0) {
-      setFileError("No hay archivo seleccionado")
+    
+    // 🆕 Enhanced validation: allow text-only or files
+    const hasFiles = selectedFiles && selectedFiles.length > 0
+    const hasText = allowTextOnly && textContent.trim().length > 0
+    
+    if (!hasFiles && !hasText) {
+      setFileError(allowTextOnly ? "Ingrese texto o seleccione archivos" : "No hay archivo seleccionado")
       return
     }
 
@@ -88,18 +104,34 @@ export default function FileUploader({ onFileProcessed, onRFXProcessed, isLoadin
 
     try {
       // Use files from state (supports removal before upload)
-      for (const f of selectedFiles) if (f.size === 0) throw new Error(`El archivo "${f.name}" está vacío`)
+      if (hasFiles) {
+        for (const f of selectedFiles) if (f.size === 0) throw new Error(`El archivo "${f.name}" está vacío`)
+      }
 
       const rfxId = `RFX-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
 
-      // Build FormData with files[]
+      // Build FormData with files[] and text content
       const form = new FormData()
       form.append("id", rfxId)
       form.append("tipo_rfx", "catering")
-      for (const f of selectedFiles) form.append("files", f)
+      
+      // 🆕 Add text content if available
+      if (hasText) {
+        form.append("contenido_extraido", textContent.trim())
+      }
+      
+      // Add files if available
+      if (hasFiles) {
+        for (const f of selectedFiles) form.append("files", f)
+      }
 
-      console.log("📤 Enviando archivo al servicio RFX:", {
-        files: selectedFiles.map(f => ({ name: f.name, sizeMB: (f.size/1024/1024).toFixed(2) })), rfxId, tipo: "catering"
+      console.log("📤 Enviando solicitud RFX al servicio:", {
+        rfxId,
+        hasText: !!hasText,
+        textLength: textContent.length,
+        fileCount: selectedFiles.length,
+        files: selectedFiles.map(f => ({ name: f.name, sizeMB: (f.size/1024/1024).toFixed(2) })), 
+        tipo: "catering"
       })
 
       // Simulate upload progress with more realistic progression
@@ -125,7 +157,9 @@ export default function FileUploader({ onFileProcessed, onRFXProcessed, isLoadin
       if (response.status === "success") {
         // Call the parent component callbacks
         onRFXProcessed(response)
-        onFileProcessed("Documento RFX procesado exitosamente con IA")
+        onFileProcessed(hasText && !hasFiles ? 
+          "RFX procesado exitosamente desde texto con IA" : 
+          "Documento RFX procesado exitosamente con IA")
         
         console.log("✅ RFX procesado exitosamente:", {
           rfxId: response.data?.id,
@@ -133,6 +167,13 @@ export default function FileUploader({ onFileProcessed, onRFXProcessed, isLoadin
           productos: (response.data?.products || response.data?.productos || []).length,
           propuestaId: response.propuesta_id
         })
+
+        // 🆕 Reset form on success (both files and text)
+        setSelectedFiles([])
+        setTextContent("")
+        setFileName(null)
+        setIsFileSelected(false)
+        if (fileInputRef.current) fileInputRef.current.value = ""
       } else {
         throw new Error(response.error || response.message || "Error al procesar el documento RFX")
       }
@@ -148,7 +189,14 @@ export default function FileUploader({ onFileProcessed, onRFXProcessed, isLoadin
       if (error instanceof APIError) {
         switch (error.status) {
           case 400:
-            userMessage = "El archivo no es válido o faltan datos requeridos. Verifique que sea un PDF, DOCX o TXT válido."
+            // 🆕 Enhanced error message for file requirement
+            if (error.message?.includes("File upload is required") || error.message?.includes("No file provided")) {
+              userMessage = allowTextOnly ? 
+                "❌ El backend requiere un archivo. Adjunte un documento RFX (PDF, DOCX o TXT) además del texto." :
+                "❌ El backend requiere un archivo. Seleccione un documento RFX (PDF, DOCX o TXT) para continuar."
+            } else {
+              userMessage = "El archivo no es válido o faltan datos requeridos. Verifique que sea un PDF, DOCX o TXT válido."
+            }
             break
           case 413:
             userMessage = "El archivo es demasiado grande. El tamaño máximo permitido es 16MB."
@@ -210,9 +258,29 @@ export default function FileUploader({ onFileProcessed, onRFXProcessed, isLoadin
           </div>
           <h2 className="text-xl font-semibold">📄 Procesador RFX con IA</h2>
           <p className="text-sm text-gray-500 text-center max-w-md">
-            Sube un documento RFx (PDF, DOCX o TXT) para procesarlo automáticamente con inteligencia artificial. 
+            {allowTextOnly 
+              ? "Ingrese el contenido del RFX o suba documentos (PDF, DOCX, TXT) para procesarlos automáticamente con inteligencia artificial."
+              : "Sube un documento RFx (PDF, DOCX o TXT) para procesarlo automáticamente con inteligencia artificial."} 
             El sistema extraerá productos, fechas, información del solicitante y empresa, y generará una propuesta comercial personalizada.
           </p>
+
+          {/* 🆕 Text input area (when allowTextOnly is enabled) */}
+          {allowTextOnly && (
+            <div className="w-full max-w-2xl">
+              <Textarea
+                value={textContent}
+                onChange={(e) => setTextContent(e.target.value)}
+                placeholder="Ingrese el contenido del RFX aquí (información del solicitante, productos, fechas, etc.)"
+                className="min-h-[120px] resize-none"
+                disabled={isUploading}
+              />
+              {textContent.length > 0 && (
+                <div className="text-xs text-gray-500 mt-1">
+                  {textContent.length} caracteres
+                </div>
+              )}
+            </div>
+          )}
 
           <input
             type="file"
@@ -303,12 +371,17 @@ export default function FileUploader({ onFileProcessed, onRFXProcessed, isLoadin
                 </Button>
               </div>
             </div>
-          ) : fileName && isFileSelected ? (
+          ) : (canProcess() && (isFileSelected || (allowTextOnly && textContent.trim()))) ? (
             <div className="w-full space-y-4">
-              <div className="flex items-center space-x-2">
-                <FileText className="h-5 w-5 text-blue-600" />
-                <span>{fileName}</span>
-              </div>
+              {(fileName || (allowTextOnly && textContent.trim())) && (
+                <div className="flex items-center space-x-2">
+                  <FileText className="h-5 w-5 text-blue-600" />
+                  <span>
+                    {fileName || (allowTextOnly && textContent.trim() ? 
+                      `Texto ingresado (${textContent.length} caracteres)` : "")}
+                  </span>
+                </div>
+              )}
               <div className="flex justify-center gap-2">
                 <Button 
                   onClick={handleProcessFile} 
@@ -317,8 +390,15 @@ export default function FileUploader({ onFileProcessed, onRFXProcessed, isLoadin
                 >
                   Procesar RFX con IA
                 </Button>
-                <Button variant="outline" onClick={handleButtonClick} className="bg-transparent">
-                  Cambiar archivo
+                <Button variant="outline" onClick={() => {
+                  // Clear both files and text
+                  setSelectedFiles([])
+                  setTextContent("")
+                  setFileName("")
+                  setIsFileSelected(false)
+                  if (fileInputRef.current) fileInputRef.current.value = ""
+                }} className="bg-transparent">
+                  {allowTextOnly ? "Limpiar todo" : "Cambiar archivo"}
                 </Button>
               </div>
               {serviceStatus === 'offline' && (
@@ -340,10 +420,17 @@ export default function FileUploader({ onFileProcessed, onRFXProcessed, isLoadin
               </div>
             </div>
           ) : (
-            <Button onClick={handleButtonClick} className="gap-2">
-              <Upload className="h-4 w-4" />
-              Seleccionar archivos
-            </Button>
+            <div className="flex flex-col gap-2">
+              <Button onClick={handleButtonClick} className="gap-2">
+                <Upload className="h-4 w-4" />
+                {allowTextOnly ? "Seleccionar archivos (opcional)" : "Seleccionar archivos"}
+              </Button>
+              {allowTextOnly && (
+                <p className="text-xs text-gray-500 text-center">
+                  También puede ingresar texto directamente arriba
+                </p>
+              )}
+            </div>
           )}
         </div>
       </CardContent>
