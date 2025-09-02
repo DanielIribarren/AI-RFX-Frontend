@@ -43,6 +43,7 @@ export interface RFXResponse {
     email?: string;
     requester_name?: string;
     company_name?: string;
+    currency?: string;
     products?: Product[];
     delivery_date?: string;
     delivery_time?: string;
@@ -314,6 +315,26 @@ export const api = {
         throw error;
       }
       throw new APIError('Network error finalizing RFX', 0, 'NETWORK_ERROR');
+    }
+  },
+
+  // Update RFX currency
+  async updateRFXCurrency(rfxId: string, currency: string): Promise<{ status: string; message: string; data: any }> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/rfx/${rfxId}/currency`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ currency })
+      });
+
+      return handleResponse<{ status: string; message: string; data: any }>(response);
+    } catch (error) {
+      if (error instanceof APIError) {
+        throw error;
+      }
+      throw new APIError('Network error updating RFX currency', 0, 'NETWORK_ERROR');
     }
   },
 

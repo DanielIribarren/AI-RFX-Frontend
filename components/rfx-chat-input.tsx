@@ -145,8 +145,8 @@ export default function RfxChatInput({ onFileProcessed, onRFXProcessed, isLoadin
         }
       }
 
-      // Generate RFX ID
-      const rfxId = `RFX-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+      // ✅ FIX: Generate valid UUID v4 instead of custom format
+      const rfxId = crypto.randomUUID()
 
       // Build FormData with files and message (similar to FileUploader)
       const form = new FormData()

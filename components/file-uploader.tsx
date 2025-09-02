@@ -108,7 +108,8 @@ export default function FileUploader({ onFileProcessed, onRFXProcessed, isLoadin
         for (const f of selectedFiles) if (f.size === 0) throw new Error(`El archivo "${f.name}" está vacío`)
       }
 
-      const rfxId = `RFX-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+      // ✅ FIX: Generate valid UUID v4 instead of custom format
+      const rfxId = crypto.randomUUID()
 
       // Build FormData with files[] and text content
       const form = new FormData()

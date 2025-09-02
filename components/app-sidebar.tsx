@@ -32,7 +32,7 @@ interface AppSidebarProps {
   onNewRfx: () => void
   onNavigateToHistory: () => void
   onSelectRfx?: (rfxId: string) => void
-  currentView?: "main" | "results" | "history"
+  currentView?: "main" | "results" | "history" | undefined
 }
 
 export interface AppSidebarRef {

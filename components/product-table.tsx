@@ -89,6 +89,9 @@ interface ProductTableProps {
   onUnitChange?: (productId: string, unit: string) => void
   onDeleteProduct?: (productId: string) => void
   isEditable?: boolean
+  // Optional: Price review tracking functions from RFX context
+  isProductPriceUnreviewed?: (productId: string) => boolean
+  markProductPriceAsReviewed?: (productId: string) => void
 }
 
 interface InlineEditableCellProps {
@@ -194,7 +197,9 @@ export default function ProductTable({
   onPriceChange,
   onUnitChange,
   onDeleteProduct,
-  isEditable = true
+  isEditable = true,
+  isProductPriceUnreviewed,
+  markProductPriceAsReviewed
 }: ProductTableProps) {
   if (productos.length === 0) {
     return (
@@ -220,11 +225,28 @@ export default function ProductTable({
         {productos.map((producto) => {
           const safeQuantity = producto.cantidadEditada ?? producto.cantidadOriginal ?? producto.cantidad ?? 1
           const subtotal = safeQuantity * producto.precio
+          
+          // Check if product price needs review
+          const needsPriceReview = isProductPriceUnreviewed && isProductPriceUnreviewed(producto.id)
+          
+          // Enhanced price change handler that marks product as reviewed
+          const handlePriceChange = (value: number) => {
+            onPriceChange(producto.id, value)
+            // Mark as reviewed when user manually updates price
+            if (markProductPriceAsReviewed) {
+              markProductPriceAsReviewed(producto.id)
+            }
+          }
 
           return (
             <div
               key={producto.id}
-              className="grid grid-cols-12 gap-4 items-center py-4 px-4 border border-gray-100 rounded-lg hover:border-gray-200 hover:bg-gray-50/30 transition-all duration-200"
+              className={cn(
+                "grid grid-cols-12 gap-4 items-center py-4 px-4 border rounded-lg transition-all duration-200",
+                needsPriceReview 
+                  ? "border-amber-200 bg-amber-50/50 hover:border-amber-300 hover:bg-amber-50/80" 
+                  : "border-gray-100 hover:border-gray-200 hover:bg-gray-50/30"
+              )}
             >
               {/* Nombre del producto - 4 columnas */}
               <div className="col-span-4">
@@ -232,6 +254,11 @@ export default function ProductTable({
                 <div className="text-sm text-gray-500">Unidad: {producto.unidad}</div>
                 {producto.isQuantityModified && (
                   <div className="text-xs text-blue-600 font-medium">Cantidad modificada</div>
+                )}
+                {needsPriceReview && (
+                  <div className="text-xs text-amber-600 font-medium flex items-center gap-1">
+                    ⚠️ Precio requiere revisión tras cambio de moneda
+                  </div>
                 )}
               </div>
 
@@ -275,12 +302,15 @@ export default function ProductTable({
                 {isEditable ? (
                   <InlineEditableCell
                     value={producto.precio}
-                    onChange={(value) => onPriceChange(producto.id, value)}
+                    onChange={handlePriceChange}
                     type="number"
                     min={0}
                     step="0.01"
                     currencySymbol={currencySymbol}
-                    className="w-full text-center"
+                    className={cn(
+                      "w-full text-center",
+                      needsPriceReview && "border-amber-300 bg-amber-50"
+                    )}
                   />
                 ) : (
                   <span className="text-sm text-gray-900">

@@ -145,6 +145,11 @@ const RFXDetailsDialog = ({ rfxId, isOpen, onClose, rfxData, onViewFullAnalysis 
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  // ✅ DEBUG: Log propuesta state changes
+  console.log("🔍 DEBUG RFXDetailsDialog: Current propuesta state:", propuesta)
+  console.log("🔍 DEBUG RFXDetailsDialog: Dialog isOpen:", isOpen)
+  console.log("🔍 DEBUG RFXDetailsDialog: rfxId:", rfxId)
+
   const { handleAPIError } = useAPICall()
 
   // Helper function to safely extract data with validation - V2.0 with legacy fallback (EXACT COPY from RfxResults)
@@ -203,18 +208,33 @@ const RFXDetailsDialog = ({ rfxId, isOpen, onClose, rfxData, onViewFullAnalysis 
     }))
   }
 
-  // Fetch complete RFX data function (EXACT COPY from RfxResults)
+  // Fetch complete RFX data function with debugging
   const fetchCompleteRFXData = async (rfxId: string) => {
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001'}/api/rfx/${rfxId}`)
+      const url = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001'}/api/rfx/${rfxId}`
+      console.log("🔍 DEBUG RFXDetailsDialog: Fetching RFX data from URL:", url)
+      
+      const response = await fetch(url)
+      console.log("🔍 DEBUG RFXDetailsDialog: Response status:", response.status)
+      console.log("🔍 DEBUG RFXDetailsDialog: Response ok:", response.ok)
+      
       if (response.ok) {
         const result = await response.json()
+        console.log("🔍 DEBUG RFXDetailsDialog: Raw API response:", JSON.stringify(result, null, 2))
+        console.log("🔍 DEBUG RFXDetailsDialog: Response status field:", result.status)
+        console.log("🔍 DEBUG RFXDetailsDialog: Response data keys:", result.data ? Object.keys(result.data) : 'no data')
+        console.log("🔍 DEBUG RFXDetailsDialog: generated_html in response:", result.data?.generated_html)
+        
         if (result.status === "success") {
           return result.data
+        } else {
+          console.error("❌ RFXDetailsDialog API returned error status:", result.message)
         }
+      } else {
+        console.error("❌ RFXDetailsDialog HTTP error:", response.status, response.statusText)
       }
     } catch (error) {
-      console.error("Error fetching complete RFX data:", error)
+      console.error("❌ RFXDetailsDialog Error fetching complete RFX data:", error)
     }
     return null
   }
@@ -292,11 +312,22 @@ const RFXDetailsDialog = ({ rfxId, isOpen, onClose, rfxData, onViewFullAnalysis 
           setCostoTotal((completeData as any).actual_cost ?? (completeData as any).estimated_budget ?? (completeData as any).costo_total ?? null)
           setFechaCreacion((completeData as any).received_at ?? (completeData as any).created_at ?? (completeData as any).fecha_recepcion ?? new Date().toISOString())
           
-          // Set proposal data if available
-          if ((completeData as any).generated_proposal) {
-            setPropuesta((completeData as any).generated_proposal)
+          // ✅ NEW: Set proposal data from database HTML field
+          console.log("🔍 DEBUG RFXDetailsDialog: Complete backend data keys:", Object.keys(completeData))
+          console.log("🔍 DEBUG RFXDetailsDialog: generated_html field:", (completeData as any).generated_html)
+          console.log("🔍 DEBUG RFXDetailsDialog: generated_proposal field:", (completeData as any).generated_proposal)
+          
+          const htmlFromDB = (completeData as any).generated_html || (completeData as any).generated_proposal || ""
+          if (htmlFromDB) {
+            console.log("✅ HTML found in RFXDetailsDialog, length:", htmlFromDB.length)
+            setPropuesta(htmlFromDB)
             setProposalGeneratedAt((completeData as any).proposal_generated_at || "")
             setProposalCosts((completeData as any).proposal_costs || [])
+            logger.info("✅ HTML proposal loaded from database in dialog")
+          } else {
+            console.log("⚠️ No HTML content found in RFXDetailsDialog")
+            setPropuesta("")
+            logger.info("ℹ️ No HTML proposal found in database for this RFX")
           }
           
         } catch (err) {
@@ -524,6 +555,9 @@ const RFXDetailsDialog = ({ rfxId, isOpen, onClose, rfxData, onViewFullAnalysis 
                 <CardContent>
                   {propuesta ? (
                     <div className="border rounded-lg overflow-hidden">
+                      <div className="mb-2 text-xs text-blue-600 bg-blue-50 p-2 rounded">
+                        DEBUG RFXDetailsDialog: Propuesta encontrada, longitud: {propuesta.length} caracteres
+                      </div>
                       <ScrollArea className="h-96">
                         <div className="p-4 prose prose-sm max-w-none">
                           <div dangerouslySetInnerHTML={{ __html: propuesta }} />

@@ -4,7 +4,7 @@ import { useState, useRef } from "react"
 import RfxChatInput from "@/components/rfx-chat-input"
 import type { RfxData, RfxResponse } from "@/types/rfx-types"
 import type { RFXResponse } from "@/lib/api"
-import RfxResults from "@/components/rfx-results"
+import RfxResultsWrapperV2 from "@/components/rfx-results-wrapper-v2"
 import RfxHistory, { RfxHistoryRef } from "@/components/rfx-history"
 import AppSidebar, { AppSidebarRef } from "@/components/app-sidebar"
 import { AiModelSelector } from "@/components/ai-model-selector"
@@ -225,11 +225,25 @@ export default function Dashboard() {
     try {
       console.log("🔍 Loading full analysis for RFX:", rfxId)
       
+      // 🔍 DEBUG: Log input parameters to trace UUID vs name issue
+      console.log('🔍 DEBUG handleViewFullAnalysis Input:', {
+        rfxId: rfxId,
+        rfxId_type: typeof rfxId,
+        rfxData: rfxData
+      })
+      
       // Cargar datos completos del RFX usando la API
       const response = await api.getRFXById(rfxId)
       
       if (response.status === "success" && response.data) {
         console.log("✅ RFX data loaded successfully:", response.data)
+        
+        // 🔍 DEBUG: Log what comes from backend
+        console.log('🔍 DEBUG Backend Response Data:', {
+          response_data_id: response.data.id,
+          id_type: typeof response.data.id,
+          full_response: response
+        })
         
         // Establecer los datos cargados como backendData
         setBackendData(response)
@@ -293,12 +307,16 @@ export default function Dashboard() {
     switch (currentView) {
       case "results":
         return (
-          <RfxResults
+          <RfxResultsWrapperV2
             onNewRfx={handleNavigateToMain}
             onFinalize={handleFinalize}
             onNavigateToHistory={handleNavigateToHistory}
             backendData={backendData}
             onProposalGenerated={handleProposalGenerated}
+            useRealBackend={true}
+            enableAdvancedPricing={true}
+            enableTaxConfiguration={true}
+            useApiCalculations={true}
           />
         )
       case "history":

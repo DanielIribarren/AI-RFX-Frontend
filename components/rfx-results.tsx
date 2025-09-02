@@ -187,7 +187,7 @@ export default function RfxResults({ onNewRfx, onFinalize, onNavigateToHistory, 
     convertPrice, 
     formatPrice, 
     formatPriceWithSymbol 
-  } = useCurrency("EUR")
+  } = useCurrency((backendData?.data as any)?.currency || "EUR")
 
   // Nueva función para manejar guardado de campos editables
   const handleFieldSave = async (field: keyof typeof extractedData, value: string | number) => {
@@ -1343,6 +1343,9 @@ export default function RfxResults({ onNewRfx, onFinalize, onNavigateToHistory, 
                 onUnitChange={handleUnitChange}
             onDeleteProduct={handleDeleteProduct}
             isEditable={true}
+            // Optional: price review tracking (stub functions for compatibility)
+            isProductPriceUnreviewed={() => false}
+            markProductPriceAsReviewed={() => {}}
           />
           
           {/* Botón para guardar costos */}

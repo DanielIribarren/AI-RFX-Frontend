@@ -141,11 +141,22 @@ const RfxHistory = forwardRef<RfxHistoryRef, RfxHistoryProps>(
         
         // Transform backend data to frontend format using new consistent structure
         const transformedData: HistoryItem[] = response.data.map((item: RFXHistoryItem) => {
+          // 🔍 DEBUG: Log backend data to identify UUID vs name issue
+          console.log('🔍 DEBUG Backend History Item:', {
+            id: item.id,
+            rfxId: item.rfxId,
+            title: item.title,
+            client: item.client,
+            nombre_cliente: item.nombre_cliente,
+            id_type: typeof item.id,
+            rfxId_type: typeof item.rfxId
+          })
+          
           // Map database status to display status using our utility function
           const statusMapping = mapDatabaseStatusToDisplay(item.status || 'in_progress');
           
           return {
-            id: item.id,
+            id: item.id, // ✅ Should be UUID from backend
             title: item.title, // Now available directly from backend
             client: item.client, // Now available directly from backend
             empresa: {}, // Initialize empty empresa object (not provided by API currently)
@@ -154,7 +165,7 @@ const RfxHistory = forwardRef<RfxHistoryRef, RfxHistoryProps>(
             databaseStatus: statusMapping.databaseStatus, // Store original DB status
             productos: `${item.numero_productos} productos`,
             lastActivity: formatRelativeDate(item.date),
-            rfxId: item.rfxId,
+            rfxId: item.rfxId, // ⚠️ Legacy field - may contain name instead of UUID
           };
         })
         
@@ -211,7 +222,7 @@ const RfxHistory = forwardRef<RfxHistoryRef, RfxHistoryProps>(
 
     const handleRfxClick = (rfx: HistoryItem) => {
       setSelectedRfx(rfx.id)
-      setSelectedRfxForDialog(rfx.rfxId) // Use rfxId for the dialog
+      setSelectedRfxForDialog(rfx.id) // ✅ FIX: Use id (UUID) instead of rfxId (legacy name)
       setSelectedRfxData(rfx) // Pass the RFX data to the dialog
       setDialogOpen(true)
       
