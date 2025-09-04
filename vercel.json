@@ -14,11 +14,6 @@
       "NEXT_PUBLIC_API_URL": "https://recharge-api.akeela.co"
     }
   },
-  "functions": {
-    "app/api/**/*.ts": {
-      "runtime": "nodejs18.x"
-    }
-  },
   "headers": [
     {
       "source": "/(.*)",
