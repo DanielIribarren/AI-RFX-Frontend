@@ -7,9 +7,12 @@
   "devCommand": "npm run dev",
   "regions": ["cle1"],
   "env": {
+    "NEXT_PUBLIC_API_URL": "https://recharge-api.akeela.co"
   },
   "build": {
-
+    "env": {
+      "NEXT_PUBLIC_API_URL": "https://recharge-api.akeela.co"
+    }
   },
   "functions": {
     "app/api/**/*.ts": {

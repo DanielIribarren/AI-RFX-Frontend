@@ -88,7 +88,7 @@ jobs:
       - name: Run build test
         run: npm run build
         env:
-          NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL || 'https://api.example.com' }}
+          NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL || 'https://recharge-api.akeela.co' }}
 
       - name: Determine deployment type
         id: deploy-type
