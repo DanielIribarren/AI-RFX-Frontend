@@ -6,7 +6,15 @@
     "build": "next build",
     "dev": "next dev",
     "lint": "next lint",
-    "start": "next start"
+    "start": "next start",
+    "deploy": "vercel --prod",
+    "deploy:preview": "vercel",
+    "deploy:local": "vercel --local",
+    "hook:trigger": "node scripts/trigger-deploy-hook.js",
+    "check:status": "node scripts/check-deploy-status.js",
+    "deploy:complete": "./scripts/deploy-complete.sh",
+    "clean": "rm -rf .next && rm -rf node_modules/.cache",
+    "prebuild": "npm run clean"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",

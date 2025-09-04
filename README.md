@@ -54,11 +54,24 @@ La aplicación estará disponible en [http://localhost:3000](http://localhost:30
 
 ## 📦 Scripts Disponibles
 
+### Desarrollo
+
 - `npm run dev` - Servidor de desarrollo
 - `npm run build` - Build de producción
 - `npm run start` - Servidor de producción
 - `npm run lint` - Linter
-- `npm test` - Tests
+
+### Deploy
+
+- `npm run deploy` - Deploy a producción (Vercel)
+- `npm run deploy:preview` - Deploy de preview
+- `npm run deploy:complete` - Deploy completo con limpieza
+- `npm run hook:trigger` - Disparar deploy hook manualmente
+- `npm run check:status` - Verificar estado de deploys
+
+### Utilidades
+
+- `npm run clean` - Limpiar caché de build
 
 ## 🌐 Variables de Entorno
 
@@ -69,15 +82,43 @@ NEXT_PUBLIC_APP_NAME=AI-RFX
 
 ## 🚢 Deploy
 
-### Vercel (Recomendado)
+### 🔥 Deploy Hooks Automáticos (Configurado)
+
+El proyecto está configurado con **deploy hooks automáticos** que se activan automáticamente:
+
+- **Push a `main`** → Deploy a **producción** 🚀
+- **Push a otras ramas** → Deploy de **preview** 📋
+- **Pull Requests** → Deploy de **preview** + comentario automático 💬
+
+### Manual Deploy
 
 ```bash
-vercel deploy
+# Deploy completo con limpieza
+npm run deploy:complete
+
+# Deploy directo
+npm run deploy              # Producción
+npm run deploy:preview      # Preview
+
+# Disparar hook manualmente
+npm run hook:trigger
 ```
 
-### Netlify
+### Configuración Inicial
+
+Para configurar deploy hooks por primera vez:
+
+1. **Revisar documentación completa**: [`DEPLOY_HOOKS_SETUP.md`](./DEPLOY_HOOKS_SETUP.md)
+2. **Configurar variables de entorno**: [`ENV_CONFIG.md`](./ENV_CONFIG.md)
+3. **Configurar secrets en GitHub**: Repositorio → Settings → Secrets
+
+### Legacy: Deploy Manual a Plataformas
 
 ```bash
+# Vercel CLI
+vercel deploy
+
+# Build para otros proveedores
 npm run build
 # Subir carpeta .next/
 ```
@@ -104,4 +145,5 @@ NEXT_PUBLIC_API_URL=https://tu-backend-url.com
 - ✅ Componentes reutilizables
 - ✅ TypeScript completo
 - ✅ Optimizado para producción
+
 # AI-RFX-Backend
