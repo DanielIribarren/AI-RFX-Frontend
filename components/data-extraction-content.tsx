@@ -4,11 +4,12 @@ import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { CurrencySelector } from "@/components/ui/currency-selector"
-import { RefreshCw, Plus, DollarSign } from "lucide-react"
+import { RefreshCw, Plus, DollarSign, FileText, Lightbulb, Edit3 } from "lucide-react"
 import InlineEditableField from "@/components/ui/inline-editable-field"
 import ProductTable from "@/components/product-table"
 import ProductFormDialog from "@/components/product-form-dialog"
 import { useRFXCurrencyCompatible } from "@/contexts/RFXCurrencyContext"
+import { StatusBadge } from "@/components/ui/status-badge"
 
 interface ExtractedData {
   solicitante: string
@@ -119,7 +120,6 @@ export default function DataExtractionContent({
       <Card className={isDisabled ? "opacity-50" : ""} style={{ boxShadow: "0 1px 3px 0 rgba(0, 0, 0, 0.1)", transition: "box-shadow 0.3s ease" }}>
         <CardHeader className="pb-4">
           <CardTitle className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-            <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
             Datos del Solicitante
           </CardTitle>
         </CardHeader>
@@ -168,7 +168,6 @@ export default function DataExtractionContent({
       <Card className={isDisabled ? "opacity-50" : ""} style={{ boxShadow: "0 1px 3px 0 rgba(0, 0, 0, 0.1)", transition: "box-shadow 0.3s ease" }}>
         <CardHeader className="pb-4">
           <CardTitle className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
             Datos de la Empresa
           </CardTitle>
         </CardHeader>
@@ -230,8 +229,9 @@ export default function DataExtractionContent({
               />
             )}
             {!extractedData.nombreEmpresa && !extractedData.emailEmpresa && !extractedData.telefonoEmpresa && (
-              <div className="text-sm text-gray-500 italic py-4">
-                📝 No se encontraron datos específicos de la empresa en el documento. Puede agregarlos manualmente.
+              <div className="text-sm text-gray-500 italic py-4 flex items-center gap-2">
+                <FileText className="h-4 w-4" />
+                <span>No se encontraron datos específicos de la empresa en el documento. Puede agregarlos manualmente.</span>
               </div>
             )}
           </div>
@@ -242,7 +242,6 @@ export default function DataExtractionContent({
       <Card className={isDisabled ? "opacity-50" : ""} style={{ boxShadow: "0 1px 3px 0 rgba(0, 0, 0, 0.1)", transition: "box-shadow 0.3s ease" }}>
         <CardHeader className="pb-4">
           <CardTitle className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-            <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
             Datos del Evento
           </CardTitle>
         </CardHeader>
@@ -279,7 +278,6 @@ export default function DataExtractionContent({
       <Card className={isDisabled ? "opacity-50" : ""} style={{ boxShadow: "0 1px 3px 0 rgba(0, 0, 0, 0.1)", transition: "box-shadow 0.3s ease" }}>
         <CardHeader className="pb-4">
           <CardTitle className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-            <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
             Requirements Específicos
             {extractedData.requirementsConfidence > 0 && (
               <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full ml-2">
@@ -310,8 +308,9 @@ export default function DataExtractionContent({
               />
             )}
             {!extractedData.requirements && (
-              <div className="text-xs text-gray-500 mt-2">
-                💡 Ejemplos: "Personal con +5 años experiencia", "Sin frutos secos por alergias", "Presupuesto máximo €500"
+              <div className="text-xs text-gray-500 mt-2 flex items-start gap-2">
+                <Lightbulb className="h-3 w-3 mt-0.5 flex-shrink-0" />
+                <span>Ejemplos: "Personal con +5 años experiencia", "Sin frutos secos por alergias", "Presupuesto máximo €500"</span>
               </div>
             )}
           </div>
@@ -323,7 +322,6 @@ export default function DataExtractionContent({
         <Card className={isDisabled ? "opacity-50" : ""}>
           <CardHeader className="pb-4">
             <CardTitle className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-              <div className="w-2 h-2 bg-indigo-500 rounded-full"></div>
               <span>Configurar Precios de Productos</span>
               
               {/* Controls */}
@@ -354,8 +352,9 @@ export default function DataExtractionContent({
             <CardDescription>
               Configure precios y cantidades. Los cambios se guardan automáticamente.
               {productosIndividuales.some(p => p.isQuantityModified) && (
-                <span className="block mt-1 text-blue-600 font-medium">
-                  ✏️ {productosIndividuales.filter(p => p.isQuantityModified).length} producto(s) con cantidades modificadas
+                <span className="mt-1 text-blue-600 font-medium flex items-center gap-1">
+                  <Edit3 className="h-3 w-3" />
+                  {productosIndividuales.filter(p => p.isQuantityModified).length} producto(s) con cantidades modificadas
                 </span>
               )}
             </CardDescription>
@@ -396,7 +395,9 @@ export default function DataExtractionContent({
                   )}
                 </Button>
                 {costsSaved && (
-                  <p className="text-sm text-green-600 mt-2">✅ Costos guardados exitosamente</p>
+                  <div className="mt-2">
+                    <StatusBadge variant="success">Costos guardados exitosamente</StatusBadge>
+                  </div>
                 )}
               </div>
             )}

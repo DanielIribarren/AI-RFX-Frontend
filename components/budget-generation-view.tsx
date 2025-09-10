@@ -5,12 +5,13 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { CurrencySelector } from "@/components/ui/currency-selector"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { ArrowLeft, Download, RefreshCw, CheckCircle, Settings, FileText } from "lucide-react"
+import { ArrowLeft, Download, RefreshCw, CheckCircle, Settings, FileText, DollarSign } from "lucide-react"
 import PricingConfigurationCard from "@/components/pricing-configuration-card"
 import type { PricingConfigFormData, LegacyPricingConfig, PricingCalculationResult } from "@/types/pricing-v2"
 import BudgetPreviewCard from "@/components/budget-preview-card"
 import ChatInputCard from "@/components/chat-input-card"
 import { useRFXCurrencyCompatible } from "@/contexts/RFXCurrencyContext"
+import { StatusBadge } from "@/components/ui/status-badge"
 
 interface ProductoIndividual {
   id: string
@@ -354,21 +355,21 @@ export default function BudgetGenerationView({
             <div className={`w-2 h-2 rounded-full ${canGenerateProposal ? 'bg-teal-500' : 'bg-amber-500'}`}></div>
             Generar Propuesta Comercial
             {canGenerateProposal && (
-              <span className="text-green-600 text-sm flex items-center gap-1">
-                <CheckCircle className="h-3 w-3" />
-                Lista para generar
-              </span>
+              <StatusBadge variant="success">Lista para generar</StatusBadge>
             )}
           </CardTitle>
           <CardDescription>
             {canGenerateProposal ? (
               <div className="space-y-1">
-                <p className="text-green-700">✅ Productos con precios configurados (Total: €{productsTotal.toFixed(2)})</p>
+                <div className="flex items-center gap-2">
+                  <StatusBadge variant="success">Productos configurados</StatusBadge>
+                  <span className="text-sm text-gray-600">Total: €{productsTotal.toFixed(2)}</span>
+                </div>
                 <p className="text-sm text-gray-600">Puede generar la propuesta directamente o actualizar precios si lo desea.</p>
               </div>
             ) : (
               <div className="space-y-1">
-                <p className="text-amber-700">⚠️ Configure precios de productos para generar la propuesta</p>
+                <StatusBadge variant="warning">Configure precios de productos para generar la propuesta</StatusBadge>
                 <p className="text-sm text-gray-600">Los productos necesitan precios válidos antes de generar la propuesta comercial.</p>
               </div>
             )}
@@ -378,9 +379,6 @@ export default function BudgetGenerationView({
           {/* Proposal preview */}
           {propuesta ? (
             <div className="min-h-[400px] max-h-[600px] overflow-y-auto border border-gray-200 rounded-lg p-6 bg-white prose prose-sm max-w-none relative">
-              <div className="mb-2 text-xs text-blue-600 bg-blue-50 p-2 rounded">
-                DEBUG: Propuesta encontrada, longitud: {propuesta.length} caracteres
-              </div>
               <div 
                 className="proposal-content"
                 dangerouslySetInnerHTML={{ 
@@ -411,13 +409,16 @@ export default function BudgetGenerationView({
               <div className="text-center">
                 {!canGenerateProposal ? (
                   <>
-                    <p className="text-amber-600 mb-2">⚠️ Configure precios de productos</p>
-                    <p className="text-sm text-gray-500 mb-3">Los productos necesitan precios válidos para generar la propuesta</p>
+                    <StatusBadge variant="warning">Configure precios de productos</StatusBadge>
+                    <p className="text-sm text-gray-500 mb-3 mt-2">Los productos necesitan precios válidos para generar la propuesta</p>
                     <p className="text-xs text-gray-400">Vaya a la configuración de pricing para establecer los precios</p>
                   </>
                 ) : (
                   <>
-                    <p className="text-green-600 mb-2">✅ Productos configurados (Total: €{productsTotal.toFixed(2)})</p>
+                    <div className="mb-2">
+                      <StatusBadge variant="success">Productos configurados</StatusBadge>
+                      <p className="text-sm text-gray-600 mt-1">Total: €{productsTotal.toFixed(2)}</p>
+                    </div>
                     <p className="text-sm text-gray-500 mb-3">Listo para generar la propuesta comercial</p>
                     <Button 
                       onClick={onGenerateProposal} 
@@ -425,7 +426,7 @@ export default function BudgetGenerationView({
                       disabled={isRegenerating || isFinalized}
                     >
                       <RefreshCw className={`h-4 w-4 ${isRegenerating ? "animate-spin" : ""}`} />
-                      🤖 Generar con IA
+                      Generar con IA
                     </Button>
                   </>
                 )}
@@ -443,7 +444,7 @@ export default function BudgetGenerationView({
                 title={!canGenerateProposal ? "Configure precios de productos primero" : "Generar propuesta con IA"}
               >
                 <RefreshCw className={`h-4 w-4 ${isRegenerating ? "animate-spin" : ""}`} />
-                🤖 Regenerar Propuesta
+                Regenerar Propuesta
               </Button>
               
               <Button 
@@ -489,7 +490,8 @@ export default function BudgetGenerationView({
         <Alert className="border-green-200 bg-green-50">
           <CheckCircle className="h-4 w-4 text-green-600" />
           <AlertDescription className="text-green-800">
-            ✅ Este análisis ha sido finalizado exitosamente y guardado en tu historial.
+            <StatusBadge variant="success">Análisis finalizado</StatusBadge>
+            <span className="ml-2">Este análisis ha sido finalizado exitosamente y guardado en tu historial.</span>
           </AlertDescription>
         </Alert>
       )}

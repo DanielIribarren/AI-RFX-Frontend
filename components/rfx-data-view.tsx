@@ -3,10 +3,11 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { CheckCircle, History, Plus, Briefcase } from "lucide-react"
+import { CheckCircle, History, Plus, Briefcase, BarChart3 } from "lucide-react"
 import { TabsComponent, Tab } from "@/components/ui/tabs-component"
 import DataExtractionContent from "@/components/data-extraction-content"
 import ProcessedFilesContent from "@/components/processed-files-content"
+import { StatusBadge } from "@/components/ui/status-badge"
 
 interface ExtractedData {
   solicitante: string
@@ -108,9 +109,12 @@ export default function RFXDataView({
         <Alert className="border-blue-200 bg-blue-50">
           <CheckCircle className="h-4 w-4 text-blue-600" />
           <AlertDescription className="text-blue-800">
-            📊 Calidad de extracción: {validationMetadata.has_original_data ? 
-              "Datos extraídos del documento" : 
-              "Algunos datos usan valores predeterminados"}
+            <div className="flex items-center gap-2">
+              <BarChart3 className="h-4 w-4" />
+              <span>Calidad de extracción: {validationMetadata.has_original_data ? 
+                "Datos extraídos del documento" : 
+                "Algunos datos usan valores predeterminados"}</span>
+            </div>
             {originalText && (
               <div className="mt-2 text-xs">
                 <strong>Texto relevante encontrado:</strong> "{originalText.slice(0, 150)}{originalText.length > 150 ? '...' : ''}"
@@ -200,7 +204,8 @@ export default function RFXDataView({
         <Alert className="border-green-200 bg-green-50">
           <CheckCircle className="h-4 w-4 text-green-600" />
           <AlertDescription className="text-green-800">
-            ✅ Este RFX ha sido finalizado exitosamente y guardado en tu historial.
+            <StatusBadge variant="success">RFX finalizado</StatusBadge>
+            <span className="ml-2">Este RFX ha sido finalizado exitosamente y guardado en tu historial.</span>
           </AlertDescription>
         </Alert>
       )}

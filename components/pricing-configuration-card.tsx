@@ -9,7 +9,7 @@ import { Switch } from "@/components/ui/switch"
 import { Separator } from "@/components/ui/separator"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { AlertTriangle, CheckCircle, Info, RefreshCw } from "lucide-react"
+import { AlertTriangle, CheckCircle, Info, RefreshCw, Settings, DollarSign, Users, Receipt } from "lucide-react"
 import type { 
   PricingConfigFormData, 
   CoordinationType, 
@@ -20,6 +20,8 @@ import type {
 import type { 
   FrontendPricingFormData 
 } from "@/types/pricing-backend-real"
+import { StatusBadge } from "@/components/ui/status-badge"
+import { SectionHeader } from "@/components/ui/section-header"
 import { 
   getFrontendPricingConfig,
   updateFrontendPricingConfig,
@@ -324,7 +326,7 @@ export default function PricingConfigurationCard({
     <Card className={isDisabled ? "opacity-50" : ""}>
       <CardHeader className="pb-4">
         <CardTitle className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-          <span className="text-xl">📊</span>
+          <Settings className="h-5 w-5" />
           Configuración de Pricing V2.2
         </CardTitle>
         <CardDescription>
@@ -362,7 +364,9 @@ export default function PricingConfigurationCard({
                 <CheckCircle className="h-4 w-4" />
                 <AlertDescription>
                   <div className="flex items-center justify-between">
-                    <span className="text-sm">Conectado al backend V2.2</span>
+                    <div className="flex items-center gap-2">
+                      <StatusBadge variant="success">Conectado al backend V2.2</StatusBadge>
+                    </div>
                     <button 
                       onClick={loadConfigFromBackend}
                       className="text-xs underline hover:no-underline"
@@ -396,13 +400,13 @@ export default function PricingConfigurationCard({
 
         {/* Coordination Configuration */}
         <div className="space-y-4">
+          <SectionHeader 
+            icon={DollarSign}
+            title="Configuración de Coordinación"
+            description="Agregar costos de coordinación y logística al presupuesto"
+            level={3}
+          />
           <div className="flex items-center justify-between">
-            <div className="space-y-1">
-              <Label className="text-base font-medium">Configuración de Coordinación</Label>
-              <p className="text-sm text-gray-600">
-                Agregar costos de coordinación y logística al presupuesto
-              </p>
-            </div>
             <Switch
               checked={localConfig.coordination_enabled}
               onCheckedChange={handleCoordinationToggle}
@@ -424,10 +428,10 @@ export default function PricingConfigurationCard({
                     <SelectValue placeholder="Seleccionar tipo" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="basic">🔰 Básica - Coordinación mínima</SelectItem>
-                    <SelectItem value="standard">⭐ Estándar - Coordinación completa</SelectItem>
-                    <SelectItem value="premium">💎 Premium - Coordinación avanzada</SelectItem>
-                    <SelectItem value="custom">🛠️ Personalizada</SelectItem>
+                    <SelectItem value="basic">Básica - Coordinación mínima</SelectItem>
+                    <SelectItem value="standard">Estándar - Coordinación completa</SelectItem>
+                    <SelectItem value="premium">Premium - Coordinación avanzada</SelectItem>
+                    <SelectItem value="custom">Personalizada</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -493,13 +497,13 @@ export default function PricingConfigurationCard({
 
         {/* Cost Per Person Configuration */}
         <div className="space-y-4">
+          <SectionHeader 
+            icon={Users}
+            title="Configuración de Costo por Persona"
+            description="Mostrar y calcular costo promedio por persona"
+            level={3}
+          />
           <div className="flex items-center justify-between">
-            <div className="space-y-1">
-              <Label className="text-base font-medium">Configuración de Costo por Persona</Label>
-              <p className="text-sm text-gray-600">
-                Mostrar y calcular costo promedio por persona
-              </p>
-            </div>
             <Switch
               checked={localConfig.cost_per_person_enabled}
               onCheckedChange={handleCostPerPersonToggle}
@@ -526,7 +530,7 @@ export default function PricingConfigurationCard({
                     className="w-28"
                     disabled={isDisabled}
                   />
-                  <span className="text-sm text-gray-600">👥 personas</span>
+                  <span className="text-sm text-gray-600">personas</span>
                 </div>
               </div>
 
@@ -542,9 +546,9 @@ export default function PricingConfigurationCard({
                     <SelectValue placeholder="Seleccionar fuente" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="manual">✋ Manual - Ingresado manualmente</SelectItem>
-                    <SelectItem value="extracted">🤖 Extraído - Detectado por IA</SelectItem>
-                    <SelectItem value="estimated">📊 Estimado - Calculado automáticamente</SelectItem>
+                    <SelectItem value="manual">Manual - Ingresado manualmente</SelectItem>
+                    <SelectItem value="extracted">Extraído - Detectado por IA</SelectItem>
+                    <SelectItem value="estimated">Estimado - Calculado automáticamente</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -561,9 +565,9 @@ export default function PricingConfigurationCard({
                     <SelectValue placeholder="Seleccionar base" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="subtotal">💰 Subtotal - Solo productos</SelectItem>
-                    <SelectItem value="subtotal_with_coordination">📊 Subtotal + Coordinación</SelectItem>
-                    <SelectItem value="final_total">🎯 Total Final - Incluye todo</SelectItem>
+                    <SelectItem value="subtotal">Subtotal - Solo productos</SelectItem>
+                    <SelectItem value="subtotal_with_coordination">Subtotal + Coordinación</SelectItem>
+                    <SelectItem value="final_total">Total Final - Incluye todo</SelectItem>
                   </SelectContent>
                 </Select>
                 <p className="text-xs text-gray-500">
@@ -593,13 +597,13 @@ export default function PricingConfigurationCard({
           <>
             <Separator />
             <div className="space-y-4">
+              <SectionHeader 
+                icon={Receipt}
+                title="Configuración de Impuestos"
+                description="Agregar impuestos y tasas adicionales"
+                level={3}
+              />
               <div className="flex items-center justify-between">
-                <div className="space-y-1">
-                  <Label className="text-base font-medium">Configuración de Impuestos</Label>
-                  <p className="text-sm text-gray-600">
-                    Agregar impuestos y tasas adicionales
-                  </p>
-                </div>
                 <Switch
                   checked={localConfig.taxes_enabled}
                   onCheckedChange={handleTaxToggle}
@@ -676,15 +680,15 @@ export default function PricingConfigurationCard({
         <div className="bg-gray-50 rounded-lg p-4 space-y-2">
           <h4 className="text-sm font-medium text-gray-800 flex items-center gap-2">
             <CheckCircle className="h-4 w-4 text-green-500" />
-            📋 Resumen de Configuración V2.2
+            Resumen de Configuración V2.2
           </h4>
           <div className="text-sm text-gray-600 space-y-1">
             <div className="flex justify-between">
               <span>Coordinación:</span>
               <span>
                 {localConfig.coordination_enabled 
-                  ? `✅ ${localConfig.coordination_type} (${(localConfig.coordination_rate * 100).toFixed(2)}%)` 
-                  : "❌ Deshabilitada"
+                  ? <StatusBadge variant="success">{localConfig.coordination_type} ({(localConfig.coordination_rate * 100).toFixed(2)}%)</StatusBadge>
+                  : <StatusBadge variant="error">Deshabilitada</StatusBadge>
                 }
               </span>
             </div>
@@ -692,8 +696,8 @@ export default function PricingConfigurationCard({
               <span>Costo por persona:</span>
               <span>
                 {localConfig.cost_per_person_enabled 
-                  ? `✅ ${localConfig.headcount} personas (${localConfig.calculation_base})` 
-                  : "❌ No mostrar"
+                  ? <StatusBadge variant="success">{localConfig.headcount} personas ({localConfig.calculation_base})</StatusBadge>
+                  : <StatusBadge variant="error">No mostrar</StatusBadge>
                 }
               </span>
             </div>
@@ -702,8 +706,8 @@ export default function PricingConfigurationCard({
                 <span>Impuestos:</span>
                 <span>
                   {localConfig.taxes_enabled 
-                    ? `✅ ${localConfig.tax_name} (${(localConfig.tax_rate * 100).toFixed(2)}%)` 
-                    : "❌ Sin impuestos"
+                    ? <StatusBadge variant="success">{localConfig.tax_name} ({(localConfig.tax_rate * 100).toFixed(2)}%)</StatusBadge>
+                    : <StatusBadge variant="neutral">Sin impuestos</StatusBadge>
                   }
                 </span>
               </div>
@@ -757,7 +761,7 @@ export default function PricingConfigurationCard({
                 </>
               ) : (
                 <>
-                  💾 {useRealBackend ? 'Guardar en Backend V2.2' : 'Guardar Configuración V2.2'}
+                  {useRealBackend ? 'Guardar en Backend V2.2' : 'Guardar Configuración V2.2'}
                 </>
               )}
             </Button>
@@ -768,9 +772,10 @@ export default function PricingConfigurationCard({
                 <button
                   onClick={loadConfigFromBackend}
                   disabled={isLoadingFromBackend || isSavingToBackend}
-                  className="text-xs text-gray-500 hover:text-gray-700 underline hover:no-underline"
+                  className="text-xs text-gray-500 hover:text-gray-700 underline hover:no-underline flex items-center gap-1"
                 >
-                  🔄 Recargar desde Servidor
+                  <RefreshCw className="h-3 w-3" />
+                  Recargar desde Servidor
                 </button>
               </div>
             )}

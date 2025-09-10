@@ -807,9 +807,9 @@ export default function RfxResultsWrapperV2({
       
       if (hasValidPrices) {
         const total = calculateProductsTotal(productosIndividuales)
-        alert(`✅ Costos guardados exitosamente para ${result.data.updated_products.length} productos (Total: €${total.toFixed(2)}). Ahora puede generar la propuesta.`)
+        alert(`Costos guardados exitosamente para ${result.data.updated_products.length} productos (Total: €${total.toFixed(2)}). Ahora puede generar la propuesta.`)
       } else {
-        alert(`⚠️ Costos guardados, pero algunos productos necesitan precios válidos antes de generar la propuesta.`)
+        alert(`Costos guardados, pero algunos productos necesitan precios válidos antes de generar la propuesta.`)
       }
       
       // Refresco automático de datos después de actualizar costos
@@ -820,11 +820,11 @@ export default function RfxResultsWrapperV2({
       const errorInfo = handleAPIError(error)
       
       if (error instanceof Error && error.message.includes("404")) {
-        alert("❌ RFX no encontrado. Por favor recargue la página e intente nuevamente.")
+        alert("RFX no encontrado. Por favor recargue la página e intente nuevamente.")
       } else if (error instanceof Error && error.message.includes("400")) {
-        alert("❌ Datos de costos inválidos. Verifique que todos los precios sean válidos.")
+        alert("Datos de costos inválidos. Verifique que todos los precios sean válidos.")
       } else {
-        alert("❌ No se pudo guardar los costos de los productos. Por favor, intente nuevamente.")
+        alert("No se pudo guardar los costos de los productos. Por favor, intente nuevamente.")
       }
     } finally {
       setIsSavingCosts(false)
@@ -841,7 +841,7 @@ export default function RfxResultsWrapperV2({
       if (productosIndividuales.length > 0) {
         const hasCosts = productosIndividuales.some(p => p.precio > 0)
         if (!hasCosts) {
-          alert("⚠️ Por favor ingrese y guarde los costos unitarios primero usando el botón 'Guardar Costos'")
+          alert("Por favor ingrese y guarde los costos unitarios primero usando el botón 'Guardar Costos'")
           setIsRegenerating(false)
           return
         }
@@ -905,11 +905,11 @@ export default function RfxResultsWrapperV2({
       const errorInfo = handleAPIError(error)
       
       if (error instanceof Error && error.message.includes("404")) {
-        alert("❌ RFX no encontrado. Por favor recargue la página e intente nuevamente.")
+        alert("RFX no encontrado. Por favor recargue la página e intente nuevamente.")
       } else if (error instanceof Error && error.message.includes("500")) {
-        alert("❌ Error del servidor al generar la propuesta. Verifique que los costos estén guardados e intente nuevamente.")
+        alert("Error del servidor al generar la propuesta. Verifique que los costos estén guardados e intente nuevamente.")
       } else {
-        alert("❌ Error al generar la propuesta. Por favor intente nuevamente.")
+        alert("Error al generar la propuesta. Por favor intente nuevamente.")
       }
     } finally {
       setIsRegenerating(false)
@@ -920,7 +920,7 @@ export default function RfxResultsWrapperV2({
     try {
       // Validar que hay propuesta generada
       if (!propuesta || propuesta.trim().length === 0) {
-        alert("⚠️ No hay propuesta generada para descargar.\n\nPor favor usa el botón 'Regenerar con IA' primero para crear una propuesta.")
+        alert("No hay propuesta generada para descargar.\n\nPor favor usa el botón 'Regenerar con IA' primero para crear una propuesta.")
         return
       }
 
@@ -995,9 +995,9 @@ export default function RfxResultsWrapperV2({
       
       // Mostrar mensaje apropiado
       if (isHTML) {
-        alert(`⚠️ PDF no disponible temporalmente. Se descargó como HTML: ${fileName}\n\nPara convertir a PDF:\n1. Abre el archivo HTML en tu navegador\n2. Presiona Ctrl+P (o Cmd+P en Mac)\n3. Selecciona "Guardar como PDF"\n4. Ajusta configuración para A4 si es necesario`)
+        alert(`PDF no disponible temporalmente. Se descargó como HTML: ${fileName}\n\nPara convertir a PDF:\n1. Abre el archivo HTML en tu navegador\n2. Presiona Ctrl+P (o Cmd+P en Mac)\n3. Selecciona "Guardar como PDF"\n4. Ajusta configuración para A4 si es necesario`)
       } else {
-        alert(`✅ Propuesta descargada exitosamente como PDF: ${fileName}`)
+        alert(`Propuesta descargada exitosamente como PDF: ${fileName}`)
       }
       
     } catch (error) {
@@ -1017,7 +1017,7 @@ export default function RfxResultsWrapperV2({
         }
       }
       
-      alert(`❌ No se pudo descargar la propuesta\n\nError: ${errorMessage}\n\nSoluciones:\n1. Verifica que la propuesta esté generada (visible en pantalla)\n2. Revisa tu conexión a internet\n3. Si persiste, contacta al administrador`)
+      alert(`No se pudo descargar la propuesta\n\nError: ${errorMessage}\n\nSoluciones:\n1. Verifica que la propuesta esté generada (visible en pantalla)\n2. Revisa tu conexión a internet\n3. Si persiste, contacta al administrador`)
     }
   }
 

@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Separator } from "@/components/ui/separator"
 import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { RefreshCw, Calculator, TrendingUp, Users, Receipt, AlertTriangle } from "lucide-react"
+import { RefreshCw, Calculator, TrendingUp, Users, Receipt, AlertTriangle, BarChart3 } from "lucide-react"
 import type { 
   PricingConfigFormData, 
   PricingCalculationResult,
@@ -17,6 +17,8 @@ import {
   handleBackendPricingError 
 } from "@/lib/api-pricing-backend-real"
 import { pricingApiV2 } from "@/lib/api-pricing-v2"
+import { StatusBadge } from "@/components/ui/status-badge"
+import { SectionHeader } from "@/components/ui/section-header"
 
 interface ProductoIndividual {
   id: string
@@ -196,22 +198,22 @@ export default function BudgetPreviewCard({
   // Helper function to get coordination type display
   const getCoordinationTypeDisplay = (type: CoordinationType): string => {
     const types = {
-      basic: '🔰 Básica',
-      standard: '⭐ Estándar',
-      premium: '💎 Premium',
-      custom: '🛠️ Personalizada'
+      basic: 'Básica',
+      standard: 'Estándar',
+      premium: 'Premium',
+      custom: 'Personalizada'
     }
-    return types[type] || '⭐ Estándar'
+    return types[type] || 'Estándar'
   }
 
   // Helper function to get calculation base display
   const getCalculationBaseDisplay = (base: CalculationBase): string => {
     const bases = {
-      subtotal: '💰 Subtotal',
-      subtotal_with_coordination: '📊 Subtotal + Coordinación',
-      final_total: '🎯 Total Final'
+      subtotal: 'Subtotal',
+      subtotal_with_coordination: 'Subtotal + Coordinación',
+      final_total: 'Total Final'
     }
-    return bases[base] || '🎯 Total Final'
+    return bases[base] || 'Total Final'
   }
 
   // If no products, show empty state
@@ -220,7 +222,7 @@ export default function BudgetPreviewCard({
       <Card>
         <CardHeader>
           <CardTitle className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-            <span className="text-xl">📋</span>
+            <BarChart3 className="h-5 w-5" />
             Vista Previa del Presupuesto V2.2
           </CardTitle>
           <CardDescription>
@@ -229,7 +231,9 @@ export default function BudgetPreviewCard({
         </CardHeader>
         <CardContent>
           <div className="text-center py-8">
-            <div className="text-gray-400 text-4xl mb-2">💰</div>
+            <div className="text-gray-400 text-4xl mb-2">
+              <Calculator className="h-16 w-16 mx-auto" />
+            </div>
             <p className="text-gray-500">No hay productos configurados</p>
             <p className="text-sm text-gray-400 mt-1">
               Agrega productos en la configuración de precios para ver la vista previa
@@ -244,14 +248,14 @@ export default function BudgetPreviewCard({
     <Card className="h-fit">
       <CardHeader>
         <CardTitle className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-          <span className="text-xl">📋</span>
+          <BarChart3 className="h-5 w-5" />
           Vista Previa del Presupuesto V2.2
           {isCalculating && <RefreshCw className="h-4 w-4 animate-spin ml-2" />}
           {useApiCalculations && (
             <Badge variant="secondary" className="ml-2 text-xs">
               {apiCalculations 
-                ? (useRealBackend ? "🎯 Backend Real V2.2" : "🤖 API Legacy") 
-                : "💻 Local"
+                ? (useRealBackend ? "Backend Real V2.2" : "API Legacy") 
+                : "Local"
               }
             </Badge>
           )}
@@ -259,10 +263,10 @@ export default function BudgetPreviewCard({
         <CardDescription>
           {useApiCalculations 
             ? (useRealBackend 
-                ? "🎯 Cálculos precisos usando Backend Real V2.2 con SQL"
-                : "🤖 Cálculos usando API Legacy"
+                ? "Cálculos precisos usando Backend Real V2.2 con SQL"
+                : "Cálculos usando API Legacy"
               )
-            : "💻 Vista previa con cálculos locales instantáneos"
+            : "Vista previa con cálculos locales instantáneos"
           }
         </CardDescription>
       </CardHeader>
@@ -392,7 +396,8 @@ export default function BudgetPreviewCard({
         {/* Advanced Summary V2.2 */}
         <div className="bg-gray-50 rounded-lg p-3">
           <h5 className="text-xs font-medium text-gray-700 mb-2 flex items-center gap-2">
-            📊 Resumen Avanzado V2.2
+            <BarChart3 className="h-3 w-3" />
+            Resumen Avanzado V2.2
             {useApiCalculations && apiCalculations && (
               <Badge variant="outline" className="text-xs">SQL Calculado</Badge>
             )}
@@ -406,8 +411,8 @@ export default function BudgetPreviewCard({
               <span className="text-gray-500">Coordinación:</span>
               <span className="ml-1 font-medium">
                 {calculations.coordination_enabled 
-                  ? `${getCoordinationTypeDisplay(config.coordination_type)}`
-                  : "❌ No"
+                  ? getCoordinationTypeDisplay(config.coordination_type)
+                  : <StatusBadge variant="error" showIcon={false}>No</StatusBadge>
                 }
               </span>
             </div>
@@ -446,10 +451,10 @@ export default function BudgetPreviewCard({
             <Badge variant="outline" className="text-xs">
               {apiCalculations 
                 ? (useRealBackend 
-                    ? "🎯 Backend Real V2.2: calculate_rfx_pricing()" 
-                    : "🤖 API Legacy: calculate_rfx_pricing()"
+                    ? "Backend Real V2.2: calculate_rfx_pricing()" 
+                    : "API Legacy: calculate_rfx_pricing()"
                   )
-                : "💻 Cálculos locales (API no disponible)"
+                : "Cálculos locales (API no disponible)"
               }
             </Badge>
           </div>

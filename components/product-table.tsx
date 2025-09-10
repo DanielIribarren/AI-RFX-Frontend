@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { CheckCircle, X, Trash2 } from "lucide-react"
+import { CheckCircle, X, Trash2, AlertTriangle, FileText, Lightbulb } from "lucide-react"
 import { cn } from "@/lib/utils"
 function InlineEditableText({
   value,
@@ -203,8 +203,9 @@ export default function ProductTable({
 }: ProductTableProps) {
   if (productos.length === 0) {
     return (
-      <div className="text-center py-8 text-gray-500">
-        📝 No hay productos disponibles para configurar costos.
+      <div className="text-center py-8 text-gray-500 flex items-center justify-center gap-2">
+        <FileText className="h-5 w-5" />
+        <span>No hay productos disponibles para configurar costos.</span>
       </div>
     )
   }
@@ -257,7 +258,8 @@ export default function ProductTable({
                 )}
                 {needsPriceReview && (
                   <div className="text-xs text-amber-600 font-medium flex items-center gap-1">
-                    ⚠️ Precio requiere revisión tras cambio de moneda
+                    <AlertTriangle className="h-3 w-3" />
+                    Precio requiere revisión tras cambio de moneda
                   </div>
                 )}
               </div>
@@ -342,8 +344,9 @@ export default function ProductTable({
       </div>
 
       {/* Información adicional */}
-      <div className="mt-3 text-xs text-gray-500 text-center">
-        💡 Haz clic en cualquier cantidad o precio para editarlo. Presiona Enter para confirmar o Escape para cancelar.
+      <div className="mt-3 text-xs text-gray-500 text-center flex items-center justify-center gap-2">
+        <Lightbulb className="h-3 w-3" />
+        <span>Haz clic en cualquier cantidad o precio para editarlo. Presiona Enter para confirmar o Escape para cancelar.</span>
       </div>
     </div>
   )
