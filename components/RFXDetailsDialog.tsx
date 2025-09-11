@@ -193,19 +193,26 @@ const RFXDetailsDialog = ({ rfxId, isOpen, onClose, rfxData, onViewFullAnalysis 
     }
   }
 
-  // Extract individual products function (EXACT COPY from RfxResults)
+  // Extract individual products function (robust to non-array inputs and multiple schemas)
   const extractIndividualProducts = (data: any): ProductoIndividual[] => {
     if (!data) return []
     
-    const products = (data as any).products || (data as any).productos || []
+    const possibleProducts = (data as any).products 
+      ?? (data as any).productos 
+      ?? (data as any).requested_products 
+      ?? []
     
-    return products.map((product: any, index: number) => ({
-      id: product.id || `product-${index}`,
-      nombre: product.product_name || product.nombre || `Producto ${index + 1}`,
-      cantidad: product.quantity || product.cantidad || 1,
-      unidad: product.unit || product.unidad || 'unidades',
-      precio: product.precio_unitario || product.estimated_unit_price || 0
-    }))
+    const productsArray = Array.isArray(possibleProducts) ? possibleProducts : []
+    
+    return productsArray.map((product: any, index: number) => {
+      const id = product?.id ?? `product-${index}`
+      const nombre = product?.product_name ?? product?.nombre ?? product?.name ?? `Producto ${index + 1}`
+      const cantidad = parseInt(String(product?.quantity ?? product?.cantidad ?? product?.qty ?? 1)) || 1
+      const unidad = product?.unit ?? product?.unidad ?? product?.measurement_unit ?? 'unidades'
+      const precio = parseFloat(String(product?.precio_unitario ?? product?.estimated_unit_price ?? product?.unit_price ?? product?.price ?? 0)) || 0
+      
+      return { id, nombre, cantidad, unidad, precio }
+    })
   }
 
   // Fetch complete RFX data function with debugging

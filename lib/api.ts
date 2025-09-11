@@ -151,6 +151,10 @@ export interface RFXHistoryItem {
   date: string;
   status: 'draft' | 'in_progress' | 'completed' | 'cancelled' | 'expired';
   rfxId: string;
+  // Optional timestamps for last activity resolution
+  updated_at?: string;
+  last_activity_at?: string;
+  last_updated?: string;
 }
 
 export interface RecentRFXItem {
@@ -164,6 +168,27 @@ export interface RecentRFXItem {
   tipo: 'catering' | 'suministros' | 'servicios' | 'construccion';
   numero_productos: number;
   costo_total: number;
+  // Optional timestamps for last activity resolution
+  updated_at?: string;
+  last_activity_at?: string;
+  last_updated?: string;
+}
+
+// New pagination response interfaces for optimized endpoints
+export interface PaginationInfo {
+  offset: number;
+  limit: number;
+  total_items: number;
+  has_more: boolean;
+  next_offset?: number;
+}
+
+export interface RFXLatestResponse {
+  status: "success" | "error";
+  message: string;
+  data: RFXHistoryItem[];
+  pagination: PaginationInfo;
+  timestamp: string;
 }
 
 // Enhanced API client with better error handling
@@ -269,6 +294,34 @@ export const api = {
         throw error;
       }
       throw new APIError('Network error fetching history', 0, 'NETWORK_ERROR');
+    }
+  },
+
+  // NEW: Get latest RFX with optimized pagination
+  async getLatestRFX(limit: number = 10): Promise<RFXLatestResponse> {
+    try {
+      const url = `${API_BASE_URL}/api/rfx/latest${limit !== 10 ? `?limit=${limit}` : ''}`;
+      const response = await fetch(url);
+      return handleResponse<RFXLatestResponse>(response);
+    } catch (error) {
+      if (error instanceof APIError) {
+        throw error;
+      }
+      throw new APIError('Failed to load latest RFX', 500);
+    }
+  },
+
+  // NEW: Load more RFX with offset-based pagination  
+  async loadMoreRFX(offset: number, limit: number = 10): Promise<RFXLatestResponse> {
+    try {
+      const url = `${API_BASE_URL}/api/rfx/load-more?offset=${offset}&limit=${limit}`;
+      const response = await fetch(url);
+      return handleResponse<RFXLatestResponse>(response);
+    } catch (error) {
+      if (error instanceof APIError) {
+        throw error;
+      }
+      throw new APIError('Failed to load more RFX', 500);
     }
   },
 

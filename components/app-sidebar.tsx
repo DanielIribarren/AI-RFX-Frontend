@@ -39,6 +39,27 @@ export interface AppSidebarRef {
   refresh: () => Promise<void>
 }
 
+// Función utilitaria para mapear estados de backend a estados de display
+const mapBackendStatusToDisplay = (backendStatus: string): "Draft" | "In progress" | "Completed" | "Cancelled" | "Expired" => {
+  const status = backendStatus.toLowerCase();
+  
+  switch (status) {
+    case 'draft':
+      return 'Draft';
+    case 'in_progress':
+      return 'In progress';
+    case 'completed':
+      return 'Completed';
+    case 'cancelled':
+      return 'Cancelled';
+    case 'expired':
+      return 'Expired';
+    default:
+      // Fallback para valores no reconocidos
+      return 'In progress';
+  }
+}
+
 // Función utilitaria para obtener icono y color del estado en sidebar
 const getStatusIcon = (status: string) => {
   switch (status) {
@@ -78,14 +99,17 @@ const AppSidebar = forwardRef<AppSidebarRef, AppSidebarProps>(
         setIsLoading(true)
         const response = await api.getRecentRFX()
         
-        // Transform backend data to frontend format using new consistent structure
-        const transformedData: RfxItem[] = response.data.map((item: RecentRFXItem) => ({
-          id: item.id,
-          title: item.title, // Now available directly from backend
-          client: item.client, // Now available directly from backend
-          date: formatRelativeDate(item.date),
-          status: item.status, // Now includes all status types: "Draft" | "In progress" | "Completed" | "Cancelled" | "Expired"
-        }))
+        // Transform backend data to frontend format using the most recent timestamp available
+        const transformedData: RfxItem[] = response.data.map((item: RecentRFXItem) => {
+          const mostRecentISO = item.updated_at || item.last_activity_at || item.last_updated || item.date
+          return {
+            id: item.id,
+            title: item.title, // Now available directly from backend
+            client: item.client, // Now available directly from backend
+            date: formatRelativeDate(mostRecentISO),
+            status: mapBackendStatusToDisplay(item.status), // Map backend status to display format
+          }
+        })
         
         setRecentRfx(transformedData)
       } catch (err) {

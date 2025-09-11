@@ -111,11 +111,15 @@ const getStatusBadgeProps = (status: RFXDisplayStatus) => {
 
 const RfxHistory = forwardRef<RfxHistoryRef, RfxHistoryProps>(
   ({ onNewRfx, onNavigateToMain, onSelectRfx, onViewFullAnalysis }, ref) => {
+    const PAGE_LIMIT = 10 // Optimized limit for new endpoints
     const [isLoading, setIsLoading] = useState(true)
     const [error, setError] = useState(false)
     const [searchQuery, setSearchQuery] = useState("")
     const [selectedRfx, setSelectedRfx] = useState<string | null>(null)
     const [historyItems, setHistoryItems] = useState<HistoryItem[]>([])
+    const [currentOffset, setCurrentOffset] = useState(0)
+    const [hasMore, setHasMore] = useState(false)
+    const [isLoadingMore, setIsLoadingMore] = useState(false)
     
     // Dialog state for RFX details
     const [dialogOpen, setDialogOpen] = useState(false)
@@ -132,29 +136,28 @@ const RfxHistory = forwardRef<RfxHistoryRef, RfxHistoryProps>(
       }
     }))
 
-    // Load RFX history from backend
-    const loadHistory = async () => {
+    // Load RFX history using optimized endpoints
+    const loadHistory = async (offset: number = 0, append: boolean = false) => {
       try {
-        setIsLoading(true)
+        if (append) {
+          setIsLoadingMore(true)
+        } else {
+          setIsLoading(true)
+        }
         setError(false)
-        const response = await api.getRFXHistory()
+        // Use optimized endpoints based on whether it's initial load or load more
+        const response = offset === 0 
+          ? await api.getLatestRFX(PAGE_LIMIT)
+          : await api.loadMoreRFX(offset, PAGE_LIMIT)
         
         // Transform backend data to frontend format using new consistent structure
         const transformedData: HistoryItem[] = response.data.map((item: RFXHistoryItem) => {
-          // 🔍 DEBUG: Log backend data to identify UUID vs name issue
-          console.log('🔍 DEBUG Backend History Item:', {
-            id: item.id,
-            rfxId: item.rfxId,
-            title: item.title,
-            client: item.client,
-            nombre_cliente: item.nombre_cliente,
-            id_type: typeof item.id,
-            rfxId_type: typeof item.rfxId
-          })
-          
           // Map database status to display status using our utility function
           const statusMapping = mapDatabaseStatusToDisplay(item.status || 'in_progress');
           
+          // Resolve most recent timestamp for "Last activity"
+          const mostRecentISO = item.updated_at || item.last_activity_at || item.last_updated || item.date;
+
           return {
             id: item.id, // ✅ Should be UUID from backend
             title: item.title, // Now available directly from backend
@@ -164,12 +167,16 @@ const RfxHistory = forwardRef<RfxHistoryRef, RfxHistoryProps>(
             estado: statusMapping.displayStatus, // Use mapped display status
             databaseStatus: statusMapping.databaseStatus, // Store original DB status
             productos: `${item.numero_productos} productos`,
-            lastActivity: formatRelativeDate(item.date),
+            lastActivity: formatRelativeDate(mostRecentISO),
             rfxId: item.rfxId, // ⚠️ Legacy field - may contain name instead of UUID
           };
         })
-        
-        setHistoryItems(transformedData)
+        // Update pagination state using offset-based pagination
+        setHasMore(Boolean(response.pagination?.has_more))
+        setCurrentOffset(response.pagination?.next_offset || 0)
+
+        // Append or replace
+        setHistoryItems(prev => append ? [...prev, ...transformedData] : transformedData)
       } catch (err) {
         console.error('Error loading RFX history:', err)
         
@@ -181,11 +188,12 @@ const RfxHistory = forwardRef<RfxHistoryRef, RfxHistoryProps>(
         setHistoryItems([])
       } finally {
         setIsLoading(false)
+        setIsLoadingMore(false)
       }
     }
 
     useEffect(() => {
-      loadHistory()
+      loadHistory(0, false) // Start with offset 0 for initial load
     }, [])
     
     // Helper function to format relative dates
@@ -203,7 +211,8 @@ const RfxHistory = forwardRef<RfxHistoryRef, RfxHistoryProps>(
     }
     
     const handleRefresh = async () => {
-      await loadHistory()
+      setCurrentOffset(0) // Reset offset on refresh
+      await loadHistory(0, false)
     }
 
     // Filter RFXs based on search query
@@ -432,6 +441,28 @@ const RfxHistory = forwardRef<RfxHistoryRef, RfxHistoryProps>(
           ))
         )}
       </div>
+
+      {/* Load more */}
+      {hasMore && (
+        <div className="flex justify-center mt-6">
+          <Button 
+            onClick={() => loadHistory(currentOffset, true)}
+            variant="outline"
+            className="gap-2"
+            disabled={isLoadingMore}
+          >
+            {isLoadingMore ? (
+              <>
+                <RefreshCw className="h-4 w-4 animate-spin" /> Cargando más RFX...
+              </>
+            ) : (
+              <>
+                <RefreshCw className="h-4 w-4" /> Cargar más RFX
+              </>
+            )}
+          </Button>
+        </div>
+      )}
 
       {/* Navigation Helper */}
       {filteredRfxs.length > 0 && (
