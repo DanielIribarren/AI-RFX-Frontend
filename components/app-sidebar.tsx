@@ -99,6 +99,12 @@ const AppSidebar = forwardRef<AppSidebarRef, AppSidebarProps>(
         setIsLoading(true)
         const response = await api.getRecentRFX()
         
+        // Handle case where no RFX exist (successful response with empty data)
+        if (response.status === "success" && (!response.data || response.data.length === 0)) {
+          setRecentRfx([])
+          return
+        }
+        
         // Transform backend data to frontend format using the most recent timestamp available
         const transformedData: RfxItem[] = response.data.map((item: RecentRFXItem) => {
           const mostRecentISO = item.updated_at || item.last_activity_at || item.last_updated || item.date
@@ -114,10 +120,19 @@ const AppSidebar = forwardRef<AppSidebarRef, AppSidebarProps>(
         setRecentRfx(transformedData)
       } catch (err) {
         console.error('Error loading recent RFX:', err)
-        handleAPIError(err)
+        const errorInfo = handleAPIError(err)
         
-        // No fallback to mock data - show empty state or error
-        setRecentRfx([])
+        // Check if this is a "no data" scenario vs a real API error
+        // If the error message suggests no data found, treat as empty state
+        if (errorInfo.message?.toLowerCase().includes('no') || 
+            errorInfo.message?.toLowerCase().includes('not found') || 
+            errorInfo.status === 404) {
+          console.log('No RFX found, showing empty state')
+          setRecentRfx([])
+        } else {
+          // Real API error - show empty state but log the error
+          setRecentRfx([])
+        }
       } finally {
         setIsLoading(false)
       }

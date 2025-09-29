@@ -150,6 +150,14 @@ const RfxHistory = forwardRef<RfxHistoryRef, RfxHistoryProps>(
           ? await api.getLatestRFX(PAGE_LIMIT)
           : await api.loadMoreRFX(offset, PAGE_LIMIT)
         
+        // Handle case where no RFX exist (successful response with empty data)
+        if (response.status === "success" && (!response.data || response.data.length === 0)) {
+          setHistoryItems([])
+          setHasMore(false)
+          setCurrentOffset(0)
+          return
+        }
+        
         // Transform backend data to frontend format using new consistent structure
         const transformedData: HistoryItem[] = response.data.map((item: RFXHistoryItem) => {
           // Map database status to display status using our utility function
@@ -182,10 +190,22 @@ const RfxHistory = forwardRef<RfxHistoryRef, RfxHistoryProps>(
         
         // Use enhanced error handling
         const errorInfo = handleAPIError(err)
-        setError(true)
         
-        // No fallback to mock data - show actual error
-        setHistoryItems([])
+        // Check if this is a "no data" scenario vs a real API error
+        // If the error message suggests no data found, treat as empty state instead of error
+        if (errorInfo.message?.toLowerCase().includes('no') || 
+            errorInfo.message?.toLowerCase().includes('not found') || 
+            errorInfo.status === 404) {
+          console.log('No RFX found, showing empty state instead of error')
+          setHistoryItems([])
+          setError(false) // Don't show error state for empty data
+          setHasMore(false)
+          setCurrentOffset(0)
+        } else {
+          // Real API error - show error state
+          setError(true)
+          setHistoryItems([])
+        }
       } finally {
         setIsLoading(false)
         setIsLoadingMore(false)
@@ -321,7 +341,7 @@ const RfxHistory = forwardRef<RfxHistoryRef, RfxHistoryProps>(
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
             <FileText className="h-12 w-12 text-gray-400 mb-4" />
-            <h3 className="text-lg font-semibold mb-2">No RFX history yet</h3>
+            <h3 className="text-lg font-semibold mb-2">You have no RFX processed</h3>
             <p className="text-gray-600 mb-6 text-center">
               Start by processing your first RFX document to see it appear here.
             </p>
