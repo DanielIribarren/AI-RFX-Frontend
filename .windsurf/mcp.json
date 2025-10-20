@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+      "shadcn": {
+        "serverUrl": "https://www.shadcn.io/api/mcp"
+      }
+    }
+  }
+

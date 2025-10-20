@@ -3,9 +3,10 @@
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { useAuth } from "@/contexts/AuthContext"
+import { TransformedHtmlContent } from "@/components/transformed-html-content"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { ScrollArea } from "@/components/ui/scroll-area"
-
 import { AlertCircle, CheckCircle, Clock, FileText, XCircle, AlertTriangle } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { api, APIError, useAPICall } from "@/lib/api"
@@ -567,7 +568,7 @@ const RFXDetailsDialog = ({ rfxId, isOpen, onClose, rfxData, onViewFullAnalysis 
                       </div>
                       <ScrollArea className="h-96">
                         <div className="p-4 prose prose-sm max-w-none">
-                          <div dangerouslySetInnerHTML={{ __html: propuesta }} />
+                          <TransformedHtmlContent html={propuesta} />
                         </div>
                       </ScrollArea>
                     </div>

@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useImperativeHandle, forwardRef } from "react"
-import { Plus, MessageSquare, FileText, Clock, MoreHorizontal, ChevronLeft, CheckCircle, XCircle, AlertTriangle, Archive } from "lucide-react"
+import { Plus, MessageSquare, FileText, Clock, MoreHorizontal, ChevronLeft, CheckCircle, XCircle, AlertTriangle, Archive, Settings } from "lucide-react"
 import {
   Sidebar,
   SidebarContent,
@@ -14,11 +14,13 @@ import {
   SidebarMenuItem,
   SidebarMenuAction,
   SidebarRail,
+  SidebarFooter,
 } from "@/components/ui/sidebar"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { useSidebar } from "@/components/ui/sidebar"
 import { api, RecentRFXItem, useAPICall } from "@/lib/api"
+import { SidebarUser } from "@/components/sidebar-user"
 
 interface RfxItem {
   id: string
@@ -31,8 +33,9 @@ interface RfxItem {
 interface AppSidebarProps {
   onNewRfx: () => void
   onNavigateToHistory: () => void
+  onNavigateToBudgetSettings?: () => void
   onSelectRfx?: (rfxId: string) => void
-  currentView?: "main" | "results" | "history" | undefined
+  currentView?: "main" | "results" | "history" | "budget-settings" | undefined
 }
 
 export interface AppSidebarRef {
@@ -79,7 +82,7 @@ const getStatusIcon = (status: string) => {
 }
 
 const AppSidebar = forwardRef<AppSidebarRef, AppSidebarProps>(
-  ({ onNewRfx, onNavigateToHistory, onSelectRfx, currentView }, ref) => {
+  ({ onNewRfx, onNavigateToHistory, onNavigateToBudgetSettings, onSelectRfx, currentView }, ref) => {
     const { toggleSidebar } = useSidebar()
     const { handleAPIError } = useAPICall()
     
@@ -215,6 +218,16 @@ const AppSidebar = forwardRef<AppSidebarRef, AppSidebarProps>(
                   <span>RFX History</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  onClick={onNavigateToBudgetSettings}
+                  isActive={currentView === "budget-settings"}
+                  className="w-full justify-start text-gray-700 hover:bg-gray-100 h-8 rounded-md"
+                >
+                  <Settings className="h-4 w-4" />
+                  <span>Budget Settings</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
@@ -273,6 +286,10 @@ const AppSidebar = forwardRef<AppSidebarRef, AppSidebarProps>(
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+
+      <SidebarFooter>
+        <SidebarUser />
+      </SidebarFooter>
 
       <SidebarRail />
     </Sidebar>

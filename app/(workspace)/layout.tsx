@@ -22,6 +22,7 @@ export default function WorkspaceLayout({ children }: WorkspaceLayoutProps) {
         <AppSidebar
           onNewRfx={() => router.push("/dashboard")}
           onNavigateToHistory={() => router.push("/history")}
+          onNavigateToBudgetSettings={() => router.push("/budget-settings")}
           onSelectRfx={(id) => router.push(`/rfx-result-wrapper-v2/data/${id}`)}
           currentView={undefined} // Will be removed after full migration
         />

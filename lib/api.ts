@@ -1,6 +1,86 @@
 // API configuration for connecting to Flask backend
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001';
 
+// ⭐ Helper function to get auth headers with JWT token
+function getAuthHeaders(): HeadersInit {
+  const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
+  const headers: HeadersInit = {
+    'Content-Type': 'application/json',
+  };
+  
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+  
+  return headers;
+}
+
+// ⭐ Enhanced fetch with automatic token injection and refresh
+async function fetchWithAuth(url: string, options: RequestInit = {}): Promise<Response> {
+  // Add auth headers
+  const headers = {
+    ...getAuthHeaders(),
+    ...options.headers,
+  };
+  
+  let response = await fetch(url, {
+    ...options,
+    headers,
+  });
+  
+  // Handle 401 - Token expired, try to refresh
+  if (response.status === 401 && typeof window !== 'undefined') {
+    console.log('🔄 Token expired, attempting refresh...');
+    const refreshToken = localStorage.getItem('refresh_token');
+    
+    if (refreshToken) {
+      try {
+        const refreshResponse = await fetch(`${API_BASE_URL}/api/auth/refresh`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ refresh_token: refreshToken }),
+        });
+        
+        if (refreshResponse.ok) {
+          const data = await refreshResponse.json();
+          localStorage.setItem('access_token', data.access_token);
+          console.log('✅ Token refreshed successfully');
+          
+          // Retry original request with new token
+          const newHeaders = {
+            ...getAuthHeaders(),
+            ...options.headers,
+          };
+          response = await fetch(url, {
+            ...options,
+            headers: newHeaders,
+          });
+        } else {
+          console.error('❌ Token refresh failed, redirecting to login');
+          localStorage.clear();
+          if (typeof window !== 'undefined') {
+            window.location.href = '/login';
+          }
+        }
+      } catch (error) {
+        console.error('❌ Error refreshing token:', error);
+        localStorage.clear();
+        if (typeof window !== 'undefined') {
+          window.location.href = '/login';
+        }
+      }
+    } else {
+      console.error('❌ No refresh token available, redirecting to login');
+      localStorage.clear();
+      if (typeof window !== 'undefined') {
+        window.location.href = '/login';
+      }
+    }
+  }
+  
+  return response;
+}
+
 // Backend data types (updated for V2.0 structure with legacy fallback)
 export interface Product {
   // V2.0 structure (primary)
@@ -261,14 +341,11 @@ export const api = {
     }
   },
 
-  // Generate proposal - Enhanced
+  // Generate proposal - Enhanced with JWT
   async generateProposal(data: ProposalRequest): Promise<ProposalResponse> {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/proposals/generate`, {
+      const response = await fetchWithAuth(`${API_BASE_URL}/api/proposals/generate`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify(data),
       });
 
@@ -281,10 +358,10 @@ export const api = {
     }
   },
 
-  // Get RFX history with pagination support
+  // Get RFX history with pagination support and JWT
   async getRFXHistory(page: number = 1, limit: number = 50): Promise<RFXHistoryResponse> {
     try {
-      const response = await fetch(
+      const response = await fetchWithAuth(
         `${API_BASE_URL}/api/rfx/history?page=${page}&limit=${limit}`
       );
 
@@ -297,11 +374,11 @@ export const api = {
     }
   },
 
-  // NEW: Get latest RFX with optimized pagination
+  // NEW: Get latest RFX with optimized pagination and JWT
   async getLatestRFX(limit: number = 10): Promise<RFXLatestResponse> {
     try {
       const url = `${API_BASE_URL}/api/rfx/latest${limit !== 10 ? `?limit=${limit}` : ''}`;
-      const response = await fetch(url);
+      const response = await fetchWithAuth(url);
       return handleResponse<RFXLatestResponse>(response);
     } catch (error) {
       if (error instanceof APIError) {
@@ -311,11 +388,11 @@ export const api = {
     }
   },
 
-  // NEW: Load more RFX with offset-based pagination  
+  // NEW: Load more RFX with offset-based pagination and JWT
   async loadMoreRFX(offset: number, limit: number = 10): Promise<RFXLatestResponse> {
     try {
       const url = `${API_BASE_URL}/api/rfx/load-more?offset=${offset}&limit=${limit}`;
-      const response = await fetch(url);
+      const response = await fetchWithAuth(url);
       return handleResponse<RFXLatestResponse>(response);
     } catch (error) {
       if (error instanceof APIError) {
@@ -325,10 +402,10 @@ export const api = {
     }
   },
 
-  // Get recent RFX for sidebar (limited to 12 items)
+  // Get recent RFX for sidebar (limited to 12 items) with JWT
   async getRecentRFX(): Promise<{ status: string; message: string; data: RecentRFXItem[] }> {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/rfx/recent`);
+      const response = await fetchWithAuth(`${API_BASE_URL}/api/rfx/recent`);
 
       return handleResponse<{ status: string; message: string; data: RecentRFXItem[] }>(response);
     } catch (error) {
@@ -339,10 +416,10 @@ export const api = {
     }
   },
 
-  // Get specific RFX by ID
+  // Get specific RFX by ID with JWT
   async getRFXById(rfxId: string): Promise<RFXResponse> {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/rfx/${rfxId}`);
+      const response = await fetchWithAuth(`${API_BASE_URL}/api/rfx/${rfxId}`);
       return handleResponse<RFXResponse>(response);
     } catch (error) {
       if (error instanceof APIError) {
@@ -352,14 +429,11 @@ export const api = {
     }
   },
 
-  // Finalize RFX (mark as completed)
+  // Finalize RFX (mark as completed) with JWT
   async finalizeRFX(rfxId: string): Promise<{ status: string; message: string; data: { id: string; estado: string } }> {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/rfx/${rfxId}/finalize`, {
+      const response = await fetchWithAuth(`${API_BASE_URL}/api/rfx/${rfxId}/finalize`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
       });
 
       return handleResponse<{ status: string; message: string; data: { id: string; estado: string } }>(response);
@@ -371,14 +445,11 @@ export const api = {
     }
   },
 
-  // Update RFX currency
+  // Update RFX currency with JWT
   async updateRFXCurrency(rfxId: string, currency: string): Promise<{ status: string; message: string; data: any }> {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/rfx/${rfxId}/currency`, {
+      const response = await fetchWithAuth(`${API_BASE_URL}/api/rfx/${rfxId}/currency`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify({ currency })
       });
 
@@ -391,10 +462,10 @@ export const api = {
     }
   },
 
-  // Get specific proposal by ID
+  // Get specific proposal by ID with JWT
   async getProposalById(proposalId: string): Promise<ProposalResponse> {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/proposals/${proposalId}`);
+      const response = await fetchWithAuth(`${API_BASE_URL}/api/proposals/${proposalId}`);
       return handleResponse<ProposalResponse>(response);
     } catch (error) {
       if (error instanceof APIError) {
@@ -404,10 +475,10 @@ export const api = {
     }
   },
 
-  // Get proposals for specific RFX
+  // Get proposals for specific RFX with JWT
   async getProposalsByRFX(rfxId: string): Promise<{ status: string; message: string; data: any[] }> {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/proposals/rfx/${rfxId}/proposals`);
+      const response = await fetchWithAuth(`${API_BASE_URL}/api/proposals/rfx/${rfxId}/proposals`);
       return handleResponse<{ status: string; message: string; data: any[] }>(response);
     } catch (error) {
       if (error instanceof APIError) {
@@ -441,14 +512,11 @@ export const api = {
     }
   },
 
-  // Update product costs for RFX  
+  // Update product costs for RFX with JWT
   async updateProductCosts(rfxId: string, productCosts: { product_id: string; unit_price: number }[]): Promise<{ status: string; message: string; data: any }> {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/rfx/${rfxId}/products/costs`, {
+      const response = await fetchWithAuth(`${API_BASE_URL}/api/rfx/${rfxId}/products/costs`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify({ product_costs: productCosts }),
       });
 
@@ -461,14 +529,11 @@ export const api = {
     }
   },
 
-  // ✅ NUEVO: Update RFX field data (company, client, request info, etc.)
+  // ✅ NUEVO: Update RFX field data (company, client, request info, etc.) with JWT
   async updateRFXField(rfxId: string, field: string, value: string): Promise<{ status: string; message: string; data: any }> {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/rfx/${rfxId}/data`, {
+      const response = await fetchWithAuth(`${API_BASE_URL}/api/rfx/${rfxId}/data`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify({ field, value }),
       });
 
@@ -481,14 +546,11 @@ export const api = {
     }
   },
 
-  // ✅ NUEVO: Update individual product field
+  // ✅ NUEVO: Update individual product field with JWT
   async updateProductField(rfxId: string, productId: string, field: string, value: string | number): Promise<{ status: string; message: string; data: any }> {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/rfx/${rfxId}/products/${productId}`, {
+      const response = await fetchWithAuth(`${API_BASE_URL}/api/rfx/${rfxId}/products/${productId}`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify({ field, value }),
       });
 
