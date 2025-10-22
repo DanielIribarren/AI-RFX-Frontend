@@ -13,8 +13,7 @@
     "hook:trigger": "node scripts/trigger-deploy-hook.js",
     "check:status": "node scripts/check-deploy-status.js",
     "deploy:complete": "./scripts/deploy-complete.sh",
-    "clean": "rm -rf .next && rm -rf node_modules/.cache",
-    "prebuild": "npm run clean"
+    "clean": "rm -rf .next && rm -rf node_modules/.cache"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",
