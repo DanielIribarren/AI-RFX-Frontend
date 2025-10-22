@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_AUTH_API_URL || 'http://localhost:5001/api/auth'
+const BACKEND_URL = process.env.AUTH_API_URL || process.env.NEXT_PUBLIC_AUTH_API_URL || 'http://localhost:5001/api/auth'
 
 export async function POST(request: NextRequest) {
   try {
