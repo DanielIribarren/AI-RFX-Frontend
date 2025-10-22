@@ -63,6 +63,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
+        credentials: 'include', // Important: include cookies
       })
       
       const response: AuthResponse = await res.json()
@@ -71,12 +72,20 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         throw new Error(response.message || 'Login failed')
       }
       
-      // Save tokens
+      // Save tokens in localStorage
       if (response.access_token) {
         localStorage.setItem('access_token', response.access_token)
       }
       if (response.refresh_token) {
         localStorage.setItem('refresh_token', response.refresh_token)
+      }
+      
+      // Save tokens in cookies for middleware
+      if (response.access_token) {
+        document.cookie = `access_token=${response.access_token}; path=/; max-age=86400; SameSite=Lax`
+      }
+      if (response.refresh_token) {
+        document.cookie = `refresh_token=${response.refresh_token}; path=/; max-age=604800; SameSite=Lax`
       }
       
       if (response.user) {
@@ -100,6 +109,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           full_name: fullName,
           company_name: companyName 
         }),
+        credentials: 'include', // Important: include cookies
       })
       
       const response: AuthResponse = await res.json()
@@ -108,12 +118,20 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         throw new Error(response.message || 'Signup failed')
       }
       
-      // Save tokens
+      // Save tokens in localStorage
       if (response.access_token) {
         localStorage.setItem('access_token', response.access_token)
       }
       if (response.refresh_token) {
         localStorage.setItem('refresh_token', response.refresh_token)
+      }
+      
+      // Save tokens in cookies for middleware
+      if (response.access_token) {
+        document.cookie = `access_token=${response.access_token}; path=/; max-age=86400; SameSite=Lax`
+      }
+      if (response.refresh_token) {
+        document.cookie = `refresh_token=${response.refresh_token}; path=/; max-age=604800; SameSite=Lax`
       }
       
       if (response.user) {
@@ -127,6 +145,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const logout = () => {
     authService.logout()
     setUser(null)
+    // Clear cookies
+    document.cookie = 'access_token=; path=/; max-age=0'
+    document.cookie = 'refresh_token=; path=/; max-age=0'
   }
 
   const updateUser = async (updates: Partial<User>) => {
