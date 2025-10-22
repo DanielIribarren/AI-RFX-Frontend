@@ -58,7 +58,27 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const login = async (email: string, password: string) => {
     setLoading(true)
     try {
-      const response: AuthResponse = await authService.login(email, password)
+      // Use Next.js API route instead of direct backend call
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      })
+      
+      const response: AuthResponse = await res.json()
+      
+      if (!res.ok) {
+        throw new Error(response.message || 'Login failed')
+      }
+      
+      // Save tokens
+      if (response.access_token) {
+        localStorage.setItem('access_token', response.access_token)
+      }
+      if (response.refresh_token) {
+        localStorage.setItem('refresh_token', response.refresh_token)
+      }
+      
       if (response.user) {
         setUser(response.user)
       }
@@ -70,7 +90,32 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const signup = async (email: string, password: string, fullName: string, companyName?: string) => {
     setLoading(true)
     try {
-      const response: AuthResponse = await authService.signup(email, password, fullName, companyName)
+      // Use Next.js API route instead of direct backend call
+      const res = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          email, 
+          password, 
+          full_name: fullName,
+          company_name: companyName 
+        }),
+      })
+      
+      const response: AuthResponse = await res.json()
+      
+      if (!res.ok) {
+        throw new Error(response.message || 'Signup failed')
+      }
+      
+      // Save tokens
+      if (response.access_token) {
+        localStorage.setItem('access_token', response.access_token)
+      }
+      if (response.refresh_token) {
+        localStorage.setItem('refresh_token', response.refresh_token)
+      }
+      
       if (response.user) {
         setUser(response.user)
       }
