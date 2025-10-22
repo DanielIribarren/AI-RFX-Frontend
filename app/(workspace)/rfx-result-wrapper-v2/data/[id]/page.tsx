@@ -204,6 +204,67 @@ export default function RfxDataPage() {
     }
   };
 
+  // Add product handler
+  const handleAddProduct = async (productData: {
+    nombre: string;
+    categoria?: string;
+    cantidad: number;
+    unidad: string;
+    precio: number;
+    descripcion?: string;
+  }) => {
+    if (!backendData?.data?.id) {
+      alert("Error: No hay datos del RFX disponibles");
+      return;
+    }
+
+    try {
+      console.log("🔄 Adding product:", productData);
+      const result = await api.addProduct(backendData.data.id, productData);
+      console.log("✅ Product added successfully:", result);
+
+      // Add product to local state
+      const newProduct: ProductoIndividual = {
+        id: result.data.product.id || `product-${Date.now()}`,
+        nombre: productData.nombre,
+        cantidad: productData.cantidad,
+        cantidadOriginal: productData.cantidad,
+        cantidadEditada: productData.cantidad,
+        unidad: productData.unidad,
+        precio: productData.precio,
+        isQuantityModified: false
+      };
+
+      setProductosIndividuales(prev => [...prev, newProduct]);
+      
+    } catch (error) {
+      console.error("Error adding product:", error);
+      alert("❌ No se pudo agregar el producto. Por favor, intente nuevamente.");
+      throw error;
+    }
+  };
+
+  // Delete product handler
+  const handleDeleteProduct = async (productId: string) => {
+    if (!backendData?.data?.id) {
+      alert("Error: No hay datos del RFX disponibles");
+      return;
+    }
+
+    try {
+      console.log("🔄 Deleting product:", productId);
+      await api.deleteProduct(backendData.data.id, productId);
+      console.log("✅ Product deleted successfully");
+
+      // Remove product from local state
+      setProductosIndividuales(prev => prev.filter(p => p.id !== productId));
+      
+    } catch (error) {
+      console.error("Error deleting product:", error);
+      alert("❌ No se pudo eliminar el producto. Por favor, intente nuevamente.");
+    }
+  };
+
   // Save all product costs
   const saveProductCosts = async () => {
     if (!backendData?.data?.id) {
@@ -391,8 +452,8 @@ export default function RfxDataPage() {
         originalText={backendData.data?.metadata_json?.texto_original_relevante || ""}
         isFinalized={false}
         productosIndividuales={productosIndividuales}
-        onAddProduct={async () => {}}
-        onDeleteProduct={() => {}}
+        onAddProduct={handleAddProduct}
+        onDeleteProduct={handleDeleteProduct}
         onQuantityChange={handleQuantityChange}
         onPriceChange={handleProductPriceChange}
         onUnitChange={handleUnitChange}

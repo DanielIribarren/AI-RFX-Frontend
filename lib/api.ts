@@ -563,6 +563,54 @@ export const api = {
     }
   },
 
+  // ✅ NUEVO: Add product to RFX with JWT
+  async addProduct(rfxId: string, productData: {
+    nombre: string;
+    categoria?: string;
+    cantidad: number;
+    unidad: string;
+    precio: number;
+    descripcion?: string;
+  }): Promise<{ status: string; message: string; data: any }> {
+    try {
+      const response = await fetchWithAuth(`${API_BASE_URL}/api/rfx/${rfxId}/products`, {
+        method: 'POST',
+        body: JSON.stringify({
+          nombre: productData.nombre,
+          cantidad: productData.cantidad,
+          unidad: productData.unidad,
+          precio_unitario: productData.precio,
+          descripcion: productData.descripcion,
+          // Notas opcionales si se agregan en el futuro
+          notas: productData.categoria ? `Categoría: ${productData.categoria}` : undefined
+        }),
+      });
+
+      return handleResponse<{ status: string; message: string; data: any }>(response);
+    } catch (error) {
+      if (error instanceof APIError) {
+        throw error;
+      }
+      throw new APIError('Network error adding product', 0, 'NETWORK_ERROR');
+    }
+  },
+
+  // ✅ NUEVO: Delete product from RFX with JWT
+  async deleteProduct(rfxId: string, productId: string): Promise<{ status: string; message: string; data: any }> {
+    try {
+      const response = await fetchWithAuth(`${API_BASE_URL}/api/rfx/${rfxId}/products/${productId}`, {
+        method: 'DELETE',
+      });
+
+      return handleResponse<{ status: string; message: string; data: any }>(response);
+    } catch (error) {
+      if (error instanceof APIError) {
+        throw error;
+      }
+      throw new APIError('Network error deleting product', 0, 'NETWORK_ERROR');
+    }
+  },
+
   // Legacy method for backward compatibility
   async downloadPDF(documentId: string): Promise<Blob> {
     return this.downloadDocument(documentId, 'pdf');
