@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { useAuth } from "@/contexts/AuthContext"
 import { Button } from "@/components/ui/button"
@@ -23,6 +23,8 @@ export default function SignupPage() {
   
   const { signup } = useAuth()
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const redirectTo = searchParams.get('redirect') || '/dashboard'
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -47,7 +49,7 @@ export default function SignupPage() {
       
       // Redirigir después de 2 segundos
       setTimeout(() => {
-        router.push("/dashboard")
+        router.push(redirectTo)
       }, 2000)
     } catch (err: any) {
       setError(err.message || "Error al crear la cuenta. Por favor intenta nuevamente.")

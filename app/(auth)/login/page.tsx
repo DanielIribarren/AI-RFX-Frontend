@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { useAuth } from "@/contexts/AuthContext"
 import { Button } from "@/components/ui/button"
@@ -19,6 +19,8 @@ export default function LoginPage() {
   
   const { login } = useAuth()
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const redirectTo = searchParams.get('redirect') || '/dashboard'
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -27,7 +29,7 @@ export default function LoginPage() {
 
     try {
       await login(email, password)
-      router.push("/dashboard")
+      router.push(redirectTo)
     } catch (err: any) {
       setError(err.message || "Login failed. Please check your credentials.")
     } finally {
