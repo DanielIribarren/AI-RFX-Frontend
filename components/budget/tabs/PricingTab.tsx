@@ -6,8 +6,6 @@ import { Input } from "@/components/ui/input"
 import { Switch } from "@/components/ui/switch"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
-import { Button } from "@/components/ui/button"
-import { Save } from "lucide-react"
 
 interface PricingTabProps {
   config: any
@@ -15,30 +13,67 @@ interface PricingTabProps {
   onSave?: () => Promise<boolean> | void
   isDisabled: boolean
   isLoading?: boolean
+  onAutoSave?: (partialConfig: any) => Promise<void>
+  saveStatus?: 'idle' | 'saving' | 'saved' | 'error'
 }
 
-export function PricingTab({ config, onConfigChange, onSave, isDisabled, isLoading = false }: PricingTabProps) {
+export function PricingTab({ config, onConfigChange, onSave, isDisabled, isLoading = false, onAutoSave, saveStatus = 'idle' }: PricingTabProps) {
   const handleSave = async () => {
     if (onSave) {
       await onSave()
     }
   }
 
+  // Auto-save handler for individual changes
+  const handleAutoSave = async (partialConfig: any) => {
+    if (onAutoSave) {
+      await onAutoSave(partialConfig)
+    }
+  }
+
   return (
     <div className="space-y-6">
       
+      {/* Indicador de guardado automático */}
+      {saveStatus !== 'idle' && (
+        <div className="flex items-center justify-end gap-2 text-sm">
+          {saveStatus === 'saving' && (
+            <>
+              <div className="h-2 w-2 rounded-full bg-blue-500 animate-pulse" />
+              <span className="text-muted-foreground">Guardando...</span>
+            </>
+          )}
+          {saveStatus === 'saved' && (
+            <>
+              <div className="h-2 w-2 rounded-full bg-green-500" />
+              <span className="text-green-600">Guardado</span>
+            </>
+          )}
+          {saveStatus === 'error' && (
+            <>
+              <div className="h-2 w-2 rounded-full bg-red-500" />
+              <span className="text-red-600">Error al guardar</span>
+            </>
+          )}
+        </div>
+      )}
+      
       {/* Coordinación */}
-      <Card>
+      <Card className={config.coordination_enabled ? "border-l-4 border-l-green-500" : "border-l-4 border-l-gray-300"}>
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <div className="space-y-1">
-              <CardTitle className="flex items-center gap-2">
+          <div className="flex items-center justify-between gap-4">
+            <div className="space-y-1 flex-1">
+              <CardTitle className="flex items-center gap-3">
                 Coordinación y Logística
-                {config.coordination_enabled && (
-                  <Badge variant="secondary" className="ml-2">
-                    Activo
-                  </Badge>
-                )}
+                <Badge 
+                  variant="secondary"
+                  className={config.coordination_enabled 
+                    ? "bg-green-500 hover:bg-green-600 text-white border-green-500" 
+                    : "bg-gray-100 text-gray-600 border-gray-300"
+                  }
+                >
+                  {config.coordination_enabled ? "Activo" : "Inactivo"}
+                </Badge>
               </CardTitle>
               <CardDescription>
                 Agregar costos de coordinación al presupuesto
@@ -46,10 +81,13 @@ export function PricingTab({ config, onConfigChange, onSave, isDisabled, isLoadi
             </div>
             <Switch
               checked={config.coordination_enabled}
-              onCheckedChange={(checked) => 
-                onConfigChange({ ...config, coordination_enabled: checked })
-              }
+              onCheckedChange={async (checked) => {
+                const newConfig = { ...config, coordination_enabled: checked }
+                onConfigChange(newConfig)
+                await handleAutoSave({ coordination_enabled: checked })
+              }}
               disabled={isDisabled}
+              className="data-[state=checked]:bg-green-500"
             />
           </div>
         </CardHeader>
@@ -125,17 +163,21 @@ export function PricingTab({ config, onConfigChange, onSave, isDisabled, isLoadi
       </Card>
 
       {/* Costo por persona */}
-      <Card>
+      <Card className={config.cost_per_person_enabled ? "border-l-4 border-l-green-500" : "border-l-4 border-l-gray-300"}>
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <div className="space-y-1">
-              <CardTitle className="flex items-center gap-2">
+          <div className="flex items-center justify-between gap-4">
+            <div className="space-y-1 flex-1">
+              <CardTitle className="flex items-center gap-3">
                 Costo por Persona
-                {config.cost_per_person_enabled && (
-                  <Badge variant="secondary" className="ml-2">
-                    Activo
-                  </Badge>
-                )}
+                <Badge 
+                  variant="secondary"
+                  className={config.cost_per_person_enabled 
+                    ? "bg-green-500 hover:bg-green-600 text-white border-green-500" 
+                    : "bg-gray-100 text-gray-600 border-gray-300"
+                  }
+                >
+                  {config.cost_per_person_enabled ? "Activo" : "Inactivo"}
+                </Badge>
               </CardTitle>
               <CardDescription>
                 Calcular y mostrar costo individual
@@ -143,10 +185,13 @@ export function PricingTab({ config, onConfigChange, onSave, isDisabled, isLoadi
             </div>
             <Switch
               checked={config.cost_per_person_enabled}
-              onCheckedChange={(checked) => 
-                onConfigChange({ ...config, cost_per_person_enabled: checked })
-              }
+              onCheckedChange={async (checked) => {
+                const newConfig = { ...config, cost_per_person_enabled: checked }
+                onConfigChange(newConfig)
+                await handleAutoSave({ cost_per_person_enabled: checked })
+              }}
               disabled={isDisabled}
+              className="data-[state=checked]:bg-green-500"
             />
           </div>
         </CardHeader>
@@ -188,17 +233,21 @@ export function PricingTab({ config, onConfigChange, onSave, isDisabled, isLoadi
       </Card>
 
       {/* Impuestos */}
-      <Card>
+      <Card className={config.taxes_enabled ? "border-l-4 border-l-green-500" : "border-l-4 border-l-gray-300"}>
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <div className="space-y-1">
-              <CardTitle className="flex items-center gap-2">
+          <div className="flex items-center justify-between gap-4">
+            <div className="space-y-1 flex-1">
+              <CardTitle className="flex items-center gap-3">
                 Impuestos
-                {config.taxes_enabled && (
-                  <Badge variant="secondary" className="ml-2">
-                    Activo
-                  </Badge>
-                )}
+                <Badge 
+                  variant="secondary"
+                  className={config.taxes_enabled 
+                    ? "bg-green-500 hover:bg-green-600 text-white border-green-500" 
+                    : "bg-gray-100 text-gray-600 border-gray-300"
+                  }
+                >
+                  {config.taxes_enabled ? "Activo" : "Inactivo"}
+                </Badge>
               </CardTitle>
               <CardDescription>
                 Configurar impuestos aplicables
@@ -206,10 +255,13 @@ export function PricingTab({ config, onConfigChange, onSave, isDisabled, isLoadi
             </div>
             <Switch
               checked={config.taxes_enabled}
-              onCheckedChange={(checked) => 
-                onConfigChange({ ...config, taxes_enabled: checked })
-              }
+              onCheckedChange={async (checked) => {
+                const newConfig = { ...config, taxes_enabled: checked }
+                onConfigChange(newConfig)
+                await handleAutoSave({ taxes_enabled: checked })
+              }}
               disabled={isDisabled}
+              className="data-[state=checked]:bg-green-500"
             />
           </div>
         </CardHeader>
@@ -249,20 +301,6 @@ export function PricingTab({ config, onConfigChange, onSave, isDisabled, isLoadi
           </div>
         </CardContent>
       </Card>
-
-      {/* Botón de guardar */}
-      {onSave && (
-        <div className="flex justify-end">
-          <Button
-            onClick={handleSave}
-            disabled={isDisabled || isLoading}
-            className="gap-2"
-          >
-            <Save className="h-4 w-4" />
-            {isLoading ? 'Guardando...' : 'Guardar Configuración'}
-          </Button>
-        </div>
-      )}
 
     </div>
   )

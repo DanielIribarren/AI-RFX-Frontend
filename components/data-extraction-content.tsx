@@ -248,14 +248,6 @@ export default function DataExtractionContent({
         <CardContent className="px-6 py-4">
           <div className="space-y-0">
             <InlineEditableField 
-              value={extractedData.productos} 
-              onSave={(value) => onFieldSave("productos", value)}
-              label="Productos" 
-              placeholder="Productos solicitados"
-              type="textarea"
-              disabled={isDisabled}
-            />
-            <InlineEditableField 
               value={extractedData.fechaEntrega} 
               onSave={(value) => onFieldSave("fechaEntrega", value)}
               type="date"

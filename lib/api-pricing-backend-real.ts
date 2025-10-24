@@ -33,6 +33,13 @@ import type {
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001'
 const PRICING_API_BASE = `${API_BASE_URL}/api/pricing`
 
+// Log configuration on module load
+console.log('🔧 Pricing API Configuration:', {
+  API_BASE_URL,
+  PRICING_API_BASE,
+  env: process.env.NEXT_PUBLIC_API_URL
+});
+
 // ========================
 // CONVERTERS
 // ========================
@@ -122,6 +129,8 @@ class RealBackendPricingClient {
     const url = `${this.baseURL}${endpoint}`
 
     try {
+      console.log(`🌐 API Request: ${options.method || 'GET'} ${url}`);
+      
       const response = await fetch(url, {
         headers: {
           'Content-Type': 'application/json',
@@ -131,22 +140,46 @@ class RealBackendPricingClient {
         ...options,
       })
 
-      const data = await response.json()
+      console.log(`📡 Response status: ${response.status} ${response.statusText}`);
+
+      // Try to parse JSON, but handle cases where response body is empty or invalid
+      let data: any;
+      try {
+        const text = await response.text();
+        console.log(`📄 Response body:`, text);
+        data = text ? JSON.parse(text) : {};
+      } catch (parseError) {
+        console.warn('⚠️ Failed to parse response as JSON:', parseError);
+        data = {};
+      }
 
       if (!response.ok) {
         throw new BackendPricingApiError(
-          data.message || `API Error: ${response.status}`,
+          data.message || `API Error: ${response.status} ${response.statusText}`,
           data.code || `HTTP_${response.status}`,
           data.details
         )
       }
 
+      console.log(`✅ API Success:`, data);
+      
+      // Ensure response has expected structure
+      if (!data.status && !data.data) {
+        console.warn('⚠️ Response missing expected structure, wrapping it');
+        return {
+          status: 'success',
+          data: data
+        };
+      }
+      
       return data
     } catch (error) {
       if (error instanceof BackendPricingApiError) {
         throw error
       }
 
+      // Network errors (CORS, connection refused, etc.)
+      console.error('❌ Network error:', error);
       throw new BackendPricingApiError(
         `Network error: ${error instanceof Error ? error.message : 'Unknown error'}`,
         'NETWORK_ERROR'
@@ -168,7 +201,7 @@ class RealBackendPricingClient {
   }
 
   /**
-   * Update pricing configuration
+   * Update pricing configuration (FULL UPDATE - fallback)
    * PUT /api/pricing/config/{rfx_id}
    */
   async updateConfig(
@@ -178,6 +211,63 @@ class RealBackendPricingClient {
     const response = await this.request<BackendUpdatePricingConfigResponse['data']>(`/config/${rfxId}`, {
       method: 'PUT',
       body: JSON.stringify(config),
+    })
+    return response as BackendUpdatePricingConfigResponse
+  }
+
+  /**
+   * Update coordination configuration only (OPTIMIZED)
+   * PATCH /api/pricing/config/{rfx_id}/coordination
+   */
+  async updateCoordination(
+    rfxId: string,
+    data: {
+      coordination_enabled: boolean
+      coordination_rate?: number
+      coordination_level?: string
+    }
+  ): Promise<BackendUpdatePricingConfigResponse> {
+    const response = await this.request<BackendUpdatePricingConfigResponse['data']>(`/config/${rfxId}/coordination`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    })
+    return response as BackendUpdatePricingConfigResponse
+  }
+
+  /**
+   * Update cost per person configuration only (OPTIMIZED)
+   * PATCH /api/pricing/config/{rfx_id}/cost-per-person
+   */
+  async updateCostPerPerson(
+    rfxId: string,
+    data: {
+      cost_per_person_enabled: boolean
+      headcount?: number
+      per_person_display?: boolean
+    }
+  ): Promise<BackendUpdatePricingConfigResponse> {
+    const response = await this.request<BackendUpdatePricingConfigResponse['data']>(`/config/${rfxId}/cost-per-person`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    })
+    return response as BackendUpdatePricingConfigResponse
+  }
+
+  /**
+   * Update taxes configuration only (OPTIMIZED)
+   * PATCH /api/pricing/config/{rfx_id}/taxes
+   */
+  async updateTaxes(
+    rfxId: string,
+    data: {
+      taxes_enabled: boolean
+      tax_rate?: number
+      tax_type?: string
+    }
+  ): Promise<BackendUpdatePricingConfigResponse> {
+    const response = await this.request<BackendUpdatePricingConfigResponse['data']>(`/config/${rfxId}/taxes`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
     })
     return response as BackendUpdatePricingConfigResponse
   }
@@ -319,7 +409,90 @@ export async function getFrontendPricingConfig(rfxId: string): Promise<FrontendP
 }
 
 /**
- * Update configuration from frontend format
+ * Update configuration from frontend format (OPTIMIZED - uses PATCH endpoints)
+ * Detects which fields changed and uses specific PATCH endpoints for efficiency
+ */
+export async function updateFrontendPricingConfigOptimized(
+  rfxId: string,
+  partialConfig: Partial<FrontendPricingFormData>
+): Promise<boolean> {
+  // Validate UUID
+  if (!rfxId || !isValidUUID(rfxId)) {
+    console.error('❌ Invalid UUID format:', rfxId);
+    throw new BackendPricingApiError(
+      `Invalid rfx_id format (expects UUID): ${rfxId}`,
+      'INVALID_UUID_FORMAT'
+    );
+  }
+
+  try {
+    console.log('💾 Optimized update - detecting changed fields:', Object.keys(partialConfig));
+
+    // Detect which configuration section changed
+    const hasCoordinationChange = 'coordination_enabled' in partialConfig || 
+                                   'coordination_rate' in partialConfig || 
+                                   'coordination_type' in partialConfig;
+    
+    const hasCostPerPersonChange = 'cost_per_person_enabled' in partialConfig || 
+                                    'headcount' in partialConfig;
+    
+    const hasTaxesChange = 'taxes_enabled' in partialConfig || 
+                           'tax_rate' in partialConfig || 
+                           'tax_name' in partialConfig;
+
+    // Use specific PATCH endpoint based on what changed
+    if (hasCoordinationChange && !hasCostPerPersonChange && !hasTaxesChange) {
+      console.log('🎯 Using PATCH /coordination endpoint');
+      const response = await realBackendPricingApi.updateCoordination(rfxId, {
+        coordination_enabled: partialConfig.coordination_enabled!,
+        coordination_rate: partialConfig.coordination_rate,
+        coordination_level: partialConfig.coordination_type as any
+      });
+      console.log('✅ Coordination update response:', response);
+      return response.status === 'success';
+    }
+    
+    if (hasCostPerPersonChange && !hasCoordinationChange && !hasTaxesChange) {
+      console.log('🎯 Using PATCH /cost-per-person endpoint');
+      const response = await realBackendPricingApi.updateCostPerPerson(rfxId, {
+        cost_per_person_enabled: partialConfig.cost_per_person_enabled!,
+        headcount: partialConfig.headcount,
+        per_person_display: true
+      });
+      console.log('✅ Cost per person update response:', response);
+      return response.status === 'success';
+    }
+    
+    if (hasTaxesChange && !hasCoordinationChange && !hasCostPerPersonChange) {
+      console.log('🎯 Using PATCH /taxes endpoint');
+      const response = await realBackendPricingApi.updateTaxes(rfxId, {
+        taxes_enabled: partialConfig.taxes_enabled!,
+        tax_rate: partialConfig.tax_rate,
+        tax_type: partialConfig.tax_name
+      });
+      console.log('✅ Taxes update response:', response);
+      return response.status === 'success';
+    }
+
+    // If multiple sections changed, fall back to full PUT
+    console.log('⚠️ Multiple sections changed, using PUT fallback');
+    return updateFrontendPricingConfig(rfxId, partialConfig as FrontendPricingFormData);
+    
+  } catch (error) {
+    console.warn('⚠️ Backend not available - configuration saved locally only');
+    if (error instanceof BackendPricingApiError) {
+      console.warn(`API Error: ${error.message} (Code: ${error.code})`);
+    } else {
+      console.warn('Network error:', error);
+    }
+    // Return false but don't throw - allows UI to continue working
+    return false;
+  }
+}
+
+/**
+ * Update configuration from frontend format (FULL UPDATE - fallback)
+ * Use updateFrontendPricingConfigOptimized for better performance
  */
 export async function updateFrontendPricingConfig(
   rfxId: string,

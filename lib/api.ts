@@ -598,15 +598,31 @@ export const api = {
   // ✅ NUEVO: Delete product from RFX with JWT
   async deleteProduct(rfxId: string, productId: string): Promise<{ status: string; message: string; data: any }> {
     try {
-      const response = await fetchWithAuth(`${API_BASE_URL}/api/rfx/${rfxId}/products/${productId}`, {
+      console.log(`🗑️ API: Deleting product ${productId} from RFX ${rfxId}`);
+      const url = `${API_BASE_URL}/api/rfx/${rfxId}/products/${productId}`;
+      console.log(`🌐 DELETE ${url}`);
+      
+      const response = await fetchWithAuth(url, {
         method: 'DELETE',
       });
 
-      return handleResponse<{ status: string; message: string; data: any }>(response);
+      console.log(`📡 Delete response status: ${response.status}`);
+      const result = await handleResponse<{ status: string; message: string; data: any }>(response);
+      console.log(`✅ Product deleted successfully:`, result);
+      
+      return result;
     } catch (error) {
+      console.error(`❌ Error deleting product:`, error);
+      
       if (error instanceof APIError) {
         throw error;
       }
+      
+      // Enhanced error for network issues
+      if (error instanceof TypeError && error.message.includes('fetch')) {
+        throw new APIError('Error de conexión al eliminar producto. Verifica que el backend esté corriendo y CORS esté configurado para DELETE.', 0, 'NETWORK_ERROR');
+      }
+      
       throw new APIError('Network error deleting product', 0, 'NETWORK_ERROR');
     }
   },

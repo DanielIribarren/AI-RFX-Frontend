@@ -66,6 +66,8 @@ interface BudgetGenerationViewProps {
   pricingConfigV2?: PricingConfigFormData
   onPricingConfigChange?: (config: PricingConfigFormData) => void
   onSavePricingConfig?: () => Promise<boolean>
+  onAutoSave?: (partialConfig: any) => Promise<void>
+  saveStatus?: 'idle' | 'saving' | 'saved' | 'error'
   isLoadingPricingConfig?: boolean
   isSavingPricingConfig?: boolean
   enableAdvancedPricing?: boolean
@@ -93,6 +95,8 @@ export default function BudgetGenerationView({
   pricingConfigV2,
   onPricingConfigChange,
   onSavePricingConfig,
+  onAutoSave,
+  saveStatus = 'idle',
   isLoadingPricingConfig = false,
   isSavingPricingConfig = false,
   defaultCurrency = "EUR"
@@ -236,6 +240,8 @@ export default function BudgetGenerationView({
               config={currentPricingConfig}
               onConfigChange={onPricingConfigChange || (() => {})}
               onSave={onSavePricingConfig}
+              onAutoSave={onAutoSave}
+              saveStatus={saveStatus}
               isDisabled={isFinalized}
               isLoading={isLoadingPricingConfig || isSavingPricingConfig}
             />

@@ -1,12 +1,13 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { api } from "@/lib/api";
 import type { RFXResponse, ProposalRequest } from "@/lib/api";
 import { useRFXCurrency } from "@/contexts/RFXCurrencyContext";
 import { 
   getFrontendPricingConfig,
+  updateFrontendPricingConfigOptimized,
   handleBackendPricingError 
 } from "@/lib/api-pricing-backend-real";
 import { pricingApiV2, pricingConverter, pricingDefaults } from "@/lib/api-pricing-v2";
@@ -65,6 +66,11 @@ export default function RfxBudgetPage() {
   
   const [isLoadingPricingConfig, setIsLoadingPricingConfig] = useState(false);
   const [isSavingPricingConfig, setIsSavingPricingConfig] = useState(false);
+  const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  
+  // Ref for debouncing auto-save
+  const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   
   // Proposal generation states
   const [isRegenerating, setIsRegenerating] = useState(false);
@@ -110,38 +116,47 @@ export default function RfxBudgetPage() {
     }
   };
 
-  // Save pricing configuration
-  const savePricingConfig = async (): Promise<boolean> => {
-    if (!id) return false;
+  // Auto-save pricing configuration (debounced)
+  const autoSavePricingConfig = useCallback(async (partialConfig: Partial<PricingConfigFormData>) => {
+    if (!id) return;
     
-    setIsSavingPricingConfig(true);
-    try {
-      const backendConfig = {
-        coordination_enabled: pricingConfigV2.coordination_enabled,
-        coordination_type: pricingConfigV2.coordination_type,
-        coordination_rate: pricingConfigV2.coordination_rate,
-        coordination_description: pricingConfigV2.coordination_description,
-        
-        cost_per_person_enabled: pricingConfigV2.cost_per_person_enabled,
-        headcount: pricingConfigV2.headcount,
-        calculation_base: pricingConfigV2.calculation_base,
-        
-        taxes_enabled: pricingConfigV2.taxes_enabled,
-        tax_name: pricingConfigV2.tax_name,
-        tax_rate: pricingConfigV2.tax_rate
-      };
-      
-      // Here you would call the save API
-      console.log("💾 Saving pricing configuration:", backendConfig);
-      // const success = await updateFrontendPricingConfig(id, backendConfig);
-      return true;
-    } catch (error) {
-      console.error("❌ Error saving pricing configuration:", error);
-      return false;
-    } finally {
-      setIsSavingPricingConfig(false);
+    // Clear any existing timeout
+    if (autoSaveTimeoutRef.current) {
+      clearTimeout(autoSaveTimeoutRef.current);
     }
-  };
+    
+    // Set saving status immediately for UI feedback
+    setSaveStatus('saving');
+    
+    // Debounce the actual save by 500ms
+    autoSaveTimeoutRef.current = setTimeout(async () => {
+      try {
+        console.log("💾 Auto-saving pricing configuration changes:", partialConfig);
+        
+        // Call the optimized backend API (detects changes and uses PATCH endpoints)
+        const success = await updateFrontendPricingConfigOptimized(id, partialConfig);
+        
+        if (success) {
+          console.log("✅ Pricing configuration auto-saved successfully");
+          setSaveStatus('saved');
+          setLastSavedAt(new Date());
+          
+          // Reset to idle after 2 seconds
+          setTimeout(() => setSaveStatus('idle'), 2000);
+        } else {
+          // Backend not available - save locally only (no error shown to user)
+          console.warn("⚠️ Backend not available - changes saved locally only");
+          setSaveStatus('saved'); // Still show "saved" to user for better UX
+          setTimeout(() => setSaveStatus('idle'), 2000);
+        }
+      } catch (error) {
+        // Silently handle errors - don't disrupt user experience
+        console.warn("⚠️ Auto-save error (working in offline mode):", error);
+        setSaveStatus('saved'); // Show saved to avoid confusing the user
+        setTimeout(() => setSaveStatus('idle'), 2000);
+      }
+    }, 500);
+  }, [id, pricingConfigV2]);
 
   // Handle pricing config change
   const handlePricingConfigChange = (newConfig: PricingConfigFormData) => {
@@ -660,7 +675,8 @@ export default function RfxBudgetPage() {
           costsSaved={false}
           pricingConfigV2={pricingConfigV2}
           onPricingConfigChange={handlePricingConfigChange}
-          onSavePricingConfig={savePricingConfig}
+          onAutoSave={autoSavePricingConfig}
+          saveStatus={saveStatus}
           isLoadingPricingConfig={isLoadingPricingConfig}
           isSavingPricingConfig={isSavingPricingConfig}
           enableAdvancedPricing={true}

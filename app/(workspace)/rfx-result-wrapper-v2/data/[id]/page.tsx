@@ -27,6 +27,7 @@ export default function RfxDataPage() {
   const [productosIndividuales, setProductosIndividuales] = useState<ProductoIndividual[]>([]);
   const [isSavingCosts, setIsSavingCosts] = useState(false);
   const [costsSaved, setCostsSaved] = useState(false);
+  const [extractedData, setExtractedData] = useState<any>({});
 
   // RFX Currency context
   const rfxCurrency = useRFXCurrency();
@@ -104,6 +105,9 @@ export default function RfxDataPage() {
   // Handle field save for extracted data
   const handleFieldSave = async (field: string, value: string | number) => {
     try {
+      // Actualizar estado local inmediatamente para feedback instantáneo
+      setExtractedData((prev: any) => ({ ...prev, [field]: value }));
+
       if (!backendData?.data?.id) return;
 
       let normalizedValue: string | number = value;
@@ -121,6 +125,10 @@ export default function RfxDataPage() {
       console.log(`✅ Field ${field} persisted to backend:`, normalizedValue);
     } catch (error) {
       console.error(`Error saving field ${field}:`, error);
+      // Revertir el cambio local si falla el guardado en backend
+      if (backendData?.data) {
+        setExtractedData((prev: any) => ({ ...prev, [field]: prev[field] }));
+      }
       alert(`Error al guardar el campo ${field}.`);
     }
   };
@@ -247,21 +255,39 @@ export default function RfxDataPage() {
   // Delete product handler
   const handleDeleteProduct = async (productId: string) => {
     if (!backendData?.data?.id) {
+      console.error("❌ Cannot delete product: No RFX data available");
       alert("Error: No hay datos del RFX disponibles");
       return;
     }
 
+    // Find product name for logging
+    const product = productosIndividuales.find(p => p.id === productId);
+    const productName = product?.nombre || "producto";
+
     try {
-      console.log("🔄 Deleting product:", productId);
+      console.log("🔄 Deleting product:", productId, productName);
+      
+      // Call API to delete product
       await api.deleteProduct(backendData.data.id, productId);
-      console.log("✅ Product deleted successfully");
+      console.log("✅ Product deleted successfully from backend");
 
       // Remove product from local state
       setProductosIndividuales(prev => prev.filter(p => p.id !== productId));
+      console.log("✅ Product removed from local state");
       
-    } catch (error) {
-      console.error("Error deleting product:", error);
-      alert("❌ No se pudo eliminar el producto. Por favor, intente nuevamente.");
+    } catch (error: any) {
+      console.error("❌ Error deleting product:", error);
+      
+      // More detailed error message
+      let errorMessage = "No se pudo eliminar el producto.";
+      if (error?.message) {
+        errorMessage += ` Detalle: ${error.message}`;
+      }
+      if (error?.code === 'NETWORK_ERROR') {
+        errorMessage += " Verifica tu conexión a internet.";
+      }
+      
+      alert(`❌ ${errorMessage}`);
     }
   };
 
@@ -355,6 +381,28 @@ export default function RfxDataPage() {
     };
   }, [id]);
 
+  // Initialize extractedData from backendData when it loads
+  useEffect(() => {
+    if (backendData?.data) {
+      setExtractedData({
+        solicitante: backendData.data?.requester_name || (backendData.data as any)?.nombre_solicitante || "",
+        email: backendData.data?.email || "",
+        productos: backendData.data?.products?.map((p: any) => 
+          `${p.product_name || p.nombre} (${p.quantity || p.cantidad} ${p.unit || p.unidad})`
+        ).join(', ') || "",
+        fechaEntrega: backendData.data?.delivery_date || (backendData.data as any)?.fecha || "",
+        lugarEntrega: backendData.data?.location || (backendData.data as any)?.lugar || "",
+        nombreEmpresa: backendData.data?.company_name || (backendData.data as any)?.nombre_empresa || "",
+        emailEmpresa: (backendData.data as any)?.email_empresa || "",
+        telefonoEmpresa: (backendData.data as any)?.telefono_empresa || "",
+        telefonoSolicitante: (backendData.data as any)?.telefono_solicitante || "",
+        cargoSolicitante: (backendData.data as any)?.cargo_solicitante || "",
+        requirements: (backendData.data as any)?.requirements || "",
+        requirementsConfidence: (backendData.data as any)?.requirements_confidence || 0.0
+      });
+    }
+  }, [backendData]);
+
   if (isLoading) {
     return (
       <div className="container mx-auto px-4 py-6">
@@ -418,24 +466,6 @@ export default function RfxDataPage() {
       </div>
     );
   }
-
-  // Extract basic data for RFXDataView props
-  const extractedData = {
-    solicitante: backendData.data?.requester_name || (backendData.data as any)?.nombre_solicitante || "",
-    email: backendData.data?.email || "",
-    productos: backendData.data?.products?.map((p: any) => 
-      `${p.product_name || p.nombre} (${p.quantity || p.cantidad} ${p.unit || p.unidad})`
-    ).join(', ') || "",
-    fechaEntrega: backendData.data?.delivery_date || (backendData.data as any)?.fecha || "",
-    lugarEntrega: backendData.data?.location || (backendData.data as any)?.lugar || "",
-    nombreEmpresa: backendData.data?.company_name || (backendData.data as any)?.nombre_empresa || "",
-    emailEmpresa: (backendData.data as any)?.email_empresa || "",
-    telefonoEmpresa: (backendData.data as any)?.telefono_empresa || "",
-    telefonoSolicitante: (backendData.data as any)?.telefono_solicitante || "",
-    cargoSolicitante: (backendData.data as any)?.cargo_solicitante || "",
-    requirements: (backendData.data as any)?.requirements || "",
-    requirementsConfidence: (backendData.data as any)?.requirements_confidence || 0.0
-  };
 
   return (
     <div className="container mx-auto px-4 py-6 space-y-6">
