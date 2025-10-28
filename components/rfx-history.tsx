@@ -196,18 +196,25 @@ const RfxHistory = forwardRef<RfxHistoryRef, RfxHistoryProps>(
       loadHistory(0, false) // Start with offset 0 for initial load
     }, [])
     
-    // Helper function to format relative dates
+    // Helper function to format dates: Today, Yesterday, or DD/MM
     const formatRelativeDate = (dateString: string) => {
       const date = new Date(dateString)
       const now = new Date()
-      const diffTime = Math.abs(now.getTime() - date.getTime())
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+      
+      // Reset time to compare only dates
+      const dateOnly = new Date(date.getFullYear(), date.getMonth(), date.getDate())
+      const nowOnly = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+      
+      const diffTime = nowOnly.getTime() - dateOnly.getTime()
+      const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24))
       
       if (diffDays === 0) return "Today"
-      if (diffDays === 1) return "1 day ago"
-      if (diffDays < 7) return `${diffDays} days ago`
-      if (diffDays < 30) return `${Math.ceil(diffDays / 7)} weeks ago`
-      return `${Math.ceil(diffDays / 30)} months ago`
+      if (diffDays === 1) return "Yesterday"
+      
+      // Format as DD/MM for older dates
+      const day = String(date.getDate()).padStart(2, '0')
+      const month = String(date.getMonth() + 1).padStart(2, '0')
+      return `${day}/${month}`
     }
     
     const handleRefresh = async () => {

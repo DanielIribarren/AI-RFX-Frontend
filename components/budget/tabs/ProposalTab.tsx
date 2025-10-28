@@ -12,7 +12,6 @@ interface ProposalTabProps {
   isLoadingProposal: boolean
   onRegenerate: () => void
   onDownload: () => void
-  canGenerate: boolean
 }
 
 export function ProposalTab({
@@ -20,8 +19,7 @@ export function ProposalTab({
   isRegenerating,
   isLoadingProposal,
   onRegenerate,
-  onDownload,
-  canGenerate
+  onDownload
 }: ProposalTabProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const contentRef = useRef<HTMLDivElement>(null)
@@ -64,17 +62,12 @@ export function ProposalTab({
             No hay propuesta generada
           </h3>
           <p className="text-sm text-muted-foreground mb-4">
-            {canGenerate ? 
-              "Haz clic en 'Generar con IA' para crear la propuesta comercial" :
-              "Configura los precios de los productos primero"
-            }
+            Haz clic en 'Generar con IA' para crear la propuesta comercial
           </p>
-          {canGenerate && (
-            <Button onClick={onRegenerate} className="gap-2">
-              <RefreshCw className="h-4 w-4" />
-              Generar con IA
-            </Button>
-          )}
+          <Button onClick={onRegenerate} className="gap-2">
+            <RefreshCw className="h-4 w-4" />
+            Generar con IA
+          </Button>
         </Card>
       </div>
     )

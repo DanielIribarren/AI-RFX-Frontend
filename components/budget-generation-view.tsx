@@ -140,17 +140,7 @@ export default function BudgetGenerationView({
   const transformedPropuesta = companyId && propuesta ? 
     transformHtmlUrls(propuesta, companyId) : propuesta
 
-  // Function to check if products have valid existing prices
-  const hasValidProductPrices = (productos: ProductoIndividual[]): boolean => {
-    if (productos.length === 0) return false
-    const allHavePrices = productos.every(producto => producto.precio && producto.precio > 0)
-    const total = productos.reduce((sum, producto) => {
-      return sum + (producto.cantidad * (producto.precio || 0))
-    }, 0)
-    return allHavePrices && total > 0
-  }
-
-  const canGenerateProposal = hasValidProductPrices(productosIndividuales)
+  // Removed validation: Users can generate proposals without pre-saved prices
 
   return (
     <div className="w-full min-h-screen bg-background">
@@ -255,7 +245,6 @@ export default function BudgetGenerationView({
               isLoadingProposal={isLoadingProposal}
               onRegenerate={onGenerateProposal}
               onDownload={onDownloadPDF}
-              canGenerate={canGenerateProposal}
             />
           </TabsContent>
         </Tabs>

@@ -19,7 +19,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { useSidebar } from "@/components/ui/sidebar"
-import { api, RecentRFXItem, useAPICall } from "@/lib/api"
+import { api, RFXHistoryItem, useAPICall } from "@/lib/api"
 import { SidebarUser } from "@/components/sidebar-user"
 
 interface RfxItem {
@@ -96,14 +96,15 @@ const AppSidebar = forwardRef<AppSidebarRef, AppSidebarProps>(
       }
     }))
     
-    // Load recent RFX data from backend
+    // Load recent RFX data from backend (últimos 10, sin paginación)
     const loadRecentRfx = async () => {
       try {
         setIsLoading(true)
-        const response = await api.getRecentRFX()
+        // ✅ Usar el mismo endpoint que el historial pero limitado a 10 items
+        const response = await api.getLatestRFX(10)
         
         // Transform backend data to frontend format using the most recent timestamp available
-        const transformedData: RfxItem[] = response.data.map((item: RecentRFXItem) => {
+        const transformedData: RfxItem[] = response.data.map((item: RFXHistoryItem) => {
           const mostRecentISO = item.updated_at || item.last_activity_at || item.last_updated || item.date
           return {
             id: item.id,
@@ -130,18 +131,25 @@ const AppSidebar = forwardRef<AppSidebarRef, AppSidebarProps>(
       loadRecentRfx()
     }, [])
     
-    // Helper function to format relative dates
+    // Helper function to format dates: Today, Yesterday, or DD/MM
     const formatRelativeDate = (dateString: string) => {
       const date = new Date(dateString)
       const now = new Date()
-      const diffTime = Math.abs(now.getTime() - date.getTime())
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+      
+      // Reset time to compare only dates
+      const dateOnly = new Date(date.getFullYear(), date.getMonth(), date.getDate())
+      const nowOnly = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+      
+      const diffTime = nowOnly.getTime() - dateOnly.getTime()
+      const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24))
       
       if (diffDays === 0) return "Today"
-      if (diffDays === 1) return "1 day ago"
-      if (diffDays < 7) return `${diffDays} days ago`
-      if (diffDays < 30) return `${Math.ceil(diffDays / 7)} weeks ago`
-      return `${Math.ceil(diffDays / 30)} months ago`
+      if (diffDays === 1) return "Yesterday"
+      
+      // Format as DD/MM for older dates
+      const day = String(date.getDate()).padStart(2, '0')
+      const month = String(date.getMonth() + 1).padStart(2, '0')
+      return `${day}/${month}`
     }
 
     const handleRfxAction = (action: string, rfxId: string) => {
@@ -236,53 +244,63 @@ const AppSidebar = forwardRef<AppSidebarRef, AppSidebarProps>(
         <SidebarGroup>
           <SidebarGroupLabel className="text-xs font-medium text-gray-500 mb-2 px-0">Recents</SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu>
-              {recentRfx.map((rfx) => (
-                <SidebarMenuItem key={rfx.id}>
-                  <SidebarMenuButton
-                    onClick={() => onSelectRfx?.(rfx.id)}
-                    className="w-full justify-start h-auto py-2 px-2 text-left hover:bg-gray-100 rounded-md group"
-                  >
-                    <div className="flex items-start gap-2 w-full min-w-0">
-                      <div className="flex-1 min-w-0">
-                        <div className="text-sm text-gray-900 truncate group-data-[collapsible=icon]:hidden">
-                          {truncateText(rfx.title)}
+            {isLoading ? (
+              <div className="px-2 py-4 text-center group-data-[collapsible=icon]:hidden">
+                <div className="text-xs text-gray-400">Loading...</div>
+              </div>
+            ) : recentRfx.length === 0 ? (
+              <div className="px-2 py-4 text-center group-data-[collapsible=icon]:hidden">
+                <div className="text-xs text-gray-400">No recent RFX</div>
+              </div>
+            ) : (
+              <SidebarMenu>
+                {recentRfx.map((rfx) => (
+                  <SidebarMenuItem key={rfx.id}>
+                    <SidebarMenuButton
+                      onClick={() => onSelectRfx?.(rfx.id)}
+                      className="w-full justify-start h-auto py-2 px-2 text-left hover:bg-gray-100 rounded-md group"
+                    >
+                      <div className="flex items-start gap-2 w-full min-w-0">
+                        <div className="flex-1 min-w-0">
+                          <div className="text-sm text-gray-900 truncate group-data-[collapsible=icon]:hidden">
+                            {truncateText(rfx.title)}
+                          </div>
+                          <div className="text-xs text-gray-500 mt-0.5 group-data-[collapsible=icon]:hidden">
+                            {rfx.client} • {rfx.date}
+                          </div>
                         </div>
-                        <div className="text-xs text-gray-500 mt-0.5 group-data-[collapsible=icon]:hidden">
-                          {rfx.client} • {rfx.date}
-                        </div>
+                        {getStatusIcon(rfx.status)}
                       </div>
-                      {getStatusIcon(rfx.status)}
-                    </div>
-                  </SidebarMenuButton>
-                  <SidebarMenuAction className="group-data-[collapsible=icon]:hidden opacity-0 group-hover:opacity-100 transition-opacity">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <div className="h-6 w-6 p-0 text-gray-400 hover:text-gray-600 cursor-pointer flex items-center justify-center rounded-sm hover:bg-gray-100">
-                          <MoreHorizontal className="h-3 w-3" />
-                        </div>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-48">
-                        <DropdownMenuItem onClick={() => handleRfxAction("view", rfx.id)}>
-                          View Details
-                        </DropdownMenuItem>
-                        {rfx.status === "Completed" && (
-                          <DropdownMenuItem onClick={() => handleRfxAction("download", rfx.id)}>
-                            Download PDF
+                    </SidebarMenuButton>
+                    <SidebarMenuAction className="group-data-[collapsible=icon]:hidden opacity-0 group-hover:opacity-100 transition-opacity">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <div className="h-6 w-6 p-0 text-gray-400 hover:text-gray-600 cursor-pointer flex items-center justify-center rounded-sm hover:bg-gray-100">
+                            <MoreHorizontal className="h-3 w-3" />
+                          </div>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-48">
+                          <DropdownMenuItem onClick={() => handleRfxAction("view", rfx.id)}>
+                            View Details
                           </DropdownMenuItem>
-                        )}
-                        <DropdownMenuItem onClick={() => handleRfxAction("duplicate", rfx.id)}>
-                          Duplicate
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleRfxAction("delete", rfx.id)} className="text-red-600">
-                          Delete
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </SidebarMenuAction>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
+                          {rfx.status === "Completed" && (
+                            <DropdownMenuItem onClick={() => handleRfxAction("download", rfx.id)}>
+                              Download PDF
+                            </DropdownMenuItem>
+                          )}
+                          <DropdownMenuItem onClick={() => handleRfxAction("duplicate", rfx.id)}>
+                            Duplicate
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleRfxAction("delete", rfx.id)} className="text-red-600">
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </SidebarMenuAction>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            )}
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
