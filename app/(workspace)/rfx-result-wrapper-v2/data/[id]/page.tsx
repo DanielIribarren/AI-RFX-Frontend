@@ -16,6 +16,11 @@ interface ProductoIndividual {
   unidad: string;
   precio: number;
   isQuantityModified: boolean;
+  // Nuevos campos de ganancias
+  costo_unitario?: number;
+  ganancia_unitaria?: number;
+  margen_ganancia?: number;
+  total_profit?: number;
 }
 
 export default function RfxDataPage() {
@@ -42,12 +47,12 @@ export default function RfxDataPage() {
   // Extract individual products from backend data
   const extractIndividualProducts = (data: any): ProductoIndividual[] => {
     if (!data) return [];
-    
+
     const products = data.products || data.productos || data.requested_products || [];
-    
+
     return products.map((product: any, index: number) => {
       let originalQuantity = 1;
-      
+
       if (product.quantity !== undefined && product.quantity !== null) {
         originalQuantity = parseInt(String(product.quantity)) || 1;
       } else if (product.cantidad !== undefined && product.cantidad !== null) {
@@ -55,11 +60,17 @@ export default function RfxDataPage() {
       } else if (product.qty !== undefined && product.qty !== null) {
         originalQuantity = parseInt(String(product.qty)) || 1;
       }
-      
+
       const productName = product.product_name || product.nombre || product.name || `Producto ${index + 1}`;
       const productUnit = product.unit || product.unidad || product.measurement_unit || 'unidades';
       const productPrice = parseFloat(String(product.precio_unitario || product.estimated_unit_price || product.unit_price || product.price || 0)) || 0;
-      
+
+      // Extraer nuevos campos de ganancias con nombres correctos del backend
+      const costoUnitario = parseFloat(String(product.unit_cost || product.costo_unitario || 0)) || 0;
+      const gananciaUnitaria = parseFloat(String(product.unit_profit || product.ganancia_unitaria || 0)) || 0;
+      const margenGanancia = parseFloat(String(product.unit_margin || product.margen_ganancia || 0)) || 0;
+      const totalProfit = parseFloat(String(product.total_profit || 0)) || 0;
+
       return {
         id: product.id || `product-${index}`,
         nombre: productName,
@@ -68,7 +79,12 @@ export default function RfxDataPage() {
         cantidadEditada: originalQuantity,
         unidad: productUnit,
         precio: productPrice,
-        isQuantityModified: false
+        isQuantityModified: false,
+        // Nuevos campos de ganancias con nombres correctos
+        costo_unitario: costoUnitario,
+        ganancia_unitaria: gananciaUnitaria,
+        margen_ganancia: margenGanancia,
+        total_profit: totalProfit
       };
     });
   };
@@ -76,9 +92,9 @@ export default function RfxDataPage() {
   // Handle product price change
   const handleProductPriceChange = async (productId: string, newPrice: number) => {
     try {
-      setProductosIndividuales(prev => 
-        prev.map(product => 
-          product.id === productId 
+      setProductosIndividuales(prev =>
+        prev.map(product =>
+          product.id === productId
             ? { ...product, precio: newPrice }
             : product
         )
@@ -92,13 +108,88 @@ export default function RfxDataPage() {
     } catch (error) {
       console.error(`❌ Error saving product price:`, error);
       // Revert change on error
-      setProductosIndividuales(prev => 
-        prev.map(product => 
-          product.id === productId 
+      setProductosIndividuales(prev =>
+        prev.map(product =>
+          product.id === productId
             ? { ...product, precio: product.precio }
             : product
         )
       );
+    }
+  };
+
+  // Function to refresh RFX data after updates
+  const refreshRFXData = async () => {
+    if (!backendData?.data?.id) {
+      console.warn("No RFX ID to refresh");
+      return;
+    }
+
+    try {
+      console.log("🔄 Refreshing RFX data:", backendData.data.id);
+
+      // Get updated products data with profits and costs
+      const productsResponse = await api.getProductsWithProfits(backendData.data.id);
+
+      if (productsResponse.status === "success" && productsResponse.data) {
+        // Update backendData with fresh products
+        const updatedData = {
+          ...backendData.data,
+          products: productsResponse.data.products || productsResponse.data
+        };
+
+        setBackendData({ ...backendData, data: updatedData });
+
+        // Extract updated individual products
+        const updatedProducts = extractIndividualProducts(updatedData);
+        setProductosIndividuales(updatedProducts);
+
+        console.log("✅ RFX data refreshed successfully with updated products");
+      } else {
+        console.warn("Could not refresh products data");
+      }
+    } catch (error) {
+      console.error("Error refreshing RFX data:", error);
+    }
+  };
+
+  // Handle product cost change
+  const handleProductCostChange = async (productId: string, newCost: number) => {
+    // Guardar el valor anterior para revertir en caso de error
+    let previousCost = 0;
+
+    try {
+      setProductosIndividuales(prev => {
+        const product = prev.find(p => p.id === productId);
+        if (product) {
+          previousCost = product.costo_unitario || 0;
+        }
+        return prev.map(product =>
+          product.id === productId
+            ? { ...product, costo_unitario: newCost }
+            : product
+        );
+      });
+
+      if (backendData?.data?.id) {
+        console.log(`🔄 Saving product cost: ${productId} = ${newCost} (was: ${previousCost})`);
+        const result = await api.updateProductField(backendData.data.id, productId, "unit_cost", newCost);
+        console.log(`✅ Product cost saved to backend:`, result);
+
+        // Refresh data to get updated profit calculations
+        await refreshRFXData();
+      }
+    } catch (error) {
+      console.error(`❌ Error saving product cost:`, error);
+      // Revertir cambio local si falla el backend
+      setProductosIndividuales(prev =>
+        prev.map(product =>
+          product.id === productId
+            ? { ...product, costo_unitario: previousCost }
+            : product
+        )
+      );
+      throw error; // Re-lanzar el error para que se maneje en el componente
     }
   };
 
@@ -240,7 +331,12 @@ export default function RfxDataPage() {
         cantidadEditada: productData.cantidad,
         unidad: productData.unidad,
         precio: productData.precio,
-        isQuantityModified: false
+        isQuantityModified: false,
+        // Nuevos campos de ganancias (inicialmente 0)
+        costo_unitario: 0,
+        ganancia_unitaria: 0,
+        margen_ganancia: 0,
+        total_profit: 0
       };
 
       setProductosIndividuales(prev => [...prev, newProduct]);
@@ -335,25 +431,51 @@ export default function RfxDataPage() {
       try {
         console.log("🔍 Loading RFX data for ID:", id);
         const response = await api.getRFXById(id);
-        
+
         if (isMounted) {
           if (response.status === "success" && response.data) {
-            setBackendData(response);
-            
+            // Get complete product data with profits and costs from backend
+            console.log("📊 Fetching complete products data with profits from /api/rfx/{id}/products");
+            const productsResponse = await api.getProductsWithProfits(id);
+
+            let completeData = response.data;
+
+            if (productsResponse.status === "success" && productsResponse.data) {
+              // Combine RFX data with complete products data including costs and profits
+              completeData = {
+                ...response.data,
+                products: productsResponse.data.products || productsResponse.data
+              };
+              console.log("✅ Combined RFX data with complete products data:", {
+                rfxId: completeData.id,
+                productsCount: completeData.products?.length || 0,
+                sampleProduct: completeData.products?.[0] ? {
+                  id: (completeData.products[0] as any).id,
+                  unit_cost: (completeData.products[0] as any).unit_cost,
+                  unit_profit: (completeData.products[0] as any).unit_profit,
+                  unit_margin: (completeData.products[0] as any).unit_margin
+                } : null
+              });
+            } else {
+              console.warn("⚠️ Could not fetch complete products data, using basic RFX products");
+            }
+
+            setBackendData({ ...response, data: completeData });
+
             // Initialize RFX context with currency
-            const backendCurrency = (response.data as any)?.currency;
-            await rfxCurrency.setRfxContext(response.data.id, backendCurrency);
-            
-            // Extract individual products
-            const individualProducts = extractIndividualProducts(response.data);
+            const backendCurrency = (completeData as any)?.currency;
+            await rfxCurrency.setRfxContext(completeData.id, backendCurrency);
+
+            // Extract individual products with complete data including costs
+            const individualProducts = extractIndividualProducts(completeData);
             setProductosIndividuales(individualProducts);
-            
+
             // Check if products already have valid prices
             const hasValidPrices = individualProducts.every(p => p.precio && p.precio > 0);
             setCostsSaved(hasValidPrices);
-            
+
             setError(null);
-            console.log("✅ RFX data loaded successfully:", response.data);
+            console.log("✅ RFX data loaded successfully with complete products:", completeData);
           } else {
             setError(response.message || "Error al cargar datos del RFX");
             console.error("❌ Error loading RFX data:", response.message);
@@ -486,6 +608,7 @@ export default function RfxDataPage() {
         onDeleteProduct={handleDeleteProduct}
         onQuantityChange={handleQuantityChange}
         onPriceChange={handleProductPriceChange}
+        onCostChange={handleProductCostChange}
         onUnitChange={handleUnitChange}
         onSaveProductCosts={saveProductCosts}
         isSavingCosts={isSavingCosts}

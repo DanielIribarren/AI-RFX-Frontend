@@ -55,6 +55,7 @@ interface BudgetGenerationViewProps {
   onDeleteProduct?: (productId: string) => void
   onQuantityChange?: (productId: string, newQuantity: number) => void
   onPriceChange?: (productId: string, newPrice: number) => void
+  onCostChange?: (productId: string, newCost: number) => void
   onUnitChange?: (productId: string, newUnit: string) => void
   onSaveProductCosts?: () => void
   isRegenerating?: boolean

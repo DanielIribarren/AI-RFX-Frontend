@@ -11,18 +11,17 @@ function InlineEditableText({
 }: { value: string; onChange: (v: string) => void }) {
   const [isEditing, setIsEditing] = useState(false)
   const [editValue, setEditValue] = useState(value)
-  const [error, setError] = useState<string | null>(null)
 
   const handleEdit = () => {
     setIsEditing(true)
     setEditValue(value)
-    setError(null)
   }
 
   const handleSave = () => {
     const trimmed = editValue.trim()
     if (!trimmed) {
-      setError("La unidad no puede estar vacía")
+      setEditValue(value)
+      setIsEditing(false)
       return
     }
     onChange(trimmed)
@@ -32,7 +31,6 @@ function InlineEditableText({
   const handleCancel = () => {
     setIsEditing(false)
     setEditValue(value)
-    setError(null)
   }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -40,29 +38,34 @@ function InlineEditableText({
     else if (e.key === "Escape") handleCancel()
   }
 
+  const handleBlur = () => {
+    // Auto-save on blur
+    handleSave()
+  }
+
   if (isEditing) {
     return (
-      <div className="flex items-center gap-1">
+      <div className="relative inline-flex items-center w-full justify-center">
         <Input
           type="text"
           value={editValue}
           onChange={(e) => setEditValue(e.target.value)}
           onKeyDown={handleKeyDown}
-          className={cn("h-8 text-sm", error ? "border-red-300 bg-red-50" : "border-blue-300")}
+          onBlur={handleBlur}
+          className="h-7 w-24 text-xs text-center border-blue-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
           autoFocus
+          onClick={(e) => e.stopPropagation()}
         />
-        <Button onClick={handleSave} className="h-6 w-6 p-0 bg-emerald-600 hover:bg-emerald-700 text-white border-0">
-          <CheckCircle className="h-3 w-3" />
-        </Button>
-        <Button onClick={handleCancel} className="h-6 w-6 p-0 border-gray-300 text-gray-600 hover:bg-gray-50 bg-white">
-          <X className="h-3 w-3" />
-        </Button>
       </div>
     )
   }
 
   return (
-    <div className="cursor-pointer hover:bg-blue-50 rounded px-2 py-1 transition-colors duration-200" onClick={handleEdit}>
+    <div 
+      className="cursor-pointer hover:bg-blue-50 rounded px-2 py-1 transition-colors duration-200 text-center" 
+      onClick={handleEdit}
+      title="Click para editar"
+    >
       <span className="text-sm text-gray-900">{value}</span>
     </div>
   )
@@ -78,6 +81,11 @@ interface ProductoIndividual {
   unidad: string
   precio: number
   isQuantityModified: boolean
+  // Nuevos campos de ganancias
+  costo_unitario?: number
+  ganancia_unitaria?: number
+  margen_ganancia?: number
+  total_profit?: number // Campo adicional del backend
 }
 
 interface ProductTableProps {
@@ -86,6 +94,7 @@ interface ProductTableProps {
   selectedCurrency: string
   onQuantityChange: (productId: string, quantity: number) => void
   onPriceChange: (productId: string, price: number) => void
+  onCostChange?: (productId: string, cost: number) => void
   onUnitChange?: (productId: string, unit: string) => void
   onDeleteProduct?: (productId: string) => void
   isEditable?: boolean
@@ -96,7 +105,7 @@ interface ProductTableProps {
 
 interface InlineEditableCellProps {
   value: number
-  onChange: (value: number) => void
+  onChange: (value: number) => void | Promise<void>
   type: "number"
   min?: number
   step?: string
@@ -121,10 +130,15 @@ function InlineEditableCell({
     setEditValue(value.toString())
   }
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const newValue = parseFloat(editValue) || 0
-    onChange(newValue)
-    setIsEditing(false)
+    try {
+      await onChange(newValue)
+      setIsEditing(false)
+    } catch (error) {
+      console.error('Error saving value:', error)
+      // Don't exit edit mode on error, let user retry or cancel
+    }
   }
 
   const handleCancel = () => {
@@ -140,36 +154,36 @@ function InlineEditableCell({
     }
   }
 
+  const handleBlur = () => {
+    // Auto-save on blur
+    handleSave()
+  }
+
   if (isEditing) {
     return (
-      <div className="flex items-center gap-1">
-        {currencySymbol && (
-          <span className="text-sm text-gray-500 font-medium">
-            {currencySymbol}
-          </span>
-        )}
-        <Input
-          type={type}
-          value={editValue}
-          onChange={(e) => setEditValue(e.target.value)}
-          onKeyDown={handleKeyDown}
-          min={min}
-          step={step}
-          className="h-8 text-sm border-blue-300 focus:border-blue-400"
-          autoFocus
-        />
-        <Button
-          onClick={handleSave}
-          className="h-6 w-6 p-0 bg-emerald-600 hover:bg-emerald-700 text-white border-0"
-        >
-          <CheckCircle className="h-3 w-3" />
-        </Button>
-        <Button
-          onClick={handleCancel}
-          className="h-6 w-6 p-0 border-gray-300 text-gray-600 hover:bg-gray-50 bg-white"
-        >
-          <X className="h-3 w-3" />
-        </Button>
+      <div className="relative inline-flex items-center gap-1 w-full justify-center">
+        <div className="relative flex items-center">
+          {currencySymbol && (
+            <span className="absolute left-2 text-xs text-gray-500 font-medium pointer-events-none">
+              {currencySymbol}
+            </span>
+          )}
+          <Input
+            type={type}
+            value={editValue}
+            onChange={(e) => setEditValue(e.target.value)}
+            onKeyDown={handleKeyDown}
+            onBlur={handleBlur}
+            min={min}
+            step={step}
+            className={cn(
+              "h-7 w-20 text-xs text-center border-blue-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500",
+              currencySymbol && "pl-5"
+            )}
+            autoFocus
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
       </div>
     )
   }
@@ -177,10 +191,11 @@ function InlineEditableCell({
   return (
     <div 
       className={cn(
-        "cursor-pointer hover:bg-blue-50 rounded px-2 py-1 transition-colors duration-200",
+        "cursor-pointer hover:bg-blue-50 rounded px-2 py-1 transition-colors duration-200 text-center",
         className
       )}
       onClick={handleEdit}
+      title="Click para editar"
     >
       <span className="text-sm text-gray-900">
         {currencySymbol && `${currencySymbol}`}{value.toFixed(type === "number" && !currencySymbol ? 0 : 2)}
@@ -195,12 +210,19 @@ export default function ProductTable({
   selectedCurrency,
   onQuantityChange,
   onPriceChange,
+  onCostChange,
   onUnitChange,
   onDeleteProduct,
   isEditable = true,
   isProductPriceUnreviewed,
   markProductPriceAsReviewed
 }: ProductTableProps) {
+
+  // Debug logging (development only)
+  if (process.env.NODE_ENV === 'development') {
+    console.log('ProductTable products:', productos.length)
+  }
+  
   if (productos.length === 0) {
     return (
       <div className="text-center py-8 text-gray-500 flex items-center justify-center gap-2">
@@ -213,11 +235,14 @@ export default function ProductTable({
   return (
     <div className="space-y-4">
       {/* Header de Tabla */}
-      <div className="grid grid-cols-12 gap-4 items-center py-3 px-4 bg-gray-50/50 rounded-lg text-sm font-medium text-gray-600 border border-gray-100">
-        <div className="col-span-4">Producto</div>
-        <div className="col-span-2 text-center">Cantidad</div>
-        <div className="col-span-2 text-center">Unidad</div>
-        <div className="col-span-2 text-center">Precio Unit.</div>
+      <div className="grid grid-cols-12 gap-3 items-center py-3 px-4 bg-gray-50/50 rounded-lg text-xs font-medium text-gray-600 border border-gray-100">
+        <div className="col-span-3">Producto</div>
+        <div className="col-span-1 text-center">Cant.</div>
+        <div className="col-span-1 text-center">Unidad</div>
+        <div className="col-span-1 text-center">Costo</div>
+        <div className="col-span-1 text-center">Precio</div>
+        <div className="col-span-2 text-center">Ganancia</div>
+        <div className="col-span-1 text-center">Margen</div>
         <div className="col-span-2 text-right">Subtotal</div>
       </div>
 
@@ -243,29 +268,28 @@ export default function ProductTable({
             <div
               key={producto.id}
               className={cn(
-                "grid grid-cols-12 gap-4 items-center py-4 px-4 border rounded-lg transition-all duration-200",
+                "grid grid-cols-12 gap-3 items-center py-3 px-4 border rounded-lg transition-all duration-200",
                 needsPriceReview 
                   ? "border-amber-200 bg-amber-50/50 hover:border-amber-300 hover:bg-amber-50/80" 
                   : "border-gray-100 hover:border-gray-200 hover:bg-gray-50/30"
               )}
             >
-              {/* Nombre del producto - 4 columnas */}
-              <div className="col-span-4">
-                <div className="font-medium text-gray-900">{producto.nombre}</div>
-                <div className="text-sm text-gray-500">Unidad: {producto.unidad}</div>
+              {/* Nombre del producto - 3 columnas */}
+              <div className="col-span-3">
+                <div className="text-sm font-medium text-gray-900">{producto.nombre}</div>
                 {producto.isQuantityModified && (
-                  <div className="text-xs text-blue-600 font-medium">Cantidad modificada</div>
+                  <div className="text-xs text-blue-600 font-medium mt-1">Cantidad modificada</div>
                 )}
                 {needsPriceReview && (
-                  <div className="text-xs text-amber-600 font-medium flex items-center gap-1">
+                  <div className="text-xs text-amber-600 font-medium flex items-center gap-1 mt-1">
                     <AlertTriangle className="h-3 w-3" />
-                    Precio requiere revisión tras cambio de moneda
+                    Precio requiere revisión
                   </div>
                 )}
               </div>
 
-              {/* Cantidad - 2 columnas */}
-              <div className="col-span-2 text-center">
+              {/* Cantidad - 1 columna */}
+              <div className="col-span-1 text-center">
                 {isEditable ? (
                   <div className="flex flex-col items-center">
                     <InlineEditableCell
@@ -287,8 +311,8 @@ export default function ProductTable({
                 )}
               </div>
 
-              {/* Unidad - 2 columnas */}
-              <div className="col-span-2 text-center">
+              {/* Unidad - 1 columna */}
+              <div className="col-span-1 text-center">
                 {isEditable && onUnitChange ? (
                   <InlineEditableText
                     value={producto.unidad}
@@ -299,8 +323,36 @@ export default function ProductTable({
                 )}
               </div>
 
-              {/* Precio Unitario - 2 columnas */}
-              <div className="col-span-2 text-center">
+              {/* Costo Unitario - 1 columna */}
+              <div className="col-span-1 text-center">
+                {isEditable ? (
+                  <InlineEditableCell
+                    value={producto.costo_unitario || 0}
+                    onChange={async (value) => {
+                      if (onCostChange) {
+                        try {
+                          await onCostChange(producto.id, value)
+                        } catch (error) {
+                          console.error('❌ Error updating cost:', error)
+                          throw error // Re-throw to let InlineEditableCell handle it
+                        }
+                      }
+                    }}
+                    type="number"
+                    min={0}
+                    step="0.01"
+                    currencySymbol={currencySymbol}
+                    className="w-full text-center"
+                  />
+                ) : (
+                  <div className="text-sm text-gray-900">
+                    {currencySymbol}{producto.costo_unitario?.toFixed(2) || "0.00"}
+                  </div>
+                )}
+              </div>
+
+              {/* Precio Unitario - 1 columna */}
+              <div className="col-span-1 text-center">
                 {isEditable ? (
                   <InlineEditableCell
                     value={producto.precio}
@@ -319,6 +371,21 @@ export default function ProductTable({
                     {currencySymbol}{producto.precio.toFixed(2)}
                   </span>
                 )}
+              </div>
+
+              {/* Ganancia Unitaria - 2 columnas */}
+              <div className="col-span-2 text-center">
+                <div className="text-sm text-green-600 font-medium">
+                  {currencySymbol}{producto.ganancia_unitaria?.toFixed(2) || "0.00"}
+                </div>
+                <div className="text-xs text-gray-500">por unidad</div>
+              </div>
+
+              {/* Margen de Ganancia - 1 columna */}
+              <div className="col-span-1 text-center">
+                <div className="text-sm text-blue-600 font-medium">
+                  {producto.margen_ganancia?.toFixed(1) || "0.0"}%
+                </div>
               </div>
 
               {/* Subtotal - 2 columnas */}
@@ -343,10 +410,41 @@ export default function ProductTable({
         })}
       </div>
 
+      {/* Resumen de Totales */}
+      <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <div className="grid grid-cols-3 gap-4 text-center">
+          <div>
+            <div className="text-sm text-gray-600">Total Ganancia</div>
+            <div className="text-xl font-bold text-green-600">
+              {currencySymbol}{productos.reduce((sum, p) => {
+                // Usar total_profit del backend si está disponible, sino calcular
+                const totalProfit = (p as any).total_profit || 
+                  ((p.ganancia_unitaria || 0) * (p.cantidadEditada ?? p.cantidadOriginal ?? p.cantidad ?? 1));
+                return sum + totalProfit;
+              }, 0).toFixed(2)}
+            </div>
+          </div>
+          <div>
+            <div className="text-sm text-gray-600">Margen Promedio</div>
+            <div className="text-xl font-bold text-blue-600">
+              {productos.length > 0 
+                ? (productos.reduce((sum, p) => sum + (p.margen_ganancia || 0), 0) / productos.length).toFixed(1)
+                : "0.0"}%
+            </div>
+          </div>
+          <div>
+            <div className="text-sm text-gray-600">Total Productos</div>
+            <div className="text-xl font-bold text-gray-800">
+              {productos.reduce((sum, p) => sum + (p.cantidadEditada ?? p.cantidadOriginal ?? p.cantidad ?? 1), 0)}
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Información adicional */}
       <div className="mt-3 text-xs text-gray-500 text-center flex items-center justify-center gap-2">
         <Lightbulb className="h-3 w-3" />
-        <span>Haz clic en cualquier cantidad o precio para editarlo. Presiona Enter para confirmar o Escape para cancelar.</span>
+        <span>Haz clic en cualquier cantidad, precio o unidad para editarlo. Los cambios se guardan automáticamente al salir del campo o presionar Enter.</span>
       </div>
     </div>
   )

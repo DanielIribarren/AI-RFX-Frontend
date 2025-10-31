@@ -45,6 +45,11 @@ interface ProductoIndividual {
   unidad: string
   precio: number
   isQuantityModified: boolean
+  // Nuevos campos de ganancias
+  costo_unitario?: number
+  ganancia_unitaria?: number
+  margen_ganancia?: number
+  total_profit?: number // Campo adicional del backend
 }
 
 interface RfxResultsWrapperV2Props {
@@ -177,9 +182,9 @@ export default function RfxResultsWrapperV2({
   const [validationMetadata, setValidationMetadata] = useState<any>(null)
   const [originalText, setOriginalText] = useState<string>("")
 
-  // Estado para productos individuales
+  // Estado para productos individuales (legacy - used by individual pages now)
   const [productosIndividuales, setProductosIndividuales] = useState<ProductoIndividual[]>([])
-  
+
   // ===== V2.2 PRICING CONFIGURATION STATES =====
   const [pricingConfigV2, setPricingConfigV2] = useState<PricingConfigFormData>(() => {
     // Initialize with defaults
@@ -190,7 +195,7 @@ export default function RfxResultsWrapperV2({
       coordination_rate: 0.18,
       coordination_description: 'Coordinación y logística',
       coordination_apply_to_subtotal: true,
-      
+
       // Cost per person
       cost_per_person_enabled: false,
       headcount: 120,
@@ -198,7 +203,7 @@ export default function RfxResultsWrapperV2({
       calculation_base: 'final_total',
       display_in_proposal: true,
       cost_per_person_description: 'Cálculo de costo individual',
-      
+
       // Tax
       taxes_enabled: false,
       tax_name: 'IVA',
@@ -207,17 +212,17 @@ export default function RfxResultsWrapperV2({
       tax_apply_to_coordination: true
     }
   })
-  
+
   const [pricingConfigId, setPricingConfigId] = useState<string | null>(null)
   const [apiCalculationResult, setApiCalculationResult] = useState<PricingCalculationResult | null>(null)
   const [isLoadingPricingConfig, setIsLoadingPricingConfig] = useState(false)
   const [isSavingPricingConfig, setIsSavingPricingConfig] = useState(false)
-  
+
   // Legacy compatibility states
   const [legacyPricingConfig, setLegacyPricingConfig] = useState<LegacyPricingConfig>(() => {
     return pricingConverter.fromV2(pricingConfigV2)
   })
-  
+
   // Estado para el total calculado
   const [calculatedTotal, setCalculatedTotal] = useState<number>(0)
 
@@ -231,7 +236,7 @@ export default function RfxResultsWrapperV2({
   const [isRedirecting, setIsRedirecting] = useState(false)
   const [isSavingCosts, setIsSavingCosts] = useState(false)
   const [costsSaved, setCostsSaved] = useState(false)
-  
+
   // Estados para datos REALES de la propuesta generada por el backend
   const [proposalMetadata, setProposalMetadata] = useState<any>(null)
   const [proposalCosts, setProposalCosts] = useState<any[]>([])
@@ -251,29 +256,6 @@ export default function RfxResultsWrapperV2({
     formatPriceWithSymbol 
   } = useCurrency("EUR")
 
-  // ===== COST VALIDATION FUNCTIONS =====
-  
-  // Function to check if products have valid existing prices
-  const hasValidExistingPrices = (productos: ProductoIndividual[]): boolean => {
-    if (productos.length === 0) return false
-    
-    // Check if all products have prices > 0
-    const allHavePrices = productos.every(producto => producto.precio && producto.precio > 0)
-    
-    // Calculate total to ensure it's meaningful
-    const total = productos.reduce((sum, producto) => {
-      return sum + (producto.cantidad * (producto.precio || 0))
-    }, 0)
-    
-    return allHavePrices && total > 0
-  }
-  
-  // Function to calculate products total
-  const calculateProductsTotal = (productos: ProductoIndividual[]): number => {
-    return productos.reduce((sum, producto) => {
-      return sum + (producto.cantidad * (producto.precio || 0))
-    }, 0)
-  }
   
   // ===== V2.2 PRICING CONFIG FUNCTIONS =====
   
@@ -479,70 +461,6 @@ export default function RfxResultsWrapperV2({
     logger.debug("API calculation result received", result)
   }
 
-  // Función para obtener datos completos del RFX desde la BD
-  const fetchCompleteRFXData = async (rfxId: string) => {
-    try {
-      const url = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001'}/api/rfx/${rfxId}`
-      console.log("🔍 DEBUG: Fetching RFX data from URL:", url)
-      
-      const response = await fetch(url)
-      console.log("🔍 DEBUG: Response status:", response.status)
-      console.log("🔍 DEBUG: Response ok:", response.ok)
-      
-      if (response.ok) {
-        const result = await response.json()
-        console.log("🔍 DEBUG: Raw API response:", JSON.stringify(result, null, 2))
-        console.log("🔍 DEBUG: Response status field:", result.status)
-        console.log("🔍 DEBUG: Response data keys:", result.data ? Object.keys(result.data) : 'no data')
-        console.log("🔍 DEBUG: generated_html in response:", result.data?.generated_html)
-        
-        if (result.status === "success") {
-          return result.data
-        } else {
-          console.error("❌ API returned error status:", result.message)
-        }
-      } else {
-        console.error("❌ HTTP error:", response.status, response.statusText)
-      }
-    } catch (error) {
-      console.error("❌ Error fetching complete RFX data:", error)
-    }
-    return null
-  }
-
-  // Función para refrescar datos del RFX después de actualizaciones
-  const refreshRFXData = async () => {
-    if (!backendData?.data?.id) {
-      console.warn("No hay RFX ID para refrescar")
-      return
-    }
-
-    try {
-      console.log("🔄 Refrescando datos del RFX:", backendData.data.id)
-      const refreshedData = await fetchCompleteRFXData(backendData.data.id)
-      
-      if (refreshedData) {
-        console.log("✅ Datos del RFX refrescados exitosamente")
-        
-        // Forzar re-renderizado con datos frescos
-        if (refreshedData) {
-          const newExtractedData = safeExtractData(refreshedData)
-          if (newExtractedData) {
-            setExtractedData(newExtractedData)
-          }
-          
-          const newIndividualProducts = extractIndividualProducts(refreshedData)
-          setProductosIndividuales(newIndividualProducts)
-          
-          console.log("🔄 Estados actualizados con datos frescos")
-        }
-      } else {
-        console.error("❌ No se pudieron obtener datos actualizados")
-      }
-    } catch (error) {
-      console.error("❌ Error refrescando datos del RFX:", error)
-    }
-  }
 
   // Nueva función para manejar guardado de campos editables
   const handleFieldSave = async (field: keyof typeof extractedData, value: string | number) => {
@@ -576,22 +494,39 @@ export default function RfxResultsWrapperV2({
     }
   }
 
+  // ===== COST VALIDATION FUNCTIONS =====
+
+  // Function to check if products have valid existing prices
+  const hasValidExistingPrices = (productos: ProductoIndividual[]): boolean => {
+    if (productos.length === 0) return false
+
+    // Check if all products have prices > 0
+    const allHavePrices = productos.every(producto => producto.precio && producto.precio > 0)
+
+    // Calculate total to ensure it's meaningful
+    const total = productos.reduce((sum, producto) => {
+      return sum + (producto.cantidad * (producto.precio || 0))
+    }, 0)
+
+    return allHavePrices && total > 0
+  }
+
+  // Function to calculate products total
+  const calculateProductsTotal = (productos: ProductoIndividual[]): number => {
+    return productos.reduce((sum, producto) => {
+      return sum + (producto.cantidad * (producto.precio || 0))
+    }, 0)
+  }
+
   // Función para extraer productos individuales del backend data
   const extractIndividualProducts = (data: any): ProductoIndividual[] => {
     if (!data) return []
-    
+
     const products = (data as any).products || (data as any).productos || (data as any).requested_products || []
-    
-    console.log("🔍 DEBUG: Extracting products from backend data:", {
-      dataKeys: Object.keys(data),
-      productsLength: products.length,
-      firstProduct: products[0],
-      rawData: data
-    })
-    
+
     return products.map((product: any, index: number) => {
       let originalQuantity = 1
-      
+
       if (product.quantity !== undefined && product.quantity !== null) {
         originalQuantity = parseInt(String(product.quantity)) || 1
       } else if (product.cantidad !== undefined && product.cantidad !== null) {
@@ -599,12 +534,18 @@ export default function RfxResultsWrapperV2({
       } else if (product.qty !== undefined && product.qty !== null) {
         originalQuantity = parseInt(String(product.qty)) || 1
       }
-      
+
       const productName = product.product_name || product.nombre || product.name || `Producto ${index + 1}`
       const productUnit = product.unit || product.unidad || product.measurement_unit || 'unidades'
       const productPrice = parseFloat(String(product.precio_unitario || product.estimated_unit_price || product.unit_price || product.price || 0)) || 0
-      
-      const productData = {
+
+      // Extraer nuevos campos de ganancias con nombres correctos del backend
+      const costoUnitario = parseFloat(String(product.unit_cost || product.costo_unitario || 0)) || 0
+      const gananciaUnitaria = parseFloat(String(product.unit_profit || product.ganancia_unitaria || 0)) || 0
+      const margenGanancia = parseFloat(String(product.unit_margin || product.margen_ganancia || 0)) || 0
+      const totalProfit = parseFloat(String(product.total_profit || 0)) || 0
+
+      return {
         id: product.id || `product-${index}`,
         nombre: productName,
         cantidad: originalQuantity,
@@ -612,172 +553,51 @@ export default function RfxResultsWrapperV2({
         cantidadEditada: originalQuantity,
         unidad: productUnit,
         precio: productPrice,
-        isQuantityModified: false
+        isQuantityModified: false,
+        // Nuevos campos de ganancias con nombres correctos
+        costo_unitario: costoUnitario,
+        ganancia_unitaria: gananciaUnitaria,
+        margen_ganancia: margenGanancia,
+        total_profit: totalProfit
       }
-      
-      console.log(`🔍 DEBUG: Product ${index + 1} extracted:`, {
-        originalProduct: product,
-        extractedProduct: productData,
-        quantitySource: product.quantity !== undefined ? 'quantity' : 
-                       product.cantidad !== undefined ? 'cantidad' : 
-                       product.qty !== undefined ? 'qty' : 'default'
-      })
-      
-      return productData
     })
   }
 
-  // Función para manejar cambios en precios de productos
-  const handleProductPriceChange = async (productId: string, newPrice: number) => {
+
+
+
+
+
+
+  // Función para obtener datos completos del RFX desde la BD
+  const fetchCompleteRFXData = async (rfxId: string) => {
     try {
-      // 1. Actualizar estado local inmediatamente para UX
-      setProductosIndividuales(prev => 
-        prev.map(product => 
-          product.id === productId 
-            ? { ...product, precio: newPrice }
-            : product
-        )
-      )
+      // 1. Obtener datos básicos del RFX
+      const rfxResponse = await api.getRFXById(rfxId)
 
-      // 2. Persistir en backend inmediatamente si hay RFX ID
-      if (backendData?.data?.id) {
-        console.log(`🔄 Saving product price: ${productId} = ${newPrice}`)
-        await api.updateProductField(backendData.data.id, productId, "precio_unitario", newPrice)
-        console.log(`✅ Product price saved to backend: ${productId}`)
-        
-        // 3. Refresh datos para asegurar consistencia
-        await refreshRFXData()
-      }
-    } catch (error) {
-      console.error(`❌ Error saving product price:`, error)
-      // Revertir cambio local si falla el backend
-      setProductosIndividuales(prev => 
-        prev.map(product => 
-          product.id === productId 
-            ? { ...product, precio: product.precio }
-            : product
-        )
-      )
-    }
-  }
+      if (rfxResponse.status === "success" && rfxResponse.data) {
+        // 2. Obtener productos con cálculos de ganancias del endpoint correcto
+        const productsResponse = await api.getProductsWithProfits(rfxId)
 
-  // Función para manejar cambios en unidad de productos
-  const handleUnitChange = async (productId: string, newUnit: string) => {
-    try {
-      const trimmed = (newUnit || '').trim()
-      if (!trimmed) return
-
-      // 1. Actualizar estado local inmediatamente
-      setProductosIndividuales(prev => 
-        prev.map(product => 
-          product.id === productId 
-            ? { ...product, unidad: trimmed }
-            : product
-        )
-      )
-
-      // 2. Persistir en backend inmediatamente si hay RFX ID
-      if (backendData?.data?.id) {
-        console.log(`🔄 Saving product unit: ${productId} = ${trimmed}`)
-        await api.updateProductField(backendData.data.id, productId, "unidad", trimmed)
-        console.log(`✅ Product unit saved to backend: ${productId}`)
-        
-        // 3. Refresh datos para asegurar consistencia
-        await refreshRFXData()
-      }
-    } catch (error) {
-      console.error(`❌ Error saving product unit:`, error)
-      // Revertir cambio local si falla el backend
-      setProductosIndividuales(prev => 
-        prev.map(product => 
-          product.id === productId 
-            ? { ...product, unidad: product.unidad }
-            : product
-        )
-      )
-    }
-  }
-
-  // Función para manejar cambios en cantidades de productos
-  const handleQuantityChange = async (productId: string, newQuantity: number) => {
-    try {
-      console.log(`🔄 handleQuantityChange called:`, { productId, newQuantity })
-      
-      // 1. Actualizar estado local inmediatamente
-      setProductosIndividuales(prev => {
-        const updated = prev.map(product => {
-          if (product.id === productId) {
-            const updatedProduct = { 
-              ...product, 
-              cantidadEditada: newQuantity,
-              isQuantityModified: newQuantity !== product.cantidadOriginal
-            }
-            console.log(`✅ Updated product ${productId}:`, {
-              before: product,
-              after: updatedProduct
-            })
-            return updatedProduct
+        if (productsResponse.status === "success" && productsResponse.data) {
+          // Combinar datos del RFX con productos que incluyen ganancias
+          const completeData = {
+            ...rfxResponse.data,
+            products: productsResponse.data.products || productsResponse.data
           }
-          return product
-        })
-        
-        console.log(`📦 New productos individuales state:`, updated)
-        return updated
-      })
 
-      // 2. Persistir en backend inmediatamente si hay RFX ID
-      if (backendData?.data?.id) {
-        console.log(`🔄 Saving product quantity: ${productId} = ${newQuantity}`)
-        await api.updateProductField(backendData.data.id, productId, "cantidad", newQuantity)
-        console.log(`✅ Product quantity saved to backend: ${productId}`)
-        
-        // 3. Refresh datos para asegurar consistencia
-        await refreshRFXData()
+          return completeData
+        } else {
+          console.warn("Products endpoint returned no data, using basic RFX data")
+          return rfxResponse.data
+        }
+      } else {
+        console.error("RFX endpoint returned error status:", rfxResponse.message)
       }
     } catch (error) {
-      console.error(`❌ Error saving product quantity:`, error)
-      // Revertir cambio local si falla el backend
-      setProductosIndividuales(prev => 
-        prev.map(product => 
-          product.id === productId 
-            ? { 
-                ...product, 
-                cantidadEditada: product.cantidadOriginal,
-                isQuantityModified: false
-              }
-            : product
-        )
-      )
+      console.error("Error fetching complete RFX data:", error)
     }
-  }
-
-  // Función para agregar nuevo producto
-  const handleAddProduct = async (productData: any) => {
-    try {
-      const newProduct: ProductoIndividual = {
-        id: `new-product-${Date.now()}`,
-        nombre: productData.nombre,
-        cantidad: productData.cantidad,
-        cantidadOriginal: productData.cantidad,
-        cantidadEditada: productData.cantidad,
-        unidad: productData.unidad,
-        precio: productData.precio,
-        isQuantityModified: false
-      }
-      
-      setProductosIndividuales(prev => [...prev, newProduct])
-      console.log('✅ Product added:', newProduct)
-      
-    } catch (error) {
-      console.error('❌ Error adding product:', error)
-      throw error
-    }
-  }
-  
-  // Función para eliminar producto
-  const handleDeleteProduct = (productId: string) => {
-    setProductosIndividuales(prev => prev.filter(p => p.id !== productId))
-    console.log('🗑️ Product deleted:', productId)
+    return null
   }
 
   // Función para enviar costos unitarios al backend
@@ -795,30 +615,26 @@ export default function RfxResultsWrapperV2({
     }))
 
     try {
-      console.log("🔄 Saving product costs:", productCosts)
-      
       const result = await api.updateProductCosts(rfxId, productCosts)
-      
-      console.log("✅ Product costs saved successfully:", result)
-      
+
       // ✅ NEW: Verify costs are valid after saving
       const hasValidPrices = hasValidExistingPrices(productosIndividuales)
       setCostsSaved(hasValidPrices)
-      
+
       if (hasValidPrices) {
         const total = calculateProductsTotal(productosIndividuales)
         alert(`Costos guardados exitosamente para ${result.data.updated_products.length} productos (Total: €${total.toFixed(2)}). Ahora puede generar la propuesta.`)
       } else {
         alert(`Costos guardados, pero algunos productos necesitan precios válidos antes de generar la propuesta.`)
       }
-      
+
       // Refresco automático de datos después de actualizar costos
-      await refreshRFXData()
+      await fetchCompleteRFXData(rfxId)
     } catch (error) {
       console.error("Error saving product costs:", error)
-      
+
       const errorInfo = handleAPIError(error)
-      
+
       if (error instanceof Error && error.message.includes("404")) {
         alert("RFX no encontrado. Por favor recargue la página e intente nuevamente.")
       } else if (error instanceof Error && error.message.includes("400")) {
@@ -869,30 +685,20 @@ export default function RfxResultsWrapperV2({
         }
       }
       
-      console.log("🎯 Generating proposal with real costs from database for RFX:", backendData.data.id)
-      console.log("📝 Costs sent for validation (backend will use DB costs):", costsForValidation)
       const response = await api.generateProposal(proposalRequest)
-      
+
       if (response.proposal) {
         // Actualizar con TODOS los datos reales del backend GenerateProposalService
         setPropuesta(response.proposal.content_markdown || response.proposal.content_html)
-        
+
         // CRÍTICO: Actualizar costo total REAL calculado por el backend
         setCostoTotal(response.proposal.total_cost)
-        
+
         // Actualizar TODOS los datos reales de la propuesta del backend
         setProposalMetadata(response.proposal.metadata || {})
         setProposalCosts(response.proposal.itemized_costs || [])
         setProposalStatus(response.proposal.status || "")
         setProposalGeneratedAt(response.proposal.created_at || "")
-        
-        // Log detallado de datos reales recibidos del backend
-        console.log("✅ Proposal generated successfully with real costs")
-        console.log("💰 Real total cost from backend:", response.proposal.total_cost)
-        console.log("📋 Real itemized costs:", response.proposal.itemized_costs)
-        console.log("📊 Proposal metadata:", response.proposal.metadata)
-        console.log("🎯 Proposal status:", response.proposal.status)
-        console.log("📅 Generated at:", response.proposal.created_at)
         
         // Call the callback to refresh sidebar and history
         if (onProposalGenerated) {
@@ -1251,7 +1057,7 @@ export default function RfxResultsWrapperV2({
           <p className="text-gray-500 mb-6">
             Carga un documento para ver los resultados del análisis aquí.
           </p>
-          <button 
+          <button
             onClick={onNewRfx}
             className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium"
           >
@@ -1276,16 +1082,8 @@ export default function RfxResultsWrapperV2({
         validationMetadata={validationMetadata}
         originalText={originalText}
         isFinalized={isFinalized}
-        // Product management props
+        // Product management props - handled by individual pages
         productosIndividuales={productosIndividuales}
-        onAddProduct={handleAddProduct}
-        onDeleteProduct={handleDeleteProduct}
-        onQuantityChange={handleQuantityChange}
-        onPriceChange={handleProductPriceChange}
-        onUnitChange={handleUnitChange}
-        onSaveProductCosts={saveProductCosts}
-        isSavingCosts={isSavingCosts}
-        costsSaved={costsSaved}
       />
     )
   }
@@ -1319,16 +1117,9 @@ export default function RfxResultsWrapperV2({
       onGenerateProposal={handleRegenerate}
       onDownloadPDF={handleDownloadPDF}
       onFinalize={handleFinalize}
-      onAddProduct={handleAddProduct}
-      onDeleteProduct={handleDeleteProduct}
-      onQuantityChange={handleQuantityChange}
-      onPriceChange={handleProductPriceChange}
-      onUnitChange={handleUnitChange}
-      onSaveProductCosts={saveProductCosts}
+      // Product management props - handled by individual pages
       isRegenerating={isRegenerating}
       isFinalized={isFinalized}
-      isSavingCosts={isSavingCosts}
-      costsSaved={costsSaved}
       // V2.2 specific props
       pricingConfigV2={pricingConfigV2}
       onPricingConfigChange={handlePricingConfigChange}

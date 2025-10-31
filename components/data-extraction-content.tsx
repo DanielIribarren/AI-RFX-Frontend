@@ -37,6 +37,11 @@ interface ProductoIndividual {
   unidad: string
   precio: number
   isQuantityModified: boolean
+  // Nuevos campos de ganancias
+  costo_unitario?: number
+  ganancia_unitaria?: number
+  margen_ganancia?: number
+  total_profit?: number // Campo adicional del backend
 }
 
 interface DataExtractionContentProps {
@@ -51,6 +56,7 @@ interface DataExtractionContentProps {
   onDeleteProduct?: (productId: string) => void
   onQuantityChange?: (productId: string, newQuantity: number) => void
   onPriceChange?: (productId: string, newPrice: number) => void
+  onCostChange?: (productId: string, newCost: number) => void
   onUnitChange?: (productId: string, newUnit: string) => void
   onSaveProductCosts?: () => void
   isSavingCosts?: boolean
@@ -72,6 +78,7 @@ export default function DataExtractionContent({
   onDeleteProduct,
   onQuantityChange,
   onPriceChange,
+  onCostChange,
   onUnitChange,
   onSaveProductCosts,
   isSavingCosts = false,
@@ -79,7 +86,7 @@ export default function DataExtractionContent({
   defaultCurrency,
   onCurrencyChange
 }: DataExtractionContentProps) {
-  
+
   // State for product form dialog
   const [isAddingProduct, setIsAddingProduct] = useState(false)
 
@@ -358,6 +365,7 @@ export default function DataExtractionContent({
               selectedCurrency={selectedCurrency}
               onQuantityChange={onQuantityChange || (() => {})}
               onPriceChange={onPriceChange || (() => {})}
+              onCostChange={onCostChange}
               onUnitChange={onUnitChange}
               onDeleteProduct={onDeleteProduct}
               isEditable={!isDisabled}

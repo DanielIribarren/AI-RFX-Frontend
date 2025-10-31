@@ -429,6 +429,19 @@ export const api = {
     }
   },
 
+  // Get products with profit calculations for specific RFX with JWT
+  async getProductsWithProfits(rfxId: string): Promise<{ status: string; message: string; data: any }> {
+    try {
+      const response = await fetchWithAuth(`${API_BASE_URL}/api/rfx/${rfxId}/products`);
+      return handleResponse<{ status: string; message: string; data: any }>(response);
+    } catch (error) {
+      if (error instanceof APIError) {
+        throw error;
+      }
+      throw new APIError('Network error fetching products with profits', 0, 'NETWORK_ERROR');
+    }
+  },
+
   // Finalize RFX (mark as completed) with JWT
   async finalizeRFX(rfxId: string): Promise<{ status: string; message: string; data: { id: string; estado: string } }> {
     try {

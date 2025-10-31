@@ -35,6 +35,11 @@ interface ProductoIndividual {
   unidad: string
   precio: number
   isQuantityModified: boolean
+  // Nuevos campos de ganancias
+  costo_unitario?: number
+  ganancia_unitaria?: number
+  margen_ganancia?: number
+  total_profit?: number // Campo adicional del backend
 }
 
 interface RFXDataViewProps {
@@ -78,6 +83,7 @@ export default function RFXDataView({
   onDeleteProduct,
   onQuantityChange,
   onPriceChange,
+  onCostChange,
   onUnitChange,
   onSaveProductCosts,
   isSavingCosts = false,
@@ -85,7 +91,7 @@ export default function RFXDataView({
   // Low-impact currency props (not in interface to avoid breaking changes)
   ...additionalProps
 }: RFXDataViewProps & any) {
-  
+
   // Format creation date
   const formatFechaCreacion = (fecha?: string) => {
     if (!fecha) return new Date().toLocaleDateString("es-ES")
@@ -165,6 +171,7 @@ export default function RFXDataView({
             onDeleteProduct={onDeleteProduct}
             onQuantityChange={onQuantityChange}
             onPriceChange={onPriceChange}
+            onCostChange={onCostChange}
             onUnitChange={onUnitChange}
             onSaveProductCosts={onSaveProductCosts}
             isSavingCosts={isSavingCosts}
