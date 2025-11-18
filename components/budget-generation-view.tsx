@@ -79,6 +79,9 @@ interface BudgetGenerationViewProps {
   // Real Backend Integration
   useRealBackend?: boolean
   defaultCurrency?: string
+
+  // Loading state for initial proposal generation
+  isLoadingProposal?: boolean
 }
 
 export default function BudgetGenerationView({
@@ -100,11 +103,11 @@ export default function BudgetGenerationView({
   saveStatus = 'idle',
   isLoadingPricingConfig = false,
   isSavingPricingConfig = false,
-  defaultCurrency = "EUR"
+  defaultCurrency = "EUR",
+  isLoadingProposal = false
 }: BudgetGenerationViewProps) {
   
   const [activeTab, setActiveTab] = useState("preview")
-  const [isLoadingProposal] = useState(false)
   
   // Auth context for company ID
   const { user } = useAuth()

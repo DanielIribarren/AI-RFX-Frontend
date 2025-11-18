@@ -237,6 +237,9 @@ export default function RfxResultsWrapperV2({
   const [isSavingCosts, setIsSavingCosts] = useState(false)
   const [costsSaved, setCostsSaved] = useState(false)
 
+  // Estado para controlar loading de primera generación de propuesta
+  const [isLoadingProposal, setIsLoadingProposal] = useState(false)
+
   // Estados para datos REALES de la propuesta generada por el backend
   const [proposalMetadata, setProposalMetadata] = useState<any>(null)
   const [proposalCosts, setProposalCosts] = useState<any[]>([])
@@ -650,7 +653,14 @@ export default function RfxResultsWrapperV2({
   const handleRegenerate = async () => {
     if (!backendData?.data) return
     
-    setIsRegenerating(true)
+    // Determinar si es primera generación o regeneración
+    const isFirstGeneration = !propuesta || propuesta.trim().length === 0
+    
+    if (isFirstGeneration) {
+      setIsLoadingProposal(true)
+    } else {
+      setIsRegenerating(true)
+    }
     
     try {
       // Verificar si los costos ya están guardados en BD
@@ -658,7 +668,12 @@ export default function RfxResultsWrapperV2({
         const hasCosts = productosIndividuales.some(p => p.precio > 0)
         if (!hasCosts) {
           alert("Por favor ingrese y guarde los costos unitarios primero usando el botón 'Guardar Costos'")
-          setIsRegenerating(false)
+          // Resetear el estado correspondiente
+          if (isFirstGeneration) {
+            setIsLoadingProposal(false)
+          } else {
+            setIsRegenerating(false)
+          }
           return
         }
       }
@@ -718,7 +733,12 @@ export default function RfxResultsWrapperV2({
         alert("Error al generar la propuesta. Por favor intente nuevamente.")
       }
     } finally {
-      setIsRegenerating(false)
+      // Resetear el estado correspondiente
+      if (isFirstGeneration) {
+        setIsLoadingProposal(false)
+      } else {
+        setIsRegenerating(false)
+      }
     }
   }
 
@@ -1075,9 +1095,9 @@ export default function RfxResultsWrapperV2({
         extractedData={extractedData}
         onFieldSave={handleFieldSave}
         onGenerateBudget={handleNavigateToBudget}
-        onAddNewFiles={onNewRfx}
         onNavigateToHistory={onNavigateToHistory}
         rfxId={backendData?.data?.id}
+        rfxTitle={(backendData?.data as any)?.title || extractedData.nombreEmpresa || "Datos Extraídos"}
         fechaCreacion={fechaCreacion}
         validationMetadata={validationMetadata}
         originalText={originalText}
@@ -1132,6 +1152,7 @@ export default function RfxResultsWrapperV2({
       onCalculationUpdate={handleCalculationUpdate}
       // Real Backend Integration
       useRealBackend={useRealBackend}
+      isLoadingProposal={isLoadingProposal}
     />
   )
 }

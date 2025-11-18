@@ -18,7 +18,7 @@ function SectionHeader({
   level = 2,
   ...props 
 }: SectionHeaderProps) {
-  const HeaderTag = `h${level}` as keyof JSX.IntrinsicElements
+  const HeaderTag = `h${level}` as 'h1' | 'h2' | 'h3'
   
   const headerClass = cn(
     "font-semibold text-gray-800 flex items-center gap-2",
@@ -31,10 +31,14 @@ function SectionHeader({
 
   return (
     <div className={cn("space-y-1", className)} {...props}>
-      <HeaderTag className={headerClass}>
-        {Icon && <Icon className="h-5 w-5" />}
-        {title}
-      </HeaderTag>
+      {React.createElement(
+        HeaderTag,
+        { className: headerClass },
+        <>
+          {Icon && <Icon className="h-5 w-5" />}
+          {title}
+        </>
+      )}
       {description && (
         <p className="text-sm text-gray-600">
           {description}

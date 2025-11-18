@@ -3,11 +3,12 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { CheckCircle, History, Plus, Briefcase, BarChart3 } from "lucide-react"
-import { TabsComponent, Tab } from "@/components/ui/tabs-component"
+import { CheckCircle, Briefcase, BarChart3, FileText, Archive } from "lucide-react"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import DataExtractionContent from "@/components/data-extraction-content"
 import ProcessedFilesContent from "@/components/processed-files-content"
 import { StatusBadge } from "@/components/ui/status-badge"
+import { EditableTitle } from "@/components/ui/editable-title"
 
 interface ExtractedData {
   solicitante: string
@@ -46,9 +47,9 @@ interface RFXDataViewProps {
   extractedData: ExtractedData
   onFieldSave: (field: keyof ExtractedData, value: string | number) => Promise<void>
   onGenerateBudget: () => void
-  onAddNewFiles: () => void
-  onNavigateToHistory?: () => void
   rfxId?: string
+  rfxTitle?: string
+  onTitleSave?: (newTitle: string) => Promise<void>
   fechaCreacion?: string
   validationMetadata?: any
   originalText?: string
@@ -70,9 +71,9 @@ export default function RFXDataView({
   extractedData,
   onFieldSave,
   onGenerateBudget,
-  onAddNewFiles,
-  onNavigateToHistory,
   rfxId,
+  rfxTitle = "Datos Extraídos",
+  onTitleSave,
   fechaCreacion,
   validationMetadata,
   originalText = "",
@@ -133,20 +134,22 @@ export default function RFXDataView({
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">
-            {isFinalized ? "RFX Finalizado" : "Datos Extraídos"}
-          </h1>
+          {onTitleSave && !isFinalized ? (
+            <EditableTitle
+              title={rfxTitle}
+              onSave={onTitleSave}
+              disabled={isFinalized}
+            />
+          ) : (
+            <h1 className="text-3xl font-bold text-gray-900">
+              {isFinalized ? "RFX Finalizado" : rfxTitle}
+            </h1>
+          )}
           <p className="text-lg text-gray-600 mt-1">
             {extractedData.solicitante} • {formatFechaCreacion(fechaCreacion)}
           </p>
         </div>
         <div className="flex gap-2">
-          {onNavigateToHistory && (
-            <Button onClick={onNavigateToHistory} variant="outline" className="gap-2">
-              <History className="h-4 w-4" />
-              Ver Historial
-            </Button>
-          )}
           <Button 
             onClick={onGenerateBudget} 
             className="gap-2 bg-blue-600 hover:bg-blue-700 text-white"
@@ -158,8 +161,19 @@ export default function RFXDataView({
       </div>
 
       {/* Tabs Navigation */}
-      <TabsComponent defaultTab="datos-extraidos" className="bg-white rounded-lg border border-gray-200">
-        <Tab id="datos-extraidos" label="Datos Extraídos">
+      <Tabs defaultValue="datos-extraidos" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-2 !flex-none">
+          <TabsTrigger value="datos-extraidos" className="gap-2 flex-1">
+            <FileText className="h-4 w-4" />
+            Datos Extraídos
+          </TabsTrigger>
+          <TabsTrigger value="archivos-procesados" className="gap-2 flex-1">
+            <Archive className="h-4 w-4" />
+            Archivos Procesados
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="datos-extraidos" className="space-y-6 mt-6">
           <DataExtractionContent
             extractedData={extractedData}
             onFieldSave={onFieldSave}
@@ -181,30 +195,16 @@ export default function RFXDataView({
             // @ts-ignore pass currency change handler from parent
             onCurrencyChange={additionalProps?.onCurrencyChange}
           />
-        </Tab>
+        </TabsContent>
         
-        <Tab id="archivos-procesados" label="Archivos Procesados">
+        <TabsContent value="archivos-procesados" className="space-y-6 mt-6">
           <ProcessedFilesContent
             rfxId={rfxId}
             receivedAt={fechaCreacion}
             isDisabled={isFinalized}
           />
-        </Tab>
-      </TabsComponent>
-
-      {/* Main Action Button */}
-      <div className="flex justify-center pt-6">
-        <Button 
-          onClick={onAddNewFiles} 
-          variant="outline" 
-          size="lg"
-          className="gap-2 px-8 py-3"
-          disabled={isFinalized}
-        >
-          <Plus className="h-5 w-5" />
-          Agregar Nuevos Archivos
-        </Button>
-      </div>
+        </TabsContent>
+      </Tabs>
 
       {/* Success message for finalized RFX */}
       {isFinalized && (

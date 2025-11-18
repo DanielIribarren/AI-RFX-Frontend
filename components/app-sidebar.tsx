@@ -1,7 +1,8 @@
 "use client"
 
 import { useState, useEffect, useImperativeHandle, forwardRef } from "react"
-import { Plus, MessageSquare, FileText, Clock, MoreHorizontal, ChevronLeft, CheckCircle, XCircle, AlertTriangle, Archive, Settings } from "lucide-react"
+import { Plus, MessageSquare, FileText, Clock, MoreHorizontal, ChevronLeft, CheckCircle, XCircle, AlertTriangle, Archive, Settings, Trash2 } from "lucide-react"
+import { ToastNotification, ToastType } from "./toast-notification"
 import {
   Sidebar,
   SidebarContent,
@@ -19,7 +20,8 @@ import {
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { useSidebar } from "@/components/ui/sidebar"
-import { api, RFXHistoryItem, useAPICall } from "@/lib/api"
+import { api, APIError, RFXHistoryItem, useAPICall } from "@/lib/api"
+import { useCachedData } from "@/lib/use-cached-data"
 import { SidebarUser } from "@/components/sidebar-user"
 
 interface RfxItem {
@@ -28,6 +30,15 @@ interface RfxItem {
   client: string
   date: string
   status: "Draft" | "In progress" | "Completed" | "Cancelled" | "Expired"
+  // Usuario que procesó el RFX
+  processed_by?: {
+    id: string
+    name: string
+    email: string
+    username?: string
+    avatar_url?: string
+    created_at?: string
+  }
 }
 
 interface AppSidebarProps {
@@ -81,78 +92,72 @@ const getStatusIcon = (status: string) => {
   }
 }
 
+// Helper function to format dates: Today, Yesterday, or DD/MM
+const formatRelativeDate = (dateString: string) => {
+  const date = new Date(dateString)
+  const now = new Date()
+  
+  const dateOnly = new Date(date.getFullYear(), date.getMonth(), date.getDate())
+  const nowOnly = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+  
+  const diffTime = nowOnly.getTime() - dateOnly.getTime()
+  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24))
+  
+  if (diffDays === 0) return "Today"
+  if (diffDays === 1) return "Yesterday"
+  
+  const day = String(date.getDate()).padStart(2, '0')
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  return `${day}/${month}`
+}
+
 const AppSidebar = forwardRef<AppSidebarRef, AppSidebarProps>(
   ({ onNewRfx, onNavigateToHistory, onNavigateToBudgetSettings, onSelectRfx, currentView }, ref) => {
     const { toggleSidebar } = useSidebar()
     const { handleAPIError } = useAPICall()
     
-    const [recentRfx, setRecentRfx] = useState<RfxItem[]>([])
-    const [isLoading, setIsLoading] = useState(true)
+    // Toast notification state
+    const [toast, setToast] = useState<{
+      isOpen: boolean
+      type: ToastType
+      title: string
+      message?: string
+    }>({
+      isOpen: false,
+      type: "success",
+      title: "",
+      message: "",
+    })
     
-    // Expose refresh method to parent components
-    useImperativeHandle(ref, () => ({
-      refresh: async () => {
-        await loadRecentRfx()
-      }
-    }))
-    
-    // Load recent RFX data from backend (últimos 10, sin paginación)
-    const loadRecentRfx = async () => {
-      try {
-        setIsLoading(true)
-        // ✅ Usar el mismo endpoint que el historial pero limitado a 10 items
+    // ✅ Hook de cache: carga del cache primero, luego API si es necesario
+    const { data: recentRfx, isLoading, refresh } = useCachedData(
+      async () => {
         const response = await api.getLatestRFX(10)
         
-        // Transform backend data to frontend format using the most recent timestamp available
+        // Transform backend data to frontend format
         const transformedData: RfxItem[] = response.data.map((item: RFXHistoryItem) => {
           const mostRecentISO = item.updated_at || item.last_activity_at || item.last_updated || item.date
           return {
             id: item.id,
-            title: item.title, // Now available directly from backend
-            client: item.client, // Now available directly from backend
+            title: item.title,
+            client: item.client,
             date: formatRelativeDate(mostRecentISO),
-            status: mapBackendStatusToDisplay(item.status), // Map backend status to display format
+            status: mapBackendStatusToDisplay(item.status),
+            processed_by: item.processed_by, // ✅ Include user who processed the RFX
           }
         })
         
-        setRecentRfx(transformedData)
-      } catch (err) {
-        console.error('Error loading recent RFX:', err)
-        handleAPIError(err)
-        
-        // No fallback to mock data - show empty state or error
-        setRecentRfx([])
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
-    useEffect(() => {
-      loadRecentRfx()
-    }, [])
+        return transformedData
+      },
+      { key: 'sidebar-recent-rfx', expiryMinutes: 5 }
+    )
     
-    // Helper function to format dates: Today, Yesterday, or DD/MM
-    const formatRelativeDate = (dateString: string) => {
-      const date = new Date(dateString)
-      const now = new Date()
-      
-      // Reset time to compare only dates
-      const dateOnly = new Date(date.getFullYear(), date.getMonth(), date.getDate())
-      const nowOnly = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-      
-      const diffTime = nowOnly.getTime() - dateOnly.getTime()
-      const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24))
-      
-      if (diffDays === 0) return "Today"
-      if (diffDays === 1) return "Yesterday"
-      
-      // Format as DD/MM for older dates
-      const day = String(date.getDate()).padStart(2, '0')
-      const month = String(date.getMonth() + 1).padStart(2, '0')
-      return `${day}/${month}`
-    }
+    // Expose refresh method to parent components
+    useImperativeHandle(ref, () => ({
+      refresh
+    }))
 
-    const handleRfxAction = (action: string, rfxId: string) => {
+    const handleRfxAction = (action: string, rfxId: string, rfxTitle?: string) => {
       switch (action) {
         case "view":
           if (onSelectRfx) {
@@ -166,8 +171,61 @@ const AppSidebar = forwardRef<AppSidebarRef, AppSidebarProps>(
           console.log("Duplicate RFX:", rfxId)
           break
         case "delete":
-          console.log("Delete RFX:", rfxId)
+          handleDeleteRFX(rfxId, rfxTitle || "este RFX")
           break
+      }
+    }
+
+    const handleDeleteRFX = async (rfxId: string, rfxTitle: string) => {
+      // Note: Sidebar uses dropdown menu, so we can't use a dialog easily
+      // We'll use window.confirm here but with toast for feedback
+      const confirmed = window.confirm(`¿Estás seguro de que deseas eliminar "${rfxTitle}"?\n\nEsta acción no se puede deshacer.`)
+      if (!confirmed) return
+      
+      try {
+        console.log(`🗑️ Deleting RFX: ${rfxId}`)
+        await api.deleteRFX(rfxId)
+        console.log(`✅ RFX deleted successfully`)
+        
+        // Refresh sidebar to remove deleted RFX
+        await refresh()
+        
+        // Show success toast
+        setToast({
+          isOpen: true,
+          type: "success",
+          title: "RFX eliminado",
+          message: `"${rfxTitle}" ha sido eliminado exitosamente`,
+        })
+      } catch (error) {
+        console.error(`❌ Error deleting RFX:`, error)
+        
+        // Determine error type and show appropriate message
+        let errorTitle = "Error al eliminar"
+        let errorMessage = "No se pudo eliminar el RFX"
+        
+        if (error instanceof APIError) {
+          if (error.status === 403) {
+            errorTitle = "Acceso denegado"
+            errorMessage = "No tienes permiso para eliminar este RFX. Solo el creador puede eliminarlo."
+          } else if (error.status === 404) {
+            errorTitle = "RFX no encontrado"
+            errorMessage = "El RFX que intentas eliminar ya no existe."
+          } else if (error.status === 401) {
+            errorTitle = "Sesión expirada"
+            errorMessage = "Tu sesión ha expirado. Por favor, inicia sesión nuevamente."
+          } else {
+            errorMessage = error.message || "Ocurrió un error al eliminar el RFX"
+          }
+        }
+        
+        // Show error toast
+        setToast({
+          isOpen: true,
+          type: "error",
+          title: errorTitle,
+          message: errorMessage,
+        })
       }
     }
 
@@ -248,7 +306,7 @@ const AppSidebar = forwardRef<AppSidebarRef, AppSidebarProps>(
               <div className="px-2 py-4 text-center group-data-[collapsible=icon]:hidden">
                 <div className="text-xs text-gray-400">Loading...</div>
               </div>
-            ) : recentRfx.length === 0 ? (
+            ) : !recentRfx || recentRfx.length === 0 ? (
               <div className="px-2 py-4 text-center group-data-[collapsible=icon]:hidden">
                 <div className="text-xs text-gray-400">No recent RFX</div>
               </div>
@@ -291,7 +349,11 @@ const AppSidebar = forwardRef<AppSidebarRef, AppSidebarProps>(
                           <DropdownMenuItem onClick={() => handleRfxAction("duplicate", rfx.id)}>
                             Duplicate
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleRfxAction("delete", rfx.id)} className="text-red-600">
+                          <DropdownMenuItem 
+                            onClick={() => handleRfxAction("delete", rfx.id, rfx.title)} 
+                            className="text-red-600 focus:text-red-600 focus:bg-red-50"
+                          >
+                            <Trash2 className="h-4 w-4 mr-2" />
                             Delete
                           </DropdownMenuItem>
                         </DropdownMenuContent>
@@ -310,6 +372,15 @@ const AppSidebar = forwardRef<AppSidebarRef, AppSidebarProps>(
       </SidebarFooter>
 
       <SidebarRail />
+
+      {/* Toast Notification */}
+      <ToastNotification
+        isOpen={toast.isOpen}
+        onClose={() => setToast(prev => ({ ...prev, isOpen: false }))}
+        type={toast.type}
+        title={toast.title}
+        message={toast.message}
+      />
     </Sidebar>
   )
 })

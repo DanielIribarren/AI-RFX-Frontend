@@ -6,9 +6,12 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
-import { Plus, Search, AlertCircle, RefreshCw, FileText, Clock, CheckCircle, Archive, XCircle, AlertTriangle } from "lucide-react"
+import { Plus, Search, AlertCircle, RefreshCw, FileText, Clock, CheckCircle, Archive, XCircle, AlertTriangle, Trash2, User } from "lucide-react"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { api, APIError, useAPICall, type RFXHistoryItem } from "@/lib/api"
 import RFXDetailsDialog from "./RFXDetailsDialog"
+import { DeleteConfirmationDialog } from "./delete-confirmation-dialog"
+import { ToastNotification, ToastType } from "./toast-notification"
 
 // Enum para estados posibles de RFX en la base de datos
 type RFXDatabaseStatus = 'draft' | 'in_progress' | 'completed' | 'cancelled' | 'expired';
@@ -33,13 +36,22 @@ interface HistoryItem {
     email_empresa?: string
     telefono_empresa?: string
   }
+  // Usuario que procesó el RFX
+  processed_by?: {
+    id: string
+    name: string
+    email: string
+    username?: string
+    avatar_url?: string
+    created_at?: string
+  }
 }
 
 interface RfxHistoryProps {
   onNewRfx: () => void
   onNavigateToMain: () => void
   onSelectRfx?: (rfxId: string) => void
-  onViewFullAnalysis?: (rfxId: string, rfxData: any) => void // 🆕 Callback para ver análisis completo
+  onViewFullAnalysis?: (rfxId: string, rfxData: any) => void // Callback para ver análisis completo
 }
 
 export interface RfxHistoryRef {
@@ -126,6 +138,24 @@ const RfxHistory = forwardRef<RfxHistoryRef, RfxHistoryProps>(
     const [selectedRfxForDialog, setSelectedRfxForDialog] = useState<string | null>(null)
     const [selectedRfxData, setSelectedRfxData] = useState<any>(null)
     
+    // Delete confirmation dialog state
+    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+    const [rfxToDelete, setRfxToDelete] = useState<{ id: string; title: string } | null>(null)
+    const [isDeleting, setIsDeleting] = useState(false)
+    
+    // Toast notification state
+    const [toast, setToast] = useState<{
+      isOpen: boolean
+      type: ToastType
+      title: string
+      message?: string
+    }>({
+      isOpen: false,
+      type: "success",
+      title: "",
+      message: "",
+    })
+    
     // Use the new API error handler
     const { handleAPIError } = useAPICall()
 
@@ -152,6 +182,11 @@ const RfxHistory = forwardRef<RfxHistoryRef, RfxHistoryProps>(
         
         // Transform backend data to frontend format using new consistent structure
         const transformedData: HistoryItem[] = response.data.map((item: RFXHistoryItem) => {
+          // Debug logging for processed_by field
+          if (item.processed_by) {
+            console.log(`🔍 RFX ${item.id}: processed_by =`, item.processed_by);
+          }
+
           // Map database status to display status using our utility function
           const statusMapping = mapDatabaseStatusToDisplay(item.status || 'in_progress');
           
@@ -169,6 +204,7 @@ const RfxHistory = forwardRef<RfxHistoryRef, RfxHistoryProps>(
             productos: `${item.numero_productos} productos`,
             lastActivity: formatRelativeDate(mostRecentISO),
             rfxId: item.rfxId, // ⚠️ Legacy field - may contain name instead of UUID
+            processed_by: item.processed_by, // ✅ Include user who processed the RFX
           };
         })
         // Update pagination state using offset-based pagination
@@ -255,6 +291,82 @@ const RfxHistory = forwardRef<RfxHistoryRef, RfxHistoryProps>(
 
     const handleRetry = async () => {
       await handleRefresh()
+    }
+
+    const handleDeleteRFX = async (rfxId: string, rfxTitle: string, event: React.MouseEvent) => {
+      // Prevent card click event from firing
+      event.stopPropagation()
+      
+      // Open confirmation dialog
+      setRfxToDelete({ id: rfxId, title: rfxTitle })
+      setDeleteDialogOpen(true)
+    }
+
+    const confirmDeleteRFX = async () => {
+      if (!rfxToDelete) return
+      
+      setIsDeleting(true)
+      
+      try {
+        console.log(`🗑️ Deleting RFX: ${rfxToDelete.id}`)
+        await api.deleteRFX(rfxToDelete.id)
+        console.log(`✅ RFX deleted successfully`)
+        
+        // Remove from local state immediately
+        setHistoryItems(prev => prev.filter(item => item.id !== rfxToDelete.id))
+        
+        // Close dialog
+        setDeleteDialogOpen(false)
+        setRfxToDelete(null)
+        
+        // Show success toast
+        setToast({
+          isOpen: true,
+          type: "success",
+          title: "RFX eliminado",
+          message: `"${rfxToDelete.title}" ha sido eliminado exitosamente`,
+        })
+      } catch (error) {
+        console.error(`❌ Error deleting RFX:`, error)
+        
+        // Close dialog
+        setDeleteDialogOpen(false)
+        
+        // Determine error type and show appropriate message
+        let errorTitle = "Error al eliminar"
+        let errorMessage = "No se pudo eliminar el RFX"
+        
+        if (error instanceof APIError) {
+          if (error.status === 403) {
+            errorTitle = "Acceso denegado"
+            errorMessage = "No tienes permiso para eliminar este RFX. Solo el creador puede eliminarlo."
+          } else if (error.status === 404) {
+            errorTitle = "RFX no encontrado"
+            errorMessage = "El RFX que intentas eliminar ya no existe."
+          } else if (error.status === 401) {
+            errorTitle = "Sesión expirada"
+            errorMessage = "Tu sesión ha expirado. Por favor, inicia sesión nuevamente."
+          } else {
+            errorMessage = error.message || "Ocurrió un error al eliminar el RFX"
+          }
+        }
+        
+        // Show error toast
+        setToast({
+          isOpen: true,
+          type: "error",
+          title: errorTitle,
+          message: errorMessage,
+        })
+      } finally {
+        setIsDeleting(false)
+        setRfxToDelete(null)
+      }
+    }
+
+    const cancelDeleteRFX = () => {
+      setDeleteDialogOpen(false)
+      setRfxToDelete(null)
     }
 
   if (isLoading) {
@@ -433,13 +545,39 @@ const RfxHistory = forwardRef<RfxHistoryRef, RfxHistoryProps>(
                           )}
                         </p>
                       )}
+                      {rfx.processed_by && (
+                        <div className="text-xs text-green-600 flex items-center gap-2">
+                          <div className="flex items-center gap-1">
+                            <Avatar className="h-4 w-4">
+                              <AvatarImage src={rfx.processed_by.avatar_url} alt={rfx.processed_by.name || 'Usuario'} />
+                              <AvatarFallback className="text-[10px] bg-green-100 text-green-700">
+                                {(rfx.processed_by.name || 'U').charAt(0).toUpperCase()}
+                              </AvatarFallback>
+                            </Avatar>
+                            <User className="h-3 w-3" />
+                          </div>
+                          <span>Procesado por {rfx.processed_by.name || 'Usuario Desconocido'}</span>
+                          {rfx.processed_by.username && (
+                            <span className="text-gray-500">(@{rfx.processed_by.username})</span>
+                          )}
+                        </div>
+                      )}
                       <p className="text-sm text-gray-500 line-clamp-1">{rfx.productos}</p>
                       <p className="text-xs text-gray-400">
                         Last activity {rfx.lastActivity}
                       </p>
                     </div>
                   </div>
-                  <div className="flex-shrink-0 ml-4">
+                  <div className="flex items-center gap-2 flex-shrink-0 ml-4">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={(e) => handleDeleteRFX(rfx.id, rfx.title, e)}
+                      className="h-8 w-8 p-0 text-gray-400 hover:text-red-600 hover:bg-red-50"
+                      title="Eliminar RFX"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
                     <FileText className="h-5 w-5 text-gray-400" />
                   </div>
                 </div>
@@ -490,6 +628,25 @@ const RfxHistory = forwardRef<RfxHistoryRef, RfxHistoryProps>(
           onViewFullAnalysis={onViewFullAnalysis} // 🆕 Pasar callback para ver análisis completo
         />
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <DeleteConfirmationDialog
+        isOpen={deleteDialogOpen}
+        onClose={cancelDeleteRFX}
+        onConfirm={confirmDeleteRFX}
+        title="Eliminar RFX"
+        itemName={rfxToDelete?.title || ""}
+        isDeleting={isDeleting}
+      />
+
+      {/* Toast Notification */}
+      <ToastNotification
+        isOpen={toast.isOpen}
+        onClose={() => setToast(prev => ({ ...prev, isOpen: false }))}
+        type={toast.type}
+        title={toast.title}
+        message={toast.message}
+      />
     </div>
   )
 })

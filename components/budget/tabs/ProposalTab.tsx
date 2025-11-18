@@ -162,7 +162,7 @@ export function ProposalTab({
             <div className="flex flex-col items-center gap-3">
               <RefreshCw className="h-8 w-8 animate-spin text-primary" />
               <span className="text-sm font-medium">
-                {isRegenerating ? 'Regenerando propuesta...' : 'Cargando desde base de datos...'}
+                {isRegenerating ? 'Regenerando propuesta...' : 'Generando propuesta con IA...'}
               </span>
             </div>
           </div>

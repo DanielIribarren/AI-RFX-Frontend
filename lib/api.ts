@@ -215,6 +215,20 @@ export interface RFXHistoryResponse {
   error?: string;
 }
 
+// Updated to match backend history response structure
+export interface RFXHistoryResponse {
+  status: "success" | "error";
+  message: string;
+  data: RFXHistoryItem[];
+  pagination: {
+    page: number;
+    limit: number;
+    total_items: number;
+    has_more: boolean;
+  };
+  error?: string;
+}
+
 export interface RFXHistoryItem {
   id: string;
   cliente_id?: string;
@@ -235,6 +249,15 @@ export interface RFXHistoryItem {
   updated_at?: string;
   last_activity_at?: string;
   last_updated?: string;
+  // New field: user who processed the RFX
+  processed_by?: {
+    id: string;
+    name: string;
+    email: string;
+    username?: string;
+    avatar_url?: string;
+    created_at?: string;
+  };
 }
 
 export interface RecentRFXItem {
@@ -252,6 +275,15 @@ export interface RecentRFXItem {
   updated_at?: string;
   last_activity_at?: string;
   last_updated?: string;
+  // New field: user who processed the RFX
+  processed_by?: {
+    id: string;
+    name: string;
+    email: string;
+    username?: string;
+    avatar_url?: string;
+    created_at?: string;
+  };
 }
 
 // New pagination response interfaces for optimized endpoints
@@ -315,22 +347,42 @@ async function handleResponse<T>(response: Response): Promise<T> {
 }
 
 export const api = {
-  // Process RFX - Enhanced with better error handling and FormData support
+  // Process RFX - Enhanced with JWT authentication and better error handling
   async processRFX(body: FormData | RFXRequest): Promise<RFXResponse> {
     try {
       const url = `${API_BASE_URL}/api/rfx/process`;
+      
+      // Get JWT token for authentication
+      const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
+      const headers: HeadersInit = {};
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
       if (body instanceof FormData) {
-        const response = await fetch(url, { method: "POST", body });
+        // FormData already provided - add auth header
+        const response = await fetch(url, { 
+          method: "POST", 
+          body,
+          headers 
+        });
         if (!response.ok) throw new APIError(`API ${response.status}: ${await response.text()}`, response.status);
         return await response.json();
       }
+      
+      // Build FormData from RFXRequest object
       const formData = new FormData();
       formData.append('id', body.id);
       formData.append('tipo_rfx', body.tipo_rfx ?? "catering");
       if (body.pdf_file) formData.append('pdf_file', body.pdf_file as File);
       if (body.pdf_url) formData.append('pdf_url', body.pdf_url);
       if (body.contenido_extraido) formData.append('contenido_extraido', body.contenido_extraido);
-      const response = await fetch(url, { method: "POST", body: formData });
+      
+      const response = await fetch(url, { 
+        method: "POST", 
+        body: formData,
+        headers 
+      });
       if (!response.ok) throw new APIError(`API ${response.status}: ${await response.text()}`, response.status);
       return await response.json();
     } catch (error) {
@@ -559,6 +611,27 @@ export const api = {
     }
   },
 
+  // ✅ NUEVO: Update RFX title with JWT
+  async updateRFXTitle(rfxId: string, title: string): Promise<{ status: string; message: string; data: any }> {
+    try {
+      console.log(`🔄 Updating RFX title: ${rfxId} = "${title}"`);
+      const response = await fetchWithAuth(`${API_BASE_URL}/api/rfx/${rfxId}/title`, {
+        method: 'PATCH',
+        body: JSON.stringify({ title }),
+      });
+
+      const result = await handleResponse<{ status: string; message: string; data: any }>(response);
+      console.log('✅ RFX title updated successfully');
+      return result;
+    } catch (error) {
+      console.error('❌ Error updating RFX title:', error);
+      if (error instanceof APIError) {
+        throw error;
+      }
+      throw new APIError('Network error updating RFX title', 0, 'NETWORK_ERROR');
+    }
+  },
+
   // ✅ NUEVO: Update individual product field with JWT
   async updateProductField(rfxId: string, productId: string, field: string, value: string | number): Promise<{ status: string; message: string; data: any }> {
     try {
@@ -608,7 +681,7 @@ export const api = {
     }
   },
 
-  // ✅ NUEVO: Delete product from RFX with JWT
+  // ✅ Delete product from RFX with JWT
   async deleteProduct(rfxId: string, productId: string): Promise<{ status: string; message: string; data: any }> {
     try {
       console.log(`🗑️ API: Deleting product ${productId} from RFX ${rfxId}`);
@@ -637,6 +710,38 @@ export const api = {
       }
       
       throw new APIError('Network error deleting product', 0, 'NETWORK_ERROR');
+    }
+  },
+
+  // ✅ Delete RFX (only if owner) with JWT - Uses secure endpoint
+  async deleteRFX(rfxId: string): Promise<{ status: string; message: string }> {
+    try {
+      console.log(`🗑️ API: Deleting RFX ${rfxId}`);
+      const url = `${API_BASE_URL}/api/rfx-secure/${rfxId}`;
+      console.log(`🌐 DELETE ${url} (secure endpoint with JWT)`);
+      
+      const response = await fetchWithAuth(url, {
+        method: 'DELETE',
+      });
+
+      console.log(`📡 Delete RFX response status: ${response.status}`);
+      const result = await handleResponse<{ status: string; message: string }>(response);
+      console.log(`✅ RFX deleted successfully:`, result);
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error deleting RFX:`, error);
+      
+      if (error instanceof APIError) {
+        throw error;
+      }
+      
+      // Enhanced error for network issues
+      if (error instanceof TypeError && error.message.includes('fetch')) {
+        throw new APIError('Error de conexión al eliminar RFX. Verifica que el backend esté corriendo y CORS esté configurado para DELETE.', 0, 'NETWORK_ERROR');
+      }
+      
+      throw new APIError('Network error deleting RFX', 0, 'NETWORK_ERROR');
     }
   },
 

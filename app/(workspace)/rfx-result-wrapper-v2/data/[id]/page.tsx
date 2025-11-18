@@ -224,6 +224,34 @@ export default function RfxDataPage() {
     }
   };
 
+  // Handle RFX title save
+  const handleTitleSave = async (newTitle: string) => {
+    if (!backendData?.data?.id) {
+      throw new Error("No RFX ID available");
+    }
+
+    try {
+      await api.updateRFXTitle(backendData.data.id, newTitle);
+      
+      // Update local state
+      setBackendData(prev => {
+        if (!prev?.data) return prev;
+        return {
+          ...prev,
+          data: {
+            ...prev.data,
+            title: newTitle
+          }
+        } as RFXResponse;
+      });
+      
+      console.log(`✅ RFX title updated: "${newTitle}"`);
+    } catch (error) {
+      console.error("Error saving RFX title:", error);
+      throw error; // Re-throw to let EditableTitle handle it
+    }
+  };
+
   // Handle quantity change
   const handleQuantityChange = async (productId: string, newQuantity: number) => {
     try {
@@ -596,9 +624,9 @@ export default function RfxDataPage() {
         extractedData={extractedData}
         onFieldSave={handleFieldSave}
         onGenerateBudget={() => router.push(`/rfx-result-wrapper-v2/budget/${id}`)}
-        onAddNewFiles={() => router.push("/dashboard")}
-        onNavigateToHistory={() => router.push("/history")}
         rfxId={id}
+        rfxTitle={(backendData.data as any)?.title || extractedData.nombreEmpresa || "Datos Extraídos"}
+        onTitleSave={handleTitleSave}
         fechaCreacion={(backendData.data as any)?.created_at || new Date().toISOString()}
         validationMetadata={backendData.data?.metadata_json || null}
         originalText={backendData.data?.metadata_json?.texto_original_relevante || ""}
