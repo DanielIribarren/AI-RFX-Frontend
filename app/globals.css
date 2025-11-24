@@ -184,15 +184,19 @@ body {
 
 /* ✅ Estilos mejorados para propuestas con sistema de zoom */
 .proposal-content-wrapper {
-  /* Contenedor principal con max-width para controlar el ancho */
-  width: 100%;
-  box-sizing: border-box;
+  /* Contenedor principal FORZANDO ancho completo */
+  width: 100% !important;
+  min-width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+  display: block !important;
 }
 
 .proposal-content-wrapper > * {
-  /* Todos los elementos hijos respetan el max-width del contenedor */
+  /* Todos los elementos hijos respetan el ancho del contenedor */
   max-width: 100% !important;
-  box-sizing: border-box;
+  width: auto !important;
+  box-sizing: border-box !important;
 }
 
 /* Estilos específicos para tablas en propuestas */

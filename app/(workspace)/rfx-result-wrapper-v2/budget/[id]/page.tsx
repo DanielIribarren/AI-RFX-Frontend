@@ -74,6 +74,7 @@ export default function RfxBudgetPage() {
   
   // Proposal generation states
   const [isRegenerating, setIsRegenerating] = useState(false);
+  const [isLoadingProposal, setIsLoadingProposal] = useState(false);
   const [propuesta, setPropuesta] = useState<string>("");
 
   // Load pricing configuration from API
@@ -171,6 +172,8 @@ export default function RfxBudgetPage() {
 
   // Generate/Regenerate proposal using API
   const handleGenerateProposal = async () => {
+    setIsRegenerating(true);
+    setIsLoadingProposal(true);
     if (!backendData?.data || !id) {
       console.error("❌ No backend data or ID available for proposal generation");
       return;
@@ -252,6 +255,7 @@ export default function RfxBudgetPage() {
       }
     } finally {
       setIsRegenerating(false);
+      setIsLoadingProposal(false);
     }
   };
 
@@ -631,11 +635,11 @@ export default function RfxBudgetPage() {
 
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full w-full">
       {/* Tab Navigation */}
-      <div className="border-b border-gray-200 bg-white">
-        <div className="px-4 py-2">
-          <nav className="flex gap-6" aria-label="Tabs">
+      <div className="border-b border-gray-200 bg-white w-full">
+        <div className="px-4 py-2 w-full">
+          <nav className="flex gap-6 w-full" aria-label="Tabs">
             <a
               href={`/rfx-result-wrapper-v2/data/${id}`}
               className="whitespace-nowrap py-2 px-1 border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 font-medium text-sm transition-colors duration-200"
@@ -650,7 +654,7 @@ export default function RfxBudgetPage() {
       </div>
       
       {/* Budget Content */}
-      <div className="flex-1 overflow-auto">
+      <div className="flex-1 overflow-auto w-full">
         <BudgetGenerationView
           extractedData={extractedData}
           productosIndividuales={productosIndividuales}
@@ -670,6 +674,7 @@ export default function RfxBudgetPage() {
           onUnitChange={async () => {}}
           onSaveProductCosts={async () => {}}
           isRegenerating={isRegenerating}
+          isLoadingProposal={isLoadingProposal}
           isFinalized={false}
           isSavingCosts={false}
           costsSaved={false}

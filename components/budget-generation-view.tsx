@@ -201,9 +201,9 @@ export default function BudgetGenerationView({
       </div>
 
       {/* Content con Tabs */}
-      <div className="container mx-auto px-6 py-6">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3 !flex-none">
+      <div className="w-full px-6 py-6">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6 w-full">
+          <TabsList className="grid w-full grid-cols-3 !flex-none max-w-full">
             <TabsTrigger value="preview" className="gap-2 flex-1">
               <Eye className="h-4 w-4" />
               Vista Previa
@@ -242,7 +242,7 @@ export default function BudgetGenerationView({
           </TabsContent>
 
           {/* Tab 3: Propuesta Comercial */}
-          <TabsContent value="proposal" className="space-y-6 mt-6">
+          <TabsContent value="proposal" className="space-y-6 mt-6 w-full">
             <ProposalTab
               htmlContent={transformedPropuesta || ""}
               isRegenerating={isRegenerating}

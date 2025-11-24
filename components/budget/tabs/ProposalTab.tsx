@@ -27,56 +27,68 @@ export function ProposalTab({
   const [isFullscreen, setIsFullscreen] = useState(false)
 
   useEffect(() => {
-    if (!containerRef.current || !contentRef.current || !htmlContent) return
-
-    const updateScale = () => {
-      const container = containerRef.current
-      const content = contentRef.current
-      
-      if (!container || !content) return
-
-      // Calcular ancho disponible considerando padding del contenido (3rem * 2 = 96px)
-      const containerWidth = container.offsetWidth
-      const contentWidth = content.scrollWidth + 96 // Agregar padding del contenido
-
-      if (contentWidth > containerWidth) {
-        const newScale = Math.max(0.5, Math.min(1, containerWidth / contentWidth))
-        setScale(newScale)
-      } else {
-        setScale(1)
-      }
-    }
-
-    setTimeout(updateScale, 100)
-    window.addEventListener('resize', updateScale)
-    
-    return () => window.removeEventListener('resize', updateScale)
+    // Deshabilitado: El auto-scaling causaba compresión del ancho
+    // Ahora el contenedor mantiene su ancho completo con overflow-auto
+    setScale(1)
   }, [htmlContent])
 
   if (!htmlContent) {
     return (
       <div className="flex items-center justify-center min-h-[500px]">
-        <Card className="p-8 max-w-md text-center">
-          <FileText className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-          <h3 className="text-lg font-semibold mb-2">
-            No hay propuesta generada
-          </h3>
-          <p className="text-sm text-muted-foreground mb-4">
-            Haz clic en 'Generar con IA' para crear la propuesta comercial
-          </p>
-          <Button onClick={onRegenerate} className="gap-2">
-            <RefreshCw className="h-4 w-4" />
-            Generar con IA
-          </Button>
+        <Card className="p-8 max-w-md text-center border-2 border-dashed">
+          {isLoadingProposal ? (
+            <>
+              {/* Estado de Generación */}
+              <div className="relative mb-6">
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="h-20 w-20 rounded-full bg-primary/10 animate-pulse" />
+                </div>
+                <RefreshCw className="h-16 w-16 text-primary mx-auto animate-spin relative z-10" />
+              </div>
+              <h3 className="text-lg font-semibold mb-2">
+                Generando tu propuesta comercial
+              </h3>
+              <p className="text-sm text-muted-foreground mb-4">
+                La IA está creando una propuesta personalizada basada en los datos del RFX...
+              </p>
+              <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
+                <div className="flex gap-1">
+                  <div className="h-2 w-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: '0ms' }} />
+                  <div className="h-2 w-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: '150ms' }} />
+                  <div className="h-2 w-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: '300ms' }} />
+                </div>
+                <span>Esto puede tomar unos segundos</span>
+              </div>
+            </>
+          ) : (
+            <>
+              {/* Estado Inicial */}
+              <FileText className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-lg font-semibold mb-2">
+                No hay propuesta generada
+              </h3>
+              <p className="text-sm text-muted-foreground mb-4">
+                Haz clic en 'Generar con IA' para crear la propuesta comercial
+              </p>
+              <Button 
+                onClick={onRegenerate} 
+                className="gap-2"
+                size="lg"
+              >
+                <RefreshCw className="h-4 w-4" />
+                Generar con IA
+              </Button>
+            </>
+          )}
         </Card>
       </div>
     )
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 w-full">
       {/* Header Card con Controles */}
-      <Card>
+      <Card className="w-full">
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
@@ -85,12 +97,6 @@ export function ProposalTab({
                 Documento generado por IA listo para descargar
               </CardDescription>
             </div>
-            {scale < 1 && (
-              <Badge variant="secondary" className="gap-1">
-                <Info className="h-3 w-3" />
-                Escalado: {Math.round(scale * 100)}%
-              </Badge>
-            )}
           </div>
         </CardHeader>
         <CardContent>
@@ -129,18 +135,17 @@ export function ProposalTab({
       {/* Preview Card */}
       <Card
         ref={containerRef}
-        className={`relative overflow-hidden ${
-          isFullscreen ? 'fixed inset-4 z-50 overflow-auto' : ''
+        className={`relative w-full ${
+          isFullscreen ? 'fixed inset-4 z-50 overflow-auto' : 'min-h-[600px] overflow-x-auto'
         }`}
       >
-        <CardContent className="p-0">
+        <CardContent className="p-0 w-full">
           <div 
             className="w-full"
             style={{ 
               transform: `scale(${scale})`,
-              transformOrigin: 'top center',
-              transition: 'transform 0.3s ease',
-              contain: 'layout style paint'
+              transformOrigin: 'top left',
+              transition: 'transform 0.3s ease'
             }}
           >
             <div 
@@ -148,8 +153,9 @@ export function ProposalTab({
               className="proposal-content-wrapper bg-background"
               style={{ 
                 width: '100%',
+                minWidth: '100%',
                 padding: '3rem',
-                isolation: 'isolate'
+                boxSizing: 'border-box'
               }}
               dangerouslySetInnerHTML={{ __html: htmlContent }}
             />
@@ -170,8 +176,8 @@ export function ProposalTab({
       </Card>
 
       {/* Footer Info Card */}
-      <Card>
-        <CardContent className="p-4">
+      <Card className="w-full">
+        <CardContent className="p-4 w-full">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Info className="h-4 w-4" />
             <span>
