@@ -12,12 +12,21 @@ export function middleware(request: NextRequest) {
   
   const { pathname } = request.nextUrl
   
+  // Debug logging
+  console.log('🔒 Middleware:', pathname)
+  console.log('   Access token:', accessToken ? 'EXISTS' : 'MISSING')
+  console.log('   Refresh token:', refreshToken ? 'EXISTS' : 'MISSING')
+  
   // Check if current path is a protected route
   const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route))
   const isAuthRoute = authRoutes.some(route => pathname.startsWith(route))
   
+  console.log('   Is protected route:', isProtectedRoute)
+  console.log('   Is auth route:', isAuthRoute)
+  
   // If user is not authenticated and trying to access protected route
   if (isProtectedRoute && !accessToken && !refreshToken) {
+    console.log('❌ Middleware: No tokens, redirecting to /login')
     const loginUrl = new URL('/login', request.url)
     loginUrl.searchParams.set('redirect', pathname)
     return NextResponse.redirect(loginUrl)
@@ -25,6 +34,7 @@ export function middleware(request: NextRequest) {
   
   // If user is authenticated and trying to access auth routes, redirect to dashboard
   if (isAuthRoute && (accessToken || refreshToken)) {
+    console.log('✅ Middleware: Has tokens, redirecting to /dashboard')
     return NextResponse.redirect(new URL('/dashboard', request.url))
   }
   
@@ -32,12 +42,15 @@ export function middleware(request: NextRequest) {
   if (pathname === '/') {
     // If authenticated, redirect to dashboard
     if (accessToken || refreshToken) {
+      console.log('✅ Middleware: Root path with tokens, redirecting to /dashboard')
       return NextResponse.redirect(new URL('/dashboard', request.url))
     }
     // If not authenticated, redirect to login
+    console.log('❌ Middleware: Root path without tokens, redirecting to /login')
     return NextResponse.redirect(new URL('/login', request.url))
   }
   
+  console.log('✅ Middleware: Allowing request to continue')
   return NextResponse.next()
 }
 

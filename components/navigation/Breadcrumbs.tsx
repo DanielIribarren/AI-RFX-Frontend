@@ -32,6 +32,12 @@ export default function Breadcrumbs() {
       case "history":
         label = "Historial";
         break;
+      case "budget-settings":
+        label = "Configuración de Presupuesto";
+        break;
+      case "profile":
+        label = "Perfil";
+        break;
       case "rfx-result-wrapper-v2":
         label = "RFX";
         break;

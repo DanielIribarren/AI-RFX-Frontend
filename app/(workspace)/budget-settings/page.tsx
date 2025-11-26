@@ -6,20 +6,13 @@ import { Settings, Upload, Eye, AlertCircle, Loader2 } from "lucide-react"
 import BrandingUpload from "@/components/branding-upload"
 import BrandingPreview from "@/components/branding-preview"
 import { useAuth } from "@/contexts/AuthContext"
-import { useRouter } from "next/navigation"
-import { useEffect } from "react"
 
 export default function BudgetSettingsPage() {
-  const { user, loading, isAuthenticated } = useAuth()
-  const router = useRouter()
+  const { user, loading } = useAuth()
 
-  useEffect(() => {
-    if (!loading && !isAuthenticated) {
-      router.push("/login")
-    }
-  }, [loading, isAuthenticated, router])
-
-  if (loading) {
+  // El middleware ya maneja la protección de rutas
+  // Mostramos loading mientras se carga el usuario
+  if (loading || !user) {
     return (
       <div className="flex flex-1 items-center justify-center p-6">
         <div className="flex flex-col items-center gap-2">
@@ -28,10 +21,6 @@ export default function BudgetSettingsPage() {
         </div>
       </div>
     )
-  }
-
-  if (!user) {
-    return null
   }
 
   return (

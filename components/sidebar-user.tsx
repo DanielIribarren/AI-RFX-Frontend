@@ -50,7 +50,7 @@ export function SidebarUser() {
             className="w-full justify-start h-auto py-2 px-2 hover:bg-gray-100 rounded-lg group"
           >
             <div className="flex items-center gap-3 w-full">
-              <Avatar className="h-8 w-8">
+              <Avatar className="h-8 w-8 flex-shrink-0">
                 <AvatarImage src="" alt={user.full_name} />
                 <AvatarFallback className="bg-blue-600 text-white text-xs font-medium">
                   {getInitials(user.full_name)}
@@ -68,7 +68,7 @@ export function SidebarUser() {
             </div>
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-56">
+        <DropdownMenuContent side="right" align="end" className="w-56 mb-2">
           <DropdownMenuLabel>
             <div className="flex flex-col space-y-1">
               <p className="text-sm font-medium">{user.full_name}</p>
@@ -85,7 +85,7 @@ export function SidebarUser() {
           </DropdownMenuItem>
           <DropdownMenuItem onClick={handleNavigateToSettings}>
             <Settings className="mr-2 h-4 w-4" />
-            <span>Settings</span>
+            <span>Budget Settings</span>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={handleLogout} className="text-red-600">

@@ -49,6 +49,7 @@ body {
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
+
   .dark {
     --background: 0 0% 3.9%;
     --foreground: 0 0% 98%;
@@ -86,77 +87,128 @@ body {
 }
 
 @layer base {
+
   /* @apply directive is processed by Tailwind CSS */
   * {
-    @apply border-border; /* processed by Tailwind */
+    @apply border-border;
+    /* processed by Tailwind */
   }
+
   body {
-    @apply bg-background text-foreground; /* processed by Tailwind */
+    @apply bg-background text-foreground;
+    /* processed by Tailwind */
   }
 }
 
 /* ✅ NUEVO: Animaciones personalizadas para estados de guardado */
 @layer utilities {
+
   /* Animación de shake para errores */
   .animate-shake {
     animation: shake 0.5s ease-in-out;
   }
-  
+
   @keyframes shake {
-    0%, 100% { transform: translateX(0); }
-    25% { transform: translateX(-4px); }
-    75% { transform: translateX(4px); }
+
+    0%,
+    100% {
+      transform: translateX(0);
+    }
+
+    25% {
+      transform: translateX(-4px);
+    }
+
+    75% {
+      transform: translateX(4px);
+    }
   }
 
   /* Animación de glow para estados de éxito */
   .animate-glow {
     animation: glow 1s ease-in-out;
   }
-  
+
   @keyframes glow {
-    0%, 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
-    50% { box-shadow: 0 0 20px 2px rgba(34, 197, 94, 0.3); }
+
+    0%,
+    100% {
+      box-shadow: 0 0 0 0 rgba(34, 197, 94, 0);
+    }
+
+    50% {
+      box-shadow: 0 0 20px 2px rgba(34, 197, 94, 0.3);
+    }
   }
 
   /* Animación de pulso suave para estados de guardando */
   .animate-soft-pulse {
     animation: soft-pulse 2s ease-in-out infinite;
   }
-  
+
   @keyframes soft-pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.7; }
+
+    0%,
+    100% {
+      opacity: 1;
+    }
+
+    50% {
+      opacity: 0.7;
+    }
   }
 
   /* Animación de entrada desde arriba */
   .animate-slide-down {
     animation: slide-down 0.3s ease-out;
   }
-  
+
   @keyframes slide-down {
-    0% { transform: translateY(-10px); opacity: 0; }
-    100% { transform: translateY(0); opacity: 1; }
+    0% {
+      transform: translateY(-10px);
+      opacity: 0;
+    }
+
+    100% {
+      transform: translateY(0);
+      opacity: 1;
+    }
   }
 
   /* Animación de salida hacia arriba */
   .animate-slide-up {
     animation: slide-up 0.3s ease-in;
   }
-  
+
   @keyframes slide-up {
-    0% { transform: translateY(0); opacity: 1; }
-    100% { transform: translateY(-10px); opacity: 0; }
+    0% {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    100% {
+      transform: translateY(-10px);
+      opacity: 0;
+    }
   }
 
   /* Animación de éxito con escalado */
   .animate-success-scale {
     animation: success-scale 0.6s ease-out;
   }
-  
+
   @keyframes success-scale {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.05); }
-    100% { transform: scale(1); }
+    0% {
+      transform: scale(1);
+    }
+
+    50% {
+      transform: scale(1.05);
+    }
+
+    100% {
+      transform: scale(1);
+    }
   }
 
   /* Transiciones suaves para cambios de color */
@@ -168,7 +220,7 @@ body {
   .field-modified {
     position: relative;
   }
-  
+
   .field-modified::before {
     content: '';
     position: absolute;
@@ -192,7 +244,7 @@ body {
   display: block !important;
 }
 
-.proposal-content-wrapper > * {
+.proposal-content-wrapper>* {
   /* Todos los elementos hijos respetan el ancho del contenedor */
   max-width: 100% !important;
   width: auto !important;
@@ -267,7 +319,7 @@ body {
   padding: 0 !important;
 }
 
-.proposal-content > *,
+.proposal-content>*,
 .proposal-content table,
 .proposal-content div,
 .proposal-content section,
@@ -294,6 +346,7 @@ body {
       opacity: 0;
       transform: translateY(8px);
     }
+
     to {
       opacity: 1;
       transform: translateY(0);

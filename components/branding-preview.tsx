@@ -83,6 +83,21 @@ export default function BrandingPreview({ companyId }: BrandingPreviewProps) {
     try {
       console.log('[BrandingPreview] Loading config for company:', companyId)
       const response = await fetch(`/api/branding/${companyId}`)
+      
+      // Si el backend no responde o hay error de red, es un error real
+      if (!response.ok) {
+        // Si es 404, significa que no hay configuración (no es error)
+        if (response.status === 404) {
+          console.log('[BrandingPreview] No branding configured (404)')
+          setConfig(null)
+          setIsLoading(false)
+          return
+        }
+        
+        // Otros errores sí son problemas reales
+        throw new Error(`Error ${response.status}: ${response.statusText}`)
+      }
+      
       const result = await response.json()
       
       console.log('[BrandingPreview] Response:', {
@@ -91,7 +106,7 @@ export default function BrandingPreview({ companyId }: BrandingPreviewProps) {
         result
       })
 
-      if (response.ok && result.status === 'success') {
+      if (result.status === 'success') {
         if (result.has_branding) {
           // Transformar URLs del backend a URLs del API de Next.js
           const transformedConfig = {
@@ -110,15 +125,25 @@ export default function BrandingPreview({ companyId }: BrandingPreviewProps) {
           })
           setConfig(transformedConfig)
         } else {
-          console.log('[BrandingPreview] No branding configured')
+          console.log('[BrandingPreview] No branding configured (has_branding: false)')
           setConfig(null)
         }
+      } else if (result.status === 'not_found') {
+        // Backend devuelve explícitamente que no hay configuración
+        console.log('[BrandingPreview] No branding configured (not_found)')
+        setConfig(null)
       } else {
+        // Otros estados son errores reales
         throw new Error(result.message || 'Error al cargar configuración')
       }
     } catch (error) {
       console.error('[BrandingPreview] Error loading branding config:', error)
-      setError(error instanceof Error ? error.message : 'Error desconocido')
+      // Solo mostrar error si es un problema de red o del backend
+      if (error instanceof TypeError && error.message.includes('fetch')) {
+        setError('No se pudo conectar con el servidor. Verifique su conexión.')
+      } else {
+        setError(error instanceof Error ? error.message : 'Error desconocido al cargar configuración')
+      }
       setConfig(null)
     } finally {
       setIsLoading(false)
@@ -200,15 +225,15 @@ export default function BrandingPreview({ companyId }: BrandingPreviewProps) {
 
   if (!config || !config.has_branding) {
     return (
-      <div className="text-center p-8 border-2 border-dashed border-gray-300 rounded-lg">
+      <div className="text-center p-8 border-2 border-dashed border-gray-300 rounded-lg bg-gray-50">
         <div className="space-y-3">
-          <div className="mx-auto w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center">
-            <Layout className="h-6 w-6 text-gray-400" />
+          <div className="mx-auto w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+            <Layout className="h-6 w-6 text-blue-500" />
           </div>
           <div>
-            <h3 className="text-sm font-medium text-gray-900">Sin configuración</h3>
-            <p className="text-sm text-gray-500">
-              Suba un logo y template para ver la vista previa aquí
+            <h3 className="text-sm font-medium text-gray-900">No hay configuración de presupuesto</h3>
+            <p className="text-sm text-gray-500 mt-1">
+              Suba un logo y template en la sección de la izquierda para personalizar sus presupuestos
             </p>
           </div>
         </div>

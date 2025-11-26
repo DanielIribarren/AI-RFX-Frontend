@@ -21,25 +21,39 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [loading, setLoading] = useState(true)
 
   const loadUser = async () => {
+    console.log('🔄 AuthContext: Loading user...')
+    
     // First, try to refresh token if needed
     const tokenRefreshed = await authService.refreshTokenIfNeeded()
+    console.log('🔄 AuthContext: Token refresh result:', tokenRefreshed)
     
     if (tokenRefreshed && authService.isAuthenticated()) {
+      console.log('✅ AuthContext: Token is valid, fetching user...')
       try {
         const currentUser = await authService.getCurrentUser()
+        console.log('✅ AuthContext: User loaded:', currentUser.email)
         setUser(currentUser)
       } catch (error) {
-        console.error('Failed to load user:', error)
+        console.error('❌ AuthContext: Failed to load user:', error)
         // Don't logout immediately - the token might still be valid
         // The interceptor will handle token refresh if needed
         // Only clear user state, but keep tokens for retry
         setUser(null)
       }
     } else {
-      // Token is expired or doesn't exist
+      console.log('❌ AuthContext: Token is expired or missing')
+      console.log('💡 AuthContext: User needs to login again')
+      // Token is expired or doesn't exist - clear everything
+      authService.clearTokens()
+      // Clear cookies too
+      if (typeof window !== 'undefined') {
+        document.cookie = 'access_token=; path=/; max-age=0'
+        document.cookie = 'refresh_token=; path=/; max-age=0'
+      }
       setUser(null)
     }
     setLoading(false)
+    console.log('✅ AuthContext: Loading complete')
   }
 
   useEffect(() => {

@@ -326,32 +326,52 @@ export const authService = {
 
   // Proactively refresh token if it's about to expire
   async refreshTokenIfNeeded(): Promise<boolean> {
-    if (typeof window === 'undefined') return false
+    if (typeof window === 'undefined') {
+      console.log('🔍 refreshTokenIfNeeded: Running on server side, skipping')
+      return false
+    }
     
     const token = localStorage.getItem('access_token')
     const refreshToken = localStorage.getItem('refresh_token')
     
-    if (!token || !refreshToken) return false
+    console.log('🔍 refreshTokenIfNeeded: Checking tokens...')
+    console.log('   Access token exists:', !!token)
+    console.log('   Refresh token exists:', !!refreshToken)
+    
+    if (!token || !refreshToken) {
+      console.log('❌ refreshTokenIfNeeded: Missing tokens')
+      return false
+    }
     
     // Check if token is expired or about to expire
     if (isTokenExpired(token)) {
+      console.log('⚠️ refreshTokenIfNeeded: Token expired, attempting refresh...')
       try {
         const { data } = await axios.post<AuthResponse>(`${API_BASE_URL}/refresh`, {
           refresh_token: refreshToken,
         })
         if (data.access_token) {
+          console.log('✅ refreshTokenIfNeeded: Token refreshed successfully')
           localStorage.setItem('access_token', data.access_token)
           if (data.refresh_token) {
             localStorage.setItem('refresh_token', data.refresh_token)
           }
+          // Update cookies as well
+          document.cookie = `access_token=${data.access_token}; path=/; max-age=86400; SameSite=Lax`
+          if (data.refresh_token) {
+            document.cookie = `refresh_token=${data.refresh_token}; path=/; max-age=604800; SameSite=Lax`
+          }
           return true
         }
+        console.log('❌ refreshTokenIfNeeded: No access token in response')
+        return false
       } catch (error) {
-        console.error('Failed to refresh token:', error)
+        console.error('❌ refreshTokenIfNeeded: Failed to refresh token:', error)
         return false
       }
     }
     
+    console.log('✅ refreshTokenIfNeeded: Token is still valid')
     return true // Token is still valid
   },
 }
