@@ -762,6 +762,84 @@ export const api = {
       throw new APIError('Network error checking health', 0, 'NETWORK_ERROR');
     }
   },
+
+  // ==================== CHAT CONVERSACIONAL ====================
+  
+  chat: {
+    // Send message to chat
+    async send(rfxId: string, message: string, context: any, files?: File[]): Promise<any> {
+      try {
+        // Preparar payload JSON (backend espera JSON, no FormData)
+        const payload = {
+          message,
+          context,
+          files: files && files.length > 0 ? await Promise.all(
+            files.map(async (file) => ({
+              name: file.name,
+              type: file.type,
+              content: await file.text() // Para archivos de texto
+            }))
+          ) : []
+        };
+        
+        const response = await fetchWithAuth(`${API_BASE_URL}/api/rfx/${rfxId}/chat`, {
+          method: 'POST',
+          body: JSON.stringify(payload)
+        });
+        
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new APIError(
+            errorData.message || `Error al enviar mensaje: ${response.statusText}`, 
+            response.status
+          );
+        }
+        
+        return await response.json();
+      } catch (error) {
+        if (error instanceof APIError) {
+          throw error;
+        }
+        throw new APIError('Network error sending chat message', 0, 'NETWORK_ERROR');
+      }
+    },
+    
+    // Get chat history
+    async getHistory(rfxId: string, limit: number = 50, offset: number = 0): Promise<any> {
+      try {
+        const response = await fetchWithAuth(
+          `${API_BASE_URL}/api/rfx/${rfxId}/chat/history?limit=${limit}&offset=${offset}`
+        );
+        
+        return handleResponse<any>(response);
+      } catch (error) {
+        if (error instanceof APIError) {
+          throw error;
+        }
+        throw new APIError('Network error fetching chat history', 0, 'NETWORK_ERROR');
+      }
+    },
+    
+    // Confirm option
+    async confirm(rfxId: string, optionValue: string, context: any): Promise<any> {
+      try {
+        const response = await fetchWithAuth(`${API_BASE_URL}/api/rfx/${rfxId}/chat/confirm`, {
+          method: 'POST',
+          body: JSON.stringify({
+            option_value: optionValue,
+            context
+          })
+        });
+        
+        return handleResponse<any>(response);
+      } catch (error) {
+        if (error instanceof APIError) {
+          throw error;
+        }
+        throw new APIError('Network error confirming option', 0, 'NETWORK_ERROR');
+      }
+    }
+  }
 };
 
 // Helper function for using the API in React components

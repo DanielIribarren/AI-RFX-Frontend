@@ -1,8 +1,11 @@
 {
   "mcpServers": {
-      "shadcn": {
-        "serverUrl": "https://www.shadcn.io/api/mcp"
+    "shadcn": {
+      "serverUrl": "https://www.shadcn.io/api/mcp",
+      "registries": {
+        "@acme": "https://acme.com/r/{name}.json"
       }
     }
   }
+}
 

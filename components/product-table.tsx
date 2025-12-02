@@ -3,7 +3,8 @@
 import { useState } from "react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { CheckCircle, X, Trash2, AlertTriangle, FileText, Lightbulb } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
+import { CheckCircle, X, Trash2, AlertTriangle, FileText, Lightbulb, Sparkles, Edit3 } from "lucide-react"
 import { cn } from "@/lib/utils"
 function InlineEditableText({
   value,
@@ -86,6 +87,9 @@ interface ProductoIndividual {
   ganancia_unitaria?: number
   margen_ganancia?: number
   total_profit?: number // Campo adicional del backend
+  // Campos para animaciones del chat
+  isNew?: boolean
+  isModified?: boolean
 }
 
 interface ProductTableProps {
@@ -271,12 +275,28 @@ export default function ProductTable({
                 "grid grid-cols-12 gap-3 items-center py-3 px-4 border rounded-lg transition-all duration-200",
                 needsPriceReview 
                   ? "border-amber-200 bg-amber-50/50 hover:border-amber-300 hover:bg-amber-50/80" 
-                  : "border-gray-100 hover:border-gray-200 hover:bg-gray-50/30"
+                  : "border-gray-100 hover:border-gray-200 hover:bg-gray-50/30",
+                producto.isNew && "animate-glow-blue",
+                producto.isModified && "animate-glow-yellow"
               )}
             >
               {/* Nombre del producto - 3 columnas */}
               <div className="col-span-3">
-                <div className="text-sm font-medium text-gray-900">{producto.nombre}</div>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-sm font-medium text-gray-900">{producto.nombre}</span>
+                  {producto.isNew && (
+                    <Badge variant="secondary" className="text-xs bg-blue-100 text-blue-700 border-blue-200">
+                      <Sparkles className="h-3 w-3 mr-1" />
+                      Nuevo
+                    </Badge>
+                  )}
+                  {producto.isModified && !producto.isNew && (
+                    <Badge variant="outline" className="text-xs bg-yellow-50 text-yellow-700 border-yellow-200">
+                      <Edit3 className="h-3 w-3 mr-1" />
+                      Modificado
+                    </Badge>
+                  )}
+                </div>
                 {producto.isQuantityModified && (
                   <div className="text-xs text-blue-600 font-medium mt-1">Cantidad modificada</div>
                 )}
