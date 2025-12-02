@@ -4,20 +4,21 @@ import { useState, useEffect } from "react"
 import { api, RFXResponse, ProposalRequest, useAPICall } from "@/lib/api"
 import { useCurrency } from "@/hooks/use-currency"
 import { pricingApiV2, pricingConverter, pricingDefaults } from "@/lib/api-pricing-v2"
-import { 
+import {
   getFrontendPricingConfig,
   updateFrontendPricingConfig,
-  handleBackendPricingError 
+  handleBackendPricingError
 } from "@/lib/api-pricing-backend-real"
 import { validateAndSecureUUID } from "@/lib/utils"
-import type { 
-  PricingConfigFormData, 
-  RfxPricingConfiguration, 
+import type {
+  PricingConfigFormData,
+  RfxPricingConfiguration,
   PricingCalculationResult,
-  LegacyPricingConfig 
+  LegacyPricingConfig
 } from "@/types/pricing-v2"
 import RFXDataView from "@/components/rfx-data-view"
 import BudgetGenerationView from "@/components/budget-generation-view"
+import { RFXUpdateChatPanel, type RFXChange } from "@/components/rfx-update-chat"
 
 interface ExtractedData {
   solicitante: string
@@ -58,12 +59,12 @@ interface RfxResultsWrapperV2Props {
   onNavigateToHistory?: () => void
   backendData?: RFXResponse
   onProposalGenerated?: () => Promise<void>
-  
+
   // V2.2 specific props
   enableAdvancedPricing?: boolean
   enableTaxConfiguration?: boolean
   useApiCalculations?: boolean
-  
+
   // Real Backend Integration
   useRealBackend?: boolean // Toggle between mock and real backend V2.2
 }
@@ -91,31 +92,34 @@ const logger = {
   }
 }
 
-export default function RfxResultsWrapperV2({ 
-  onNewRfx, 
-  onFinalize, 
-  onNavigateToHistory, 
-  backendData, 
+export default function RfxResultsWrapperV2({
+  onNewRfx,
+  onFinalize,
+  onNavigateToHistory,
+  backendData,
   onProposalGenerated,
   enableAdvancedPricing = true,
   enableTaxConfiguration = false,
   useApiCalculations = true,
   useRealBackend = false
 }: RfxResultsWrapperV2Props) {
-  
+
   // Current view state
   const [currentView, setCurrentView] = useState<ViewMode>(ViewMode.DATA)
-  
+
+  // Chat panel state
+  const [isChatOpen, setIsChatOpen] = useState(false)
+
   // Estado para mostrar mensaje si no hay datos
   const [hasData, setHasData] = useState(false)
-  
+
   // Helper function to safely extract data with validation - V2.0 with legacy fallback
   const safeExtractData = (data: any) => {
     if (!data || typeof data !== 'object') return null
-    
+
     // Extract metadata with V2.0 and legacy fallback
     const metadata = data.metadata_json || data.metadatos || {}
-    
+
     // Convert products array to display string
     const formatProducts = (products: any) => {
       if (Array.isArray(products)) {
@@ -128,21 +132,21 @@ export default function RfxResultsWrapperV2({
       }
       return ''
     }
-    
+
     return {
       solicitante: (data as any).requester_name || (data as any).nombre_solicitante || (data as any).nombre_cliente || metadata.nombre_solicitante || '',
       email: data.email || metadata.email || '',
       productos: formatProducts((data as any).products) || formatProducts((data as any).productos) || '',
       fechaEntrega: (data as any).delivery_date || (data as any).fecha || metadata.fecha || '',
       lugarEntrega: (data as any).location || (data as any).lugar || metadata.lugar || '',
-      
+
       // Company data - prefer direct fields, fallback to metadata
       nombreEmpresa: (data as any).company_name || (data as any).nombre_empresa || metadata.nombre_empresa || '',
       emailEmpresa: (data as any).email_empresa || metadata.email_empresa || '',
       telefonoEmpresa: (data as any).telefono_empresa || metadata.telefono_empresa || '',
       telefonoSolicitante: (data as any).telefono_solicitante || metadata.telefono_solicitante || '',
       cargoSolicitante: (data as any).cargo_solicitante || metadata.cargo_solicitante || '',
-      
+
       // Requirements específicos del cliente
       requirements: (data as any).requirements || metadata.requirements || '',
       requirementsConfidence: (data as any).requirements_confidence || metadata.requirements_confidence || 0.0
@@ -151,7 +155,7 @@ export default function RfxResultsWrapperV2({
 
   const [extractedData, setExtractedData] = useState<ExtractedData>(() => {
     logger.debug("RfxResultsWrapperV2 Initial State", backendData)
-    
+
     if (backendData?.data) {
       const safData = safeExtractData(backendData.data)
       if (safData) {
@@ -160,7 +164,7 @@ export default function RfxResultsWrapperV2({
         return safData
       }
     }
-    
+
     logger.debug("No initial data found, using empty state")
     return {
       solicitante: "",
@@ -250,18 +254,18 @@ export default function RfxResultsWrapperV2({
   const { handleAPIError } = useAPICall()
 
   // Hook para manejo de monedas
-  const { 
-    selectedCurrency, 
-    setCurrency, 
-    getCurrencyInfo, 
-    convertPrice, 
-    formatPrice, 
-    formatPriceWithSymbol 
+  const {
+    selectedCurrency,
+    setCurrency,
+    getCurrencyInfo,
+    convertPrice,
+    formatPrice,
+    formatPriceWithSymbol
   } = useCurrency("EUR")
 
-  
+
   // ===== V2.2 PRICING CONFIG FUNCTIONS =====
-  
+
   // Load pricing configuration from API
   const loadPricingConfig = async (rfxId: string) => {
     if (!enableAdvancedPricing) return
@@ -272,7 +276,7 @@ export default function RfxResultsWrapperV2({
         // Use real backend V2.2 API
         logger.info("🎯 Loading configuration from REAL backend V2.2", rfxId)
         const backendConfig = await getFrontendPricingConfig(rfxId)
-        
+
         // Convert to component format
         const formData: PricingConfigFormData = {
           coordination_enabled: backendConfig.coordination_enabled,
@@ -280,33 +284,33 @@ export default function RfxResultsWrapperV2({
           coordination_rate: backendConfig.coordination_rate,
           coordination_description: backendConfig.coordination_description || 'Coordinación y logística',
           coordination_apply_to_subtotal: true, // Default
-          
+
           cost_per_person_enabled: backendConfig.cost_per_person_enabled,
           headcount: backendConfig.headcount,
           headcount_source: 'manual', // Default
           calculation_base: backendConfig.calculation_base,
           display_in_proposal: true, // Default
           cost_per_person_description: 'Cálculo de costo individual',
-          
+
           taxes_enabled: backendConfig.taxes_enabled,
           tax_name: backendConfig.tax_name,
           tax_rate: backendConfig.tax_rate,
           tax_apply_to_subtotal: false, // Default
           tax_apply_to_coordination: true // Default
         }
-        
+
         setPricingConfigV2(formData)
         setLegacyPricingConfig(pricingConverter.fromV2(formData))
-        
+
         logger.info("✅ Real backend configuration loaded successfully", formData)
       } else {
         // Use legacy/mock API
         logger.info("💻 Loading configuration from legacy API", rfxId)
         const response = await pricingApiV2.getConfig(rfxId)
-        
+
         if (response.success && response.data) {
           const config = response.data
-          
+
           // Convert API response to form data
           const formData: PricingConfigFormData = {
             // Coordination
@@ -315,7 +319,7 @@ export default function RfxResultsWrapperV2({
             coordination_rate: config.coordination?.rate || 0.18,
             coordination_description: config.coordination?.description || 'Coordinación y logística',
             coordination_apply_to_subtotal: config.coordination?.apply_to_subtotal || true,
-            
+
             // Cost per person
             cost_per_person_enabled: config.cost_per_person?.is_enabled || false,
             headcount: config.cost_per_person?.headcount || 120,
@@ -323,7 +327,7 @@ export default function RfxResultsWrapperV2({
             calculation_base: config.cost_per_person?.calculation_base || 'final_total',
             display_in_proposal: config.cost_per_person?.display_in_proposal || true,
             cost_per_person_description: config.cost_per_person?.description || 'Cálculo de costo individual',
-            
+
             // Tax
             taxes_enabled: config.tax?.is_enabled || false,
             tax_name: config.tax?.tax_name || 'IVA',
@@ -331,20 +335,20 @@ export default function RfxResultsWrapperV2({
             tax_apply_to_subtotal: config.tax?.apply_to_subtotal || false,
             tax_apply_to_coordination: config.tax?.apply_to_subtotal_with_coordination || true
           }
-          
+
           setPricingConfigV2(formData)
           setPricingConfigId(config.id || null)
-          
+
           // Update legacy config for backward compatibility
           setLegacyPricingConfig(pricingConverter.fromV2(formData))
-          
+
           logger.info("Legacy configuration loaded successfully", formData)
         } else {
           logger.info("No pricing configuration found, using defaults")
         }
       }
     } catch (error) {
-      const errorMessage = useRealBackend 
+      const errorMessage = useRealBackend
         ? handleBackendPricingError(error)
         : "Error loading pricing configuration"
       logger.error(errorMessage, error)
@@ -363,25 +367,25 @@ export default function RfxResultsWrapperV2({
       if (useRealBackend) {
         // Use real backend V2.2 API
         logger.info("🎯 Saving configuration to REAL backend V2.2", rfxId)
-        
+
         // Convert to backend format (FrontendPricingFormData)
         const backendConfig = {
           coordination_enabled: pricingConfigV2.coordination_enabled,
           coordination_type: pricingConfigV2.coordination_type,
           coordination_rate: pricingConfigV2.coordination_rate,
           coordination_description: pricingConfigV2.coordination_description,
-          
+
           cost_per_person_enabled: pricingConfigV2.cost_per_person_enabled,
           headcount: pricingConfigV2.headcount,
           calculation_base: pricingConfigV2.calculation_base,
-          
+
           taxes_enabled: pricingConfigV2.taxes_enabled,
           tax_name: pricingConfigV2.tax_name,
           tax_rate: pricingConfigV2.tax_rate
         }
 
         const success = await updateFrontendPricingConfig(rfxId, backendConfig)
-        
+
         if (success) {
           logger.info("✅ Real backend configuration saved successfully", backendConfig)
           return true
@@ -392,7 +396,7 @@ export default function RfxResultsWrapperV2({
       } else {
         // Use legacy/mock API
         logger.info("💻 Saving configuration to legacy API", rfxId)
-        
+
         // Convert form data to API format
         const configData = {
           rfx_id: rfxId,
@@ -435,7 +439,7 @@ export default function RfxResultsWrapperV2({
         }
       }
     } catch (error) {
-      const errorMessage = useRealBackend 
+      const errorMessage = useRealBackend
         ? handleBackendPricingError(error)
         : "Error saving pricing configuration"
       logger.error(errorMessage, error)
@@ -448,11 +452,11 @@ export default function RfxResultsWrapperV2({
   // Handle pricing config change (V2.2)
   const handlePricingConfigChange = (newConfig: PricingConfigFormData) => {
     setPricingConfigV2(newConfig)
-    
+
     // Update legacy config for backward compatibility
     const legacyUpdate = pricingConverter.fromV2(newConfig)
     setLegacyPricingConfig(legacyUpdate)
-    
+
     logger.debug("Pricing configuration V2.2 updated", newConfig)
   }
 
@@ -460,7 +464,7 @@ export default function RfxResultsWrapperV2({
   const handleCalculationUpdate = (result: PricingCalculationResult) => {
     setApiCalculationResult(result)
     setCostoTotal(result.final_total)
-    
+
     logger.debug("API calculation result received", result)
   }
 
@@ -470,7 +474,7 @@ export default function RfxResultsWrapperV2({
     try {
       // Actualizar estado local inmediatamente
       setExtractedData(prev => ({ ...prev, [field]: value }))
-      
+
       // Persistir en backend si hay ID disponible
       if (!backendData?.data?.id) return
       // 'productos' no es actualizable en backend; mantener solo local
@@ -490,7 +494,7 @@ export default function RfxResultsWrapperV2({
 
       await api.updateRFXField(backendData.data.id, field as string, String(normalizedValue))
       console.log(`✅ Field ${field} persisted to backend:`, normalizedValue)
-      
+
     } catch (error) {
       console.error(`Error saving field ${field}:`, error)
       throw error
@@ -652,16 +656,16 @@ export default function RfxResultsWrapperV2({
 
   const handleRegenerate = async () => {
     if (!backendData?.data) return
-    
+
     // Determinar si es primera generación o regeneración
     const isFirstGeneration = !propuesta || propuesta.trim().length === 0
-    
+
     if (isFirstGeneration) {
       setIsLoadingProposal(true)
     } else {
       setIsRegenerating(true)
     }
-    
+
     try {
       // Verificar si los costos ya están guardados en BD
       if (productosIndividuales.length > 0) {
@@ -677,17 +681,17 @@ export default function RfxResultsWrapperV2({
           return
         }
       }
-      
+
       // Guardar configuración de pricing V2.2 antes de generar propuesta
       if (enableAdvancedPricing) {
         await savePricingConfig()
       }
-      
+
       // Enviar costos para cumplir validación Pydantic
-      const costsForValidation = productosIndividuales.length > 0 
-        ? productosIndividuales.map(p => p.precio || 0) 
+      const costsForValidation = productosIndividuales.length > 0
+        ? productosIndividuales.map(p => p.precio || 0)
         : [1]
-      
+
       const proposalRequest: ProposalRequest = {
         rfx_id: backendData.data.id,
         costs: costsForValidation,
@@ -699,7 +703,7 @@ export default function RfxResultsWrapperV2({
           additional_notes: "Propuesta generada con costos reales del usuario"
         }
       }
-      
+
       const response = await api.generateProposal(proposalRequest)
 
       if (response.proposal) {
@@ -714,7 +718,7 @@ export default function RfxResultsWrapperV2({
         setProposalCosts(response.proposal.itemized_costs || [])
         setProposalStatus(response.proposal.status || "")
         setProposalGeneratedAt(response.proposal.created_at || "")
-        
+
         // Call the callback to refresh sidebar and history
         if (onProposalGenerated) {
           await onProposalGenerated()
@@ -722,9 +726,9 @@ export default function RfxResultsWrapperV2({
       }
     } catch (error) {
       console.error("Error regenerating proposal:", error)
-      
+
       const errorInfo = handleAPIError(error)
-      
+
       if (error instanceof Error && error.message.includes("404")) {
         alert("RFX no encontrado. Por favor recargue la página e intente nuevamente.")
       } else if (error instanceof Error && error.message.includes("500")) {
@@ -753,10 +757,10 @@ export default function RfxResultsWrapperV2({
       // Validar datos del cliente para el nombre del archivo
       const clientName = extractedData.solicitante || 'cliente'
       const rfxId = backendData?.data?.id || 'unknown'
-      
+
       logger.info("🎯 Enviando HTML del preview directamente al backend para conversión a PDF")
       logger.debug("📄 HTML content length:", propuesta.length)
-      
+
       // Preparar datos estructurados adicionales para el backend
       const structuredData = {
         client_info: {
@@ -791,46 +795,46 @@ export default function RfxResultsWrapperV2({
           structured_data: structuredData
         })
       })
-      
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => null)
         throw new Error(errorData?.message || `Error del servidor: ${response.status}`)
       }
-      
+
       const blob = await response.blob()
-      
+
       if (blob.size === 0) {
         throw new Error("El archivo descargado está vacío")
       }
-      
+
       // Crear link de descarga
       const url = URL.createObjectURL(blob)
       const element = document.createElement("a")
       element.href = url
-      
+
       // Determinar extensión basada en el tipo de contenido
       const isHTML = blob.type.includes('html') || blob.type.includes('text')
       const extension = isHTML ? 'html' : 'pdf'
       const fileName = `propuesta-${clientName.replace(/\s+/g, "-").toLowerCase()}.${extension}`
-      
+
       element.download = fileName
       document.body.appendChild(element)
       element.click()
       document.body.removeChild(element)
       URL.revokeObjectURL(url)
-      
+
       // Mostrar mensaje apropiado
       if (isHTML) {
         alert(`PDF no disponible temporalmente. Se descargó como HTML: ${fileName}\n\nPara convertir a PDF:\n1. Abre el archivo HTML en tu navegador\n2. Presiona Ctrl+P (o Cmd+P en Mac)\n3. Selecciona "Guardar como PDF"\n4. Ajusta configuración para A4 si es necesario`)
       } else {
         alert(`Propuesta descargada exitosamente como PDF: ${fileName}`)
       }
-      
+
     } catch (error) {
       console.error("❌ Error downloading proposal:", error)
-      
+
       let errorMessage = "Error desconocido al descargar la propuesta"
-      
+
       if (error instanceof Error) {
         if (error.message.includes("html_content is required")) {
           errorMessage = "No se encontró contenido HTML. Genere la propuesta primero."
@@ -842,7 +846,7 @@ export default function RfxResultsWrapperV2({
           errorMessage = error.message
         }
       }
-      
+
       alert(`No se pudo descargar la propuesta\n\nError: ${errorMessage}\n\nSoluciones:\n1. Verifica que la propuesta esté generada (visible en pantalla)\n2. Revisa tu conexión a internet\n3. Si persiste, contacta al administrador`)
     }
   }
@@ -856,26 +860,26 @@ export default function RfxResultsWrapperV2({
       // Guardar TODOS los datos editados antes de finalizar
       if (backendData?.data?.id) {
         console.log("💾 Guardando todos los datos editados...")
-        
+
         // 1. Guardar configuración de pricing V2.2
         if (enableAdvancedPricing) {
           await savePricingConfig()
         }
-        
+
         // 2. Guardar datos generales del RFX
         const updatableFields = [
           "solicitante",
-          "email", 
+          "email",
           "nombreEmpresa",
           "emailEmpresa",
-          "telefonoEmpresa", 
+          "telefonoEmpresa",
           "telefonoSolicitante",
           "cargoSolicitante",
           "fechaEntrega",
           "lugarEntrega",
           "requirements"
         ]
-        
+
         console.log("📝 Guardando datos generales permitidos:", extractedData)
         for (const [field, value] of Object.entries(extractedData)) {
           if (updatableFields.includes(field) && value && value.toString().trim()) {
@@ -901,7 +905,7 @@ export default function RfxResultsWrapperV2({
 
         // 4. Guardar moneda seleccionada
         console.log("💱 Guardando moneda seleccionada:", selectedCurrency)
-        
+
         // 5. Finalizar RFX en el backend
         await api.finalizeRFX(backendData.data.id)
         console.log("✅ RFX finalizado exitosamente en backend")
@@ -918,7 +922,7 @@ export default function RfxResultsWrapperV2({
       onNewRfx()
     } catch (error) {
       console.error("❌ Error finalizando RFX:", error)
-      
+
       // Continuar con el flujo aunque falle la finalización
       if (onFinalize) {
         onFinalize(extractedData, propuesta)
@@ -937,14 +941,14 @@ export default function RfxResultsWrapperV2({
     console.log("🔄 DEBUG: useEffect triggered in RfxResultsWrapperV2")
     console.log("📦 DEBUG: backendData in useEffect:", backendData)
     console.log("📊 DEBUG: backendData status:", backendData?.status)
-    
+
     if (backendData?.status === "success" && backendData.data) {
       const data = backendData.data
-      
+
       // Fetch complete data with real product IDs if this is initial processing
       const initializeData = async () => {
         let completeData = data
-        
+
         // If we have an RFX ID, fetch complete data to get real product IDs
         if (data.id) {
           const fetchedData = await fetchCompleteRFXData(data.id)
@@ -952,34 +956,34 @@ export default function RfxResultsWrapperV2({
             completeData = fetchedData
             console.log("✅ DEBUG: Using complete data with real product IDs")
           }
-          
+
           // Load pricing configuration V2.2
           if (enableAdvancedPricing) {
             await loadPricingConfig(data.id)
           }
         }
-      
+
         console.log("✅ DEBUG: Success data found, updating extractedData...")
         console.log("📦 DEBUG: Success backend data object:", completeData)
-        
+
         // Extract validation metadata from V2.0 structure
         const metadataV2 = (completeData as any).metadata_json || (completeData as any).metadatos || {}
         const validationStatus = metadataV2.validation_status || {}
         const textoOriginal = metadataV2.texto_original_relevante || ""
-        
+
         console.log("📊 DEBUG: Validation status:", validationStatus)
         console.log("📄 DEBUG: Original text:", textoOriginal)
-        
+
         setValidationMetadata(validationStatus)
         setOriginalText(textoOriginal)
-        
+
         // Extract real data from V2.0 backend
         const metadata = metadataV2
         const newExtractedData = {
           solicitante: (completeData as any).requester_name || (completeData as any).nombre_solicitante || (completeData as any).nombre_cliente || metadata.nombre_solicitante || "",
           email: completeData.email || metadata.email || "",
-          productos: ((completeData as any).products?.map((p: any) => `${p.product_name || p.nombre} (${p.quantity || p.cantidad} ${p.unit || p.unidad})`).join(', ')) 
-                    || ((completeData as any).productos?.map((p: any) => `${p.nombre} (${p.cantidad} ${p.unidad})`).join(', ')) || "",
+          productos: ((completeData as any).products?.map((p: any) => `${p.product_name || p.nombre} (${p.quantity || p.cantidad} ${p.unit || p.unidad})`).join(', '))
+            || ((completeData as any).productos?.map((p: any) => `${p.nombre} (${p.cantidad} ${p.unidad})`).join(', ')) || "",
           fechaEntrega: (completeData as any).delivery_date || (completeData as any).fecha || metadata.fecha || "",
           lugarEntrega: (completeData as any).location || (completeData as any).lugar || metadata.lugar || "",
           // Company data with fallbacks
@@ -992,42 +996,42 @@ export default function RfxResultsWrapperV2({
           requirements: (completeData as any).requirements || metadata.requirements || "",
           requirementsConfidence: (completeData as any).requirements_confidence || metadata.requirements_confidence || 0.0
         }
-        
+
         console.log("🔄 DEBUG: New extracted data to set:", newExtractedData)
         setExtractedData(newExtractedData)
-        
+
         // Extract individual products for pricing inputs
         const individualProducts = extractIndividualProducts(completeData)
-        
+
         console.log("✅ DEBUG: Setting productos individuales:", {
           completeDataProducts: (completeData as any).products,
           extractedProducts: individualProducts,
           productsCount: individualProducts.length
         })
-        
+
         setProductosIndividuales(individualProducts)
-        
+
         // ✅ NEW: Auto-detect if costs are already saved based on existing prices
         const hasExistingPrices = hasValidExistingPrices(individualProducts)
         setCostsSaved(hasExistingPrices)
-        
+
         if (hasExistingPrices) {
           const total = calculateProductsTotal(individualProducts)
           logger.info(`✅ Products already have valid prices (Total: €${total.toFixed(2)}), marking costs as saved`)
         } else {
           logger.info("⚠️ Products need pricing configuration before generating proposal")
         }
-        
+
         // Configure other data with V2.0 and legacy fallbacks
         // ✅ NEW: Use generated_html field from database via backend
         console.log("🔍 DEBUG: Complete backend data keys:", Object.keys(completeData))
         console.log("🔍 DEBUG: generated_html field:", (completeData as any).generated_html)
         console.log("🔍 DEBUG: generated_proposal field:", (completeData as any).generated_proposal)
         console.log("🔍 DEBUG: Full completeData object:", JSON.stringify(completeData, null, 2))
-        
+
         const htmlFromDB = (completeData as any).generated_html || (completeData as any).generated_proposal || ""
         setPropuesta(htmlFromDB)
-        
+
         if (htmlFromDB) {
           console.log("✅ HTML proposal loaded from database, length:", htmlFromDB.length)
           logger.info("✅ HTML proposal loaded from database")
@@ -1035,16 +1039,16 @@ export default function RfxResultsWrapperV2({
           console.log("⚠️ No HTML content found in response")
           logger.info("ℹ️ No HTML proposal found in database for this RFX")
         }
-        
+
         setCostoTotal((completeData as any).actual_cost ?? (completeData as any).estimated_budget ?? (completeData as any).costo_total ?? null)
         setFechaCreacion((completeData as any).received_at ?? (completeData as any).created_at ?? (completeData as any).fecha_recepcion ?? new Date().toISOString())
 
         setHasData(true)
-        
+
         console.log("✅ DEBUG: State updated - hasData set to true")
         console.log("📊 DEBUG: Validation metadata set:", validationStatus)
       }
-      
+
       // Call the async function
       initializeData()
     } else {
@@ -1088,23 +1092,73 @@ export default function RfxResultsWrapperV2({
     )
   }
 
+  // Función para aplicar cambios del chat
+  const handleChatUpdate = (changes: RFXChange[]) => {
+    changes.forEach(change => {
+      switch (change.type) {
+        case "add_product":
+          // Handle add product - would need onAddProduct prop
+          console.log("Add product from chat:", change.data)
+          break
+
+        case "update_product":
+          // Handle update product
+          console.log("Update product from chat:", change.data)
+          break
+
+        case "delete_product":
+          // Handle delete product
+          console.log("Delete product from chat:", change.target)
+          break
+
+        case "update_field":
+          // Update field of RFX
+          handleFieldSave(change.target as keyof ExtractedData, change.data.newValue)
+          break
+      }
+    })
+  }
+
   // Render the appropriate view
   if (currentView === ViewMode.DATA) {
     return (
-      <RFXDataView
-        extractedData={extractedData}
-        onFieldSave={handleFieldSave}
-        onGenerateBudget={handleNavigateToBudget}
-        onNavigateToHistory={onNavigateToHistory}
-        rfxId={backendData?.data?.id}
-        rfxTitle={(backendData?.data as any)?.title || extractedData.nombreEmpresa || "Datos Extraídos"}
-        fechaCreacion={fechaCreacion}
-        validationMetadata={validationMetadata}
-        originalText={originalText}
-        isFinalized={isFinalized}
-        // Product management props - handled by individual pages
-        productosIndividuales={productosIndividuales}
-      />
+      <>
+        <RFXDataView
+          extractedData={extractedData}
+          onFieldSave={handleFieldSave}
+          onGenerateBudget={handleNavigateToBudget}
+          onNavigateToHistory={onNavigateToHistory}
+          rfxId={backendData?.data?.id}
+          rfxTitle={(backendData?.data as any)?.title || extractedData.nombreEmpresa || "Datos Extraídos"}
+          fechaCreacion={fechaCreacion}
+          validationMetadata={validationMetadata}
+          originalText={originalText}
+          isFinalized={isFinalized}
+          // Product management props - handled by individual pages
+          productosIndividuales={productosIndividuales}
+          // Chat panel control
+          isChatOpen={isChatOpen}
+          onChatToggle={() => setIsChatOpen(!isChatOpen)}
+        />
+
+        {/* Chat Panel - rendered at wrapper level for full-screen access */}
+        {backendData?.data?.id && (
+          <RFXUpdateChatPanel
+            isOpen={isChatOpen}
+            onClose={() => setIsChatOpen(false)}
+            rfxId={backendData.data.id}
+            rfxData={{
+              productos: productosIndividuales,
+              total: productosIndividuales.reduce((sum, p) => sum + (p.precio * p.cantidad), 0),
+              fechaEntrega: extractedData.fechaEntrega,
+              lugarEntrega: extractedData.lugarEntrega,
+              solicitante: extractedData.solicitante,
+              emailSolicitante: extractedData.email
+            }}
+            onUpdate={handleChatUpdate}
+          />
+        )}
+      </>
     )
   }
 
@@ -1117,9 +1171,9 @@ export default function RfxResultsWrapperV2({
     id_length: backendData?.data?.id?.length,
     id_stringified: JSON.stringify(backendData?.data?.id)
   })
-  
+
   const safeRfxId = validateAndSecureUUID(backendData?.data?.id, 'RfxResultsWrapperV2');
-  
+
   console.log('🔍 RfxResultsWrapperV2 safeRfxId result:', {
     safeRfxId: safeRfxId,
     safeRfxId_type: typeof safeRfxId,

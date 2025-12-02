@@ -6,6 +6,7 @@ import { api } from "@/lib/api";
 import type { RFXResponse } from "@/lib/api";
 import RFXDataView from "@/components/rfx-data-view";
 import { useRFXCurrency } from "@/contexts/RFXCurrencyContext";
+import RFXUpdateChatPanel from "@/components/rfx-update-chat/RFXUpdateChatPanel";
 
 interface ProductoIndividual {
   id: string;
@@ -33,6 +34,9 @@ export default function RfxDataPage() {
   const [isSavingCosts, setIsSavingCosts] = useState(false);
   const [costsSaved, setCostsSaved] = useState(false);
   const [extractedData, setExtractedData] = useState<any>({});
+  
+  // Chat panel state
+  const [isChatOpen, setIsChatOpen] = useState(false);
 
   // RFX Currency context
   const rfxCurrency = useRFXCurrency();
@@ -446,6 +450,14 @@ export default function RfxDataPage() {
     }
   };
 
+  // Handle chat updates
+  const handleChatUpdate = async (changes: any[]) => {
+    console.log("🔄 Applying chat changes:", changes);
+    
+    // Refresh RFX data after changes
+    await refreshRFXData();
+  };
+
   useEffect(() => {
     let isMounted = true;
 
@@ -618,37 +630,49 @@ export default function RfxDataPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-6 space-y-6">
-      {/* RFX Data View */}
-      <RFXDataView
-        extractedData={extractedData}
-        onFieldSave={handleFieldSave}
-        onGenerateBudget={() => router.push(`/rfx-result-wrapper-v2/budget/${id}`)}
+    <>
+      <div className="container mx-auto px-4 py-6 space-y-6">
+        {/* RFX Data View */}
+        <RFXDataView
+          extractedData={extractedData}
+          onFieldSave={handleFieldSave}
+          onGenerateBudget={() => router.push(`/rfx-result-wrapper-v2/budget/${id}`)}
+          rfxId={id}
+          rfxTitle={(backendData.data as any)?.title || extractedData.nombreEmpresa || "Datos Extraídos"}
+          onTitleSave={handleTitleSave}
+          fechaCreacion={(backendData.data as any)?.created_at || new Date().toISOString()}
+          validationMetadata={backendData.data?.metadata_json || null}
+          originalText={backendData.data?.metadata_json?.texto_original_relevante || ""}
+          isFinalized={false}
+          productosIndividuales={productosIndividuales}
+          onAddProduct={handleAddProduct}
+          onDeleteProduct={handleDeleteProduct}
+          onQuantityChange={handleQuantityChange}
+          onPriceChange={handleProductPriceChange}
+          onCostChange={handleProductCostChange}
+          onUnitChange={handleUnitChange}
+          onSaveProductCosts={saveProductCosts}
+          isSavingCosts={isSavingCosts}
+          costsSaved={costsSaved}
+          // Chat panel control
+          isChatOpen={isChatOpen}
+          onChatToggle={() => setIsChatOpen(!isChatOpen)}
+          // Pass default currency to children
+          // @ts-ignore allow prop injection without breaking existing types
+          defaultCurrency={(backendData.data as any)?.currency || selectedCurrency}
+          // @ts-ignore pass currency change handler
+          onCurrencyChange={handleCurrencyChange}
+        />
+      </div>
+
+      {/* RFX Update Chat Panel - Outside container for proper fixed positioning */}
+      <RFXUpdateChatPanel
+        isOpen={isChatOpen}
+        onClose={() => setIsChatOpen(false)}
         rfxId={id}
-        rfxTitle={(backendData.data as any)?.title || extractedData.nombreEmpresa || "Datos Extraídos"}
-        onTitleSave={handleTitleSave}
-        fechaCreacion={(backendData.data as any)?.created_at || new Date().toISOString()}
-        validationMetadata={backendData.data?.metadata_json || null}
-        originalText={backendData.data?.metadata_json?.texto_original_relevante || ""}
-        isFinalized={false}
-        productosIndividuales={productosIndividuales}
-        onAddProduct={handleAddProduct}
-        onDeleteProduct={handleDeleteProduct}
-        onQuantityChange={handleQuantityChange}
-        onPriceChange={handleProductPriceChange}
-        onCostChange={handleProductCostChange}
-        onUnitChange={handleUnitChange}
-        onSaveProductCosts={saveProductCosts}
-        isSavingCosts={isSavingCosts}
-        costsSaved={costsSaved}
-        // Pass default currency to children
-        // @ts-ignore allow prop injection without breaking existing types
-        defaultCurrency={(backendData.data as any)?.currency || selectedCurrency}
-        // @ts-ignore pass currency change handler
-        onCurrencyChange={handleCurrencyChange}
+        rfxData={extractedData}
+        onUpdate={handleChatUpdate}
       />
-
-
-    </div>
+    </>
   );
 }

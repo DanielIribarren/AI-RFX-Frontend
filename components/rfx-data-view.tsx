@@ -1,6 +1,5 @@
 "use client"
 
-import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { CheckCircle, Briefcase, BarChart3, FileText, Archive, MessageSquare } from "lucide-react"
@@ -9,7 +8,6 @@ import DataExtractionContent from "@/components/data-extraction-content"
 import ProcessedFilesContent from "@/components/processed-files-content"
 import { StatusBadge } from "@/components/ui/status-badge"
 import { EditableTitle } from "@/components/ui/editable-title"
-import { RFXUpdateChatPanel, type RFXChange } from "@/components/rfx-update-chat"
 import { cn } from "@/lib/utils"
 
 interface ExtractedData {
@@ -56,7 +54,7 @@ interface RFXDataViewProps {
   validationMetadata?: any
   originalText?: string
   isFinalized?: boolean
-  
+
   // Product management props
   productosIndividuales?: ProductoIndividual[]
   onAddProduct?: (productData: any) => void
@@ -67,6 +65,10 @@ interface RFXDataViewProps {
   onSaveProductCosts?: () => void
   isSavingCosts?: boolean
   costsSaved?: boolean
+
+  // Chat panel control (managed by parent)
+  isChatOpen?: boolean
+  onChatToggle?: () => void
 }
 
 export default function RFXDataView({
@@ -91,11 +93,12 @@ export default function RFXDataView({
   onSaveProductCosts,
   isSavingCosts = false,
   costsSaved = false,
+  // Chat panel control
+  isChatOpen = false,
+  onChatToggle,
   // Low-impact currency props (not in interface to avoid breaking changes)
   ...additionalProps
 }: RFXDataViewProps & any) {
-  // Estado para el chat panel
-  const [isChatOpen, setIsChatOpen] = useState(false)
 
   // Format creation date
   const formatFechaCreacion = (fecha?: string) => {
@@ -113,62 +116,8 @@ export default function RFXDataView({
     }
   }
 
-  // Función para aplicar cambios del chat
-  const handleChatUpdate = (changes: RFXChange[]) => {
-    changes.forEach(change => {
-      switch (change.type) {
-        case "add_product":
-          if (onAddProduct) {
-            // Limpiar datos del producto (eliminar campos que la BD no necesita)
-            const { total_estimated_cost, ...productData } = change.data
-            
-            // Agregar producto con flag isNew
-            onAddProduct({
-              ...productData,
-              isNew: true
-            })
-            
-            // Remover flag después de 2 segundos
-            setTimeout(() => {
-              // Aquí necesitarías una función para actualizar el producto
-              // Por ahora la animación se ejecutará una vez
-            }, 2000)
-          }
-          break
-          
-        case "update_product":
-          // Actualizar producto existente con flag isModified
-          if (change.data.cantidad !== undefined && onQuantityChange) {
-            onQuantityChange(change.target, change.data.cantidad)
-          }
-          if (change.data.precio !== undefined && onPriceChange) {
-            onPriceChange(change.target, change.data.precio)
-          }
-          if (change.data.unidad !== undefined && onUnitChange) {
-            onUnitChange(change.target, change.data.unidad)
-          }
-          // Marcar como modificado (esto requeriría una función adicional)
-          break
-          
-        case "delete_product":
-          if (onDeleteProduct) {
-            onDeleteProduct(change.target)
-          }
-          break
-          
-        case "update_field":
-          // Actualizar campo del RFX
-          onFieldSave(change.target as keyof ExtractedData, change.data.newValue)
-          break
-      }
-    })
-  }
-
   return (
-    <div className={cn(
-      "container mx-auto px-4 py-6 space-y-6 transition-all duration-300",
-      isChatOpen && "mr-[30%]"
-    )}>
+    <div className="container mx-auto px-4 py-6 space-y-6">
       {/* Data Quality Alert */}
       {validationMetadata && (
         <Alert className="border-blue-200 bg-blue-50">
@@ -176,8 +125,8 @@ export default function RFXDataView({
           <AlertDescription className="text-blue-800">
             <div className="flex items-center gap-2">
               <BarChart3 className="h-4 w-4" />
-              <span>Calidad de extracción: {validationMetadata.has_original_data ? 
-                "Datos extraídos del documento" : 
+              <span>Calidad de extracción: {validationMetadata.has_original_data ?
+                "Datos extraídos del documento" :
                 "Algunos datos usan valores predeterminados"}</span>
             </div>
             {originalText && (
@@ -208,18 +157,17 @@ export default function RFXDataView({
           </p>
         </div>
         <div className="flex gap-2">
-          <Button 
-            onClick={() => setIsChatOpen(!isChatOpen)} 
-            variant={isChatOpen ? "secondary" : "outline"}
+          <Button
+            onClick={onChatToggle}
+            variant="outline"
             className="gap-2"
-            disabled={isFinalized}
           >
             <MessageSquare className="h-4 w-4" />
-            Actualizar RFX
+            Abrir Chat
           </Button>
-          <Button 
-            onClick={onGenerateBudget} 
-            className="gap-2 bg-blue-600 hover:bg-blue-700 text-white"
+          <Button
+            onClick={onGenerateBudget}
+            className="gap-2 hover:text-black"
           >
             <Briefcase className="h-4 w-4" />
             Generar Presupuesto
@@ -263,7 +211,7 @@ export default function RFXDataView({
             onCurrencyChange={additionalProps?.onCurrencyChange}
           />
         </TabsContent>
-        
+
         <TabsContent value="archivos-procesados" className="space-y-6 mt-6">
           <ProcessedFilesContent
             rfxId={rfxId}
@@ -282,24 +230,6 @@ export default function RFXDataView({
             <span className="ml-2">Este RFX ha sido finalizado exitosamente y guardado en tu historial.</span>
           </AlertDescription>
         </Alert>
-      )}
-
-      {/* Chat Panel */}
-      {rfxId && (
-        <RFXUpdateChatPanel
-          isOpen={isChatOpen}
-          onClose={() => setIsChatOpen(false)}
-          rfxId={rfxId}
-          rfxData={{
-            productos: productosIndividuales,
-            total: productosIndividuales.reduce((sum: number, p: ProductoIndividual) => sum + (p.precio * p.cantidad), 0),
-            fechaEntrega: extractedData.fechaEntrega,
-            lugarEntrega: extractedData.lugarEntrega,
-            solicitante: extractedData.solicitante,
-            emailSolicitante: extractedData.email
-          }}
-          onUpdate={handleChatUpdate}
-        />
       )}
     </div>
   )

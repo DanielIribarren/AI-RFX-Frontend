@@ -10,11 +10,11 @@ import { X, Minimize2, Maximize2, Paperclip, Send, Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { api } from "@/lib/api"
 import { toast } from "sonner"
-import type { 
-  ChatMessage, 
-  RFXChange, 
-  ChatResponse, 
-  RFXUpdateChatPanelProps 
+import type {
+  ChatMessage,
+  RFXChange,
+  ChatResponse,
+  RFXUpdateChatPanelProps
 } from "./types"
 
 export default function RFXUpdateChatPanel({
@@ -31,13 +31,13 @@ export default function RFXUpdateChatPanel({
   const [isMinimized, setIsMinimized] = useState(false)
   const [attachedFiles, setAttachedFiles] = useState<File[]>([])
   const [isLoadingHistory, setIsLoadingHistory] = useState(false)
-  
+
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   // ==================== EFECTOS ====================
-  
+
   // Cargar historial al abrir
   useEffect(() => {
     if (isOpen && messages.length === 0) {
@@ -58,12 +58,12 @@ export default function RFXUpdateChatPanel({
   }, [isOpen, isMinimized])
 
   // ==================== FUNCIONES ====================
-  
+
   const loadChatHistory = async () => {
     setIsLoadingHistory(true)
     try {
       const response = await api.chat.getHistory(rfxId)
-      
+
       if (response.messages && response.messages.length === 0) {
         // Mensaje de bienvenida
         setMessages([{
@@ -121,13 +121,13 @@ Escribe tu solicitud abajo ↓`,
 
     // Agregar mensaje del usuario inmediatamente
     setMessages(prev => [...prev, userMessage])
-    
+
     // Guardar valores y limpiar input
     const messageToSend = inputValue.trim()
     const filesToSend = [...attachedFiles]
     setInputValue("")
     setAttachedFiles([])
-    
+
     // Mostrar indicador de "typing"
     setIsTyping(true)
 
@@ -173,7 +173,7 @@ Escribe tu solicitud abajo ↓`,
 
     } catch (error) {
       console.error("Error sending message:", error)
-      
+
       // Mensaje de error
       const errorMessage: ChatMessage = {
         id: crypto.randomUUID(),
@@ -186,7 +186,7 @@ Por favor, intenta de nuevo o reformula tu solicitud.`,
         timestamp: new Date().toISOString(),
         metadata: { type: "error" }
       }
-      
+
       setMessages(prev => [...prev, errorMessage])
       toast.error("Error al procesar mensaje")
     } finally {
@@ -196,10 +196,10 @@ Por favor, intenta de nuevo o reformula tu solicitud.`,
 
   const handleConfirmOption = async (optionValue: string, context: any) => {
     setIsTyping(true)
-    
+
     try {
       const response = await api.chat.confirm(rfxId, optionValue, context)
-      
+
       // Agregar mensaje de confirmación
       const confirmMessage: ChatMessage = {
         id: crypto.randomUUID(),
@@ -207,7 +207,7 @@ Por favor, intenta de nuevo o reformula tu solicitud.`,
         content: `Opción seleccionada: ${optionValue}`,
         timestamp: new Date().toISOString()
       }
-      
+
       const assistantMessage: ChatMessage = {
         id: crypto.randomUUID(),
         role: "assistant",
@@ -218,15 +218,15 @@ Por favor, intenta de nuevo o reformula tu solicitud.`,
           changes: response.changes
         }
       }
-      
+
       setMessages(prev => [...prev, confirmMessage, assistantMessage])
-      
+
       // Aplicar cambios
       if (response.changes && response.changes.length > 0) {
         onUpdate(response.changes)
         toast.success(`✅ ${response.changes.length} cambio(s) aplicado(s)`)
       }
-      
+
     } catch (error) {
       console.error("Error confirming option:", error)
       toast.error("Error al confirmar opción")
@@ -237,26 +237,26 @@ Por favor, intenta de nuevo o reformula tu solicitud.`,
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files) return
-    
+
     const files = Array.from(e.target.files)
-    
+
     // Validar tamaño (max 10MB por archivo)
     const invalidFiles = files.filter(f => f.size > 10 * 1024 * 1024)
     if (invalidFiles.length > 0) {
       toast.error("Algunos archivos son muy grandes (máx 10MB)")
       return
     }
-    
+
     // Validar tipo
     const validTypes = ['.pdf', '.jpg', '.jpeg', '.png']
-    const invalidTypes = files.filter(f => 
+    const invalidTypes = files.filter(f =>
       !validTypes.some(type => f.name.toLowerCase().endsWith(type))
     )
     if (invalidTypes.length > 0) {
       toast.error("Solo se permiten archivos PDF, JPG y PNG")
       return
     }
-    
+
     setAttachedFiles(files)
   }
 
@@ -272,30 +272,27 @@ Por favor, intenta de nuevo o reformula tu solicitud.`,
   }
 
   // ==================== RENDER ====================
-  
+
   if (!isOpen) return null
 
   return (
     <div
       className={cn(
-        "fixed right-0 top-0 h-screen bg-white border-l shadow-2xl transition-all duration-300 z-50",
-        isMinimized ? "w-16" : "w-[30%]",
+        "fixed right-0 top-0 bottom-0 bg-background border-l transition-all duration-300 z-50",
+        isMinimized ? "w-16" : "w-full sm:w-[440px]",
         "flex flex-col"
       )}
     >
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b bg-gradient-to-r from-blue-50 to-indigo-50">
-        <div className="flex items-center gap-2">
-          <span className="text-2xl">💬</span>
-          {!isMinimized && (
-            <div>
-              <h3 className="font-semibold text-gray-900">Actualizar RFX</h3>
-              <p className="text-xs text-gray-500">Asistente con IA</p>
-            </div>
-          )}
-        </div>
-        
-        <div className="flex items-center gap-1">
+      <div className="flex items-center justify-between px-4 h-14 border-b shrink-0">
+        {!isMinimized && (
+          <div className="flex items-center gap-2">
+            <h3 className="font-semibold text-sm">Actualizar RFX</h3>
+            <span className="text-xs text-muted-foreground">Asistente con IA</span>
+          </div>
+        )}
+
+        <div className="flex items-center gap-1 ml-auto">
           <Button
             variant="ghost"
             size="icon"
@@ -318,27 +315,27 @@ Por favor, intenta de nuevo o reformula tu solicitud.`,
       {!isMinimized && (
         <>
           {/* Messages Area */}
-          <ScrollArea className="flex-1 p-4">
+          <ScrollArea className="flex-1 px-4">
             {isLoadingHistory ? (
               <div className="flex items-center justify-center h-full">
-                <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
               </div>
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-4 py-4">
                 {messages.map((message) => (
                   <div key={message.id} className={cn(
-                    "flex animate-slide-down",
+                    "flex",
                     message.role === "user" ? "justify-end" : "justify-start"
                   )}>
                     <div className={cn(
-                      "max-w-[80%] rounded-lg p-3 shadow-sm",
-                      message.role === "user" 
-                        ? "bg-blue-500 text-white" 
-                        : "bg-gray-100 text-gray-900"
+                      "max-w-[85%] rounded-2xl px-4 py-2.5 text-sm",
+                      message.role === "user"
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-muted"
                     )}>
                       {/* Contenido del mensaje */}
-                      <div className="whitespace-pre-wrap">{message.content}</div>
-                      
+                      <div className="whitespace-pre-wrap leading-relaxed">{message.content}</div>
+
                       {/* Archivos adjuntos */}
                       {message.files && message.files.length > 0 && (
                         <div className="mt-2 space-y-1">
@@ -350,7 +347,7 @@ Por favor, intenta de nuevo o reformula tu solicitud.`,
                           ))}
                         </div>
                       )}
-                      
+
                       {/* Opciones de confirmación */}
                       {message.metadata?.requiresConfirmation && message.metadata?.options && (
                         <div className="mt-3 space-y-2">
@@ -359,7 +356,7 @@ Por favor, intenta de nuevo o reformula tu solicitud.`,
                               key={option.value}
                               variant="outline"
                               size="sm"
-                              className="w-full justify-start bg-white hover:bg-gray-50"
+                              className="w-full justify-start bg-background hover:bg-accent"
                               onClick={() => handleConfirmOption(option.value, option.context)}
                               disabled={isTyping}
                             >
@@ -369,19 +366,16 @@ Por favor, intenta de nuevo o reformula tu solicitud.`,
                           ))}
                         </div>
                       )}
-                      
+
                       {/* Metadata */}
                       {message.metadata?.confidence !== undefined && (
-                        <div className="mt-2 text-xs opacity-75">
+                        <div className="mt-2 text-xs opacity-60">
                           Confianza: {Math.round(message.metadata.confidence * 100)}%
                         </div>
                       )}
-                      
+
                       {/* Timestamp */}
-                      <div className={cn(
-                        "text-xs mt-1",
-                        message.role === "user" ? "text-blue-100" : "text-gray-500"
-                      )}>
+                      <div className="text-xs mt-1.5 opacity-50">
                         {new Date(message.timestamp).toLocaleTimeString('es-ES', {
                           hour: '2-digit',
                           minute: '2-digit'
@@ -390,41 +384,41 @@ Por favor, intenta de nuevo o reformula tu solicitud.`,
                     </div>
                   </div>
                 ))}
-                
+
                 {/* Indicador de typing */}
                 {isTyping && (
-                  <div className="flex justify-start animate-slide-down">
-                    <div className="max-w-[80%] rounded-lg p-3 bg-gray-100 text-gray-900 shadow-sm">
+                  <div className="flex justify-start">
+                    <div className="max-w-[85%] rounded-2xl px-4 py-2.5 bg-muted">
                       <div className="flex items-center gap-2">
                         <div className="flex gap-1">
-                          <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                          <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                          <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                          <div className="w-2 h-2 bg-muted-foreground/40 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                          <div className="w-2 h-2 bg-muted-foreground/40 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                          <div className="w-2 h-2 bg-muted-foreground/40 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
                         </div>
-                        <span className="text-xs text-gray-500">Procesando...</span>
+                        <span className="text-xs text-muted-foreground">Procesando...</span>
                       </div>
                     </div>
                   </div>
                 )}
-                
+
                 <div ref={messagesEndRef} />
               </div>
             )}
           </ScrollArea>
 
           {/* Input Area */}
-          <div className="p-4 border-t bg-gray-50">
+          <div className="p-4 border-t shrink-0">
             {/* Archivos adjuntos preview */}
             {attachedFiles.length > 0 && (
-              <div className="flex flex-wrap gap-2 mb-2">
+              <div className="flex flex-wrap gap-2 mb-3">
                 {attachedFiles.map((file, index) => (
-                  <div key={index} className="flex items-center gap-1 bg-blue-50 px-2 py-1 rounded text-sm">
-                    <Paperclip className="h-3 w-3" />
-                    <span className="max-w-[100px] truncate">{file.name}</span>
+                  <div key={index} className="flex items-center gap-1.5 bg-muted px-2.5 py-1.5 rounded-md text-sm">
+                    <Paperclip className="h-3.5 w-3.5" />
+                    <span className="max-w-[120px] truncate text-xs">{file.name}</span>
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-4 w-4 p-0"
+                      className="h-4 w-4 p-0 hover:bg-transparent"
                       onClick={() => removeFile(index)}
                     >
                       <X className="h-3 w-3" />
@@ -433,42 +427,44 @@ Por favor, intenta de nuevo o reformula tu solicitud.`,
                 ))}
               </div>
             )}
-            
-            <div className="flex gap-2">
-              <Textarea
-                ref={textareaRef}
-                value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
-                onKeyPress={handleKeyPress}
-                placeholder="Escribe tu mensaje... (Shift+Enter para nueva línea)"
-                className="min-h-[60px] max-h-[120px] resize-none"
-                disabled={isTyping}
-              />
-              <div className="flex flex-col gap-2">
+
+            <div className="flex gap-2 items-end">
+              <div className="relative flex-1">
+                <Textarea
+                  ref={textareaRef}
+                  value={inputValue}
+                  onChange={(e) => setInputValue(e.target.value)}
+                  onKeyPress={handleKeyPress}
+                  placeholder="Escribe tu mensaje..."
+                  className="min-h-[52px] max-h-[120px] resize-none pr-10 rounded-xl"
+                  disabled={isTyping}
+                />
                 <Button
                   size="icon"
-                  variant="outline"
+                  variant="ghost"
                   onClick={() => fileInputRef.current?.click()}
                   disabled={isTyping}
                   title="Adjuntar archivo"
+                  className="absolute right-2 bottom-2 h-7 w-7"
                 >
                   <Paperclip className="h-4 w-4" />
                 </Button>
-                <Button
-                  size="icon"
-                  disabled={!inputValue.trim() || isTyping}
-                  onClick={handleSendMessage}
-                  title="Enviar mensaje"
-                >
-                  {isTyping ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <Send className="h-4 w-4" />
-                  )}
-                </Button>
               </div>
+              <Button
+                size="icon"
+                disabled={!inputValue.trim() || isTyping}
+                onClick={handleSendMessage}
+                title="Enviar mensaje"
+                className="h-[52px] w-[52px] rounded-xl shrink-0"
+              >
+                {isTyping ? (
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                ) : (
+                  <Send className="h-5 w-5" />
+                )}
+              </Button>
             </div>
-            
+
             <input
               ref={fileInputRef}
               type="file"
