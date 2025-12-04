@@ -32,6 +32,18 @@ export default function RFXUpdateChatPanel({
   const [attachedFiles, setAttachedFiles] = useState<File[]>([])
   const [isLoadingHistory, setIsLoadingHistory] = useState(false)
 
+  // Estado para redimensionamiento
+  const [panelWidth, setPanelWidth] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('rfx-chat-panel-width')
+      return saved ? parseInt(saved) : 440
+    }
+    return 440
+  })
+  const [isResizing, setIsResizing] = useState(false)
+  const [resizeStartX, setResizeStartX] = useState(0)
+  const [resizeStartWidth, setResizeStartWidth] = useState(0)
+
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -271,6 +283,47 @@ Por favor, intenta de nuevo o reformula tu solicitud.`,
     }
   }
 
+  // ==================== REDIMENSIONAMIENTO ====================
+
+  const handleResizeStart = (e: React.MouseEvent) => {
+    setIsResizing(true)
+    setResizeStartX(e.clientX)
+    setResizeStartWidth(panelWidth)
+    document.body.style.cursor = 'ew-resize'
+    document.body.style.userSelect = 'none'
+  }
+
+  const handleResizeMove = (e: MouseEvent) => {
+    if (!isResizing) return
+
+    const deltaX = resizeStartX - e.clientX
+    const newWidth = Math.max(320, Math.min(800, resizeStartWidth + deltaX))
+    setPanelWidth(newWidth)
+  }
+
+  const handleResizeEnd = () => {
+    if (!isResizing) return
+
+    setIsResizing(false)
+    document.body.style.cursor = ''
+    document.body.style.userSelect = ''
+    
+    // Guardar en localStorage
+    localStorage.setItem('rfx-chat-panel-width', panelWidth.toString())
+  }
+
+  // Efecto para manejar mouse events globales
+  useEffect(() => {
+    if (isResizing) {
+      document.addEventListener('mousemove', handleResizeMove)
+      document.addEventListener('mouseup', handleResizeEnd)
+      return () => {
+        document.removeEventListener('mousemove', handleResizeMove)
+        document.removeEventListener('mouseup', handleResizeEnd)
+      }
+    }
+  }, [isResizing, resizeStartX, resizeStartWidth, panelWidth])
+
   // ==================== RENDER ====================
 
   if (!isOpen) return null
@@ -278,11 +331,18 @@ Por favor, intenta de nuevo o reformula tu solicitud.`,
   return (
     <div
       className={cn(
-        "fixed right-0 top-0 bottom-0 bg-background border-l transition-all duration-300 z-50",
-        isMinimized ? "w-16" : "w-full sm:w-[440px]",
-        "flex flex-col"
+        "fixed right-0 top-0 bottom-0 bg-background border-l transition-all duration-300 z-50 flex flex-col",
+        isMinimized ? "w-16" : ""
       )}
+      style={isMinimized ? {} : { width: panelWidth }}
     >
+      {/* Handle de redimensionamiento */}
+      {!isMinimized && (
+        <div
+          className="absolute left-0 top-0 bottom-0 w-1 bg-transparent hover:bg-accent cursor-ew-resize z-10"
+          onMouseDown={handleResizeStart}
+        />
+      )}
       {/* Header */}
       <div className="flex items-center justify-between px-4 h-14 border-b shrink-0">
         {!isMinimized && (
@@ -321,14 +381,14 @@ Por favor, intenta de nuevo o reformula tu solicitud.`,
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
               </div>
             ) : (
-              <div className="space-y-4 py-4">
+              <div className="space-y-4 py-4 max-w-full">
                 {messages.map((message) => (
                   <div key={message.id} className={cn(
                     "flex",
                     message.role === "user" ? "justify-end" : "justify-start"
                   )}>
                     <div className={cn(
-                      "max-w-[85%] rounded-2xl px-4 py-2.5 text-sm",
+                      "max-w-full rounded-2xl px-4 py-2.5 text-sm",
                       message.role === "user"
                         ? "bg-primary text-primary-foreground"
                         : "bg-muted"
@@ -388,7 +448,7 @@ Por favor, intenta de nuevo o reformula tu solicitud.`,
                 {/* Indicador de typing */}
                 {isTyping && (
                   <div className="flex justify-start">
-                    <div className="max-w-[85%] rounded-2xl px-4 py-2.5 bg-muted">
+                    <div className="max-w-full rounded-2xl px-4 py-2.5 bg-muted">
                       <div className="flex items-center gap-2">
                         <div className="flex gap-1">
                           <div className="w-2 h-2 bg-muted-foreground/40 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>

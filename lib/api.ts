@@ -766,33 +766,54 @@ export const api = {
   // ==================== CHAT CONVERSACIONAL ====================
   
   chat: {
-    // Send message to chat
+    // Send message to chat with FormData (like processRFX)
     async send(rfxId: string, message: string, context: any, files?: File[]): Promise<any> {
       try {
-        // Preparar payload JSON (backend espera JSON, no FormData)
-        const payload = {
-          message,
-          context,
-          files: files && files.length > 0 ? await Promise.all(
-            files.map(async (file) => ({
-              name: file.name,
-              type: file.type,
-              content: await file.text() // Para archivos de texto
-            }))
-          ) : []
-        };
+        const url = `${API_BASE_URL}/api/rfx/${rfxId}/chat`;
         
-        const response = await fetchWithAuth(`${API_BASE_URL}/api/rfx/${rfxId}/chat`, {
-          method: 'POST',
-          body: JSON.stringify(payload)
+        // Get JWT token for authentication
+        const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
+        const headers: HeadersInit = {};
+        if (token) {
+          headers['Authorization'] = `Bearer ${token}`;
+        }
+        
+        // Build FormData (same format as processRFX)
+        const form = new FormData();
+        form.append('id', rfxId);
+        form.append('message', message);
+        form.append('context', JSON.stringify(context));
+        
+        // Add all attached files as binary
+        if (files && files.length > 0) {
+          for (const file of files) {
+            form.append('files', file);
+          }
+        }
+
+        console.log('📤 Sending chat message with FormData:', {
+          rfxId,
+          message,
+          hasContext: !!context,
+          fileCount: files?.length || 0
+        });
+
+        const response = await fetch(url, { 
+          method: 'POST', 
+          body: form,
+          headers 
         });
         
         if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
-          throw new APIError(
-            errorData.message || `Error al enviar mensaje: ${response.statusText}`, 
-            response.status
-          );
+          const errorText = await response.text();
+          let errorMessage = `Error ${response.status}: ${response.statusText}`;
+          try {
+            const errorData = JSON.parse(errorText);
+            errorMessage = errorData.message || errorMessage;
+          } catch {
+            // Use raw text if not JSON
+          }
+          throw new APIError(errorMessage, response.status);
         }
         
         return await response.json();
