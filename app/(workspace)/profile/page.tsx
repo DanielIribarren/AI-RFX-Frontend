@@ -13,9 +13,12 @@ import { User, Mail, Building2, Phone, Calendar, CheckCircle, Loader2, Edit2, Sa
 import { Badge } from "@/components/ui/badge"
 import { authService } from "@/lib/authService"
 import { useToast } from "@/hooks/use-toast"
+import { CreditsUsageCard } from "@/components/credits/CreditsUsageCard"
+import { useCredits } from "@/contexts/CreditsContext"
 
 export default function ProfilePage() {
   const { user, loading, isAuthenticated, updateUser } = useAuth()
+  const { credits } = useCredits()
   const router = useRouter()
   const { toast } = useToast()
   
@@ -319,6 +322,55 @@ export default function ProfilePage() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Current Plan Card */}
+        <Card className="md:col-span-3">
+          <CardHeader>
+            <CardTitle>Current Plan</CardTitle>
+            <CardDescription>Manage your subscription and billing</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Badge variant="outline" className="text-sm">
+                  {credits?.plan_tier || 'Free'}
+                </Badge>
+                <div>
+                  <p className="font-medium">
+                    {credits?.plan_tier === 'free' && 'Free Plan'}
+                    {credits?.plan_tier === 'starter' && 'Starter Plan'}
+                    {credits?.plan_tier === 'pro' && 'Pro Plan'}
+                    {credits?.plan_tier === 'enterprise' && 'Enterprise Plan'}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    {credits?.plan_tier === 'free' && 'Basic features'}
+                    {credits?.plan_tier === 'starter' && '$29/month'}
+                    {credits?.plan_tier === 'pro' && '$99/month'}
+                    {credits?.plan_tier === 'enterprise' && 'Custom pricing'}
+                  </p>
+                </div>
+              </div>
+              <Button 
+                variant="outline"
+                onClick={() => router.push('/plans')}
+              >
+                Change Plan
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Credits Usage Card */}
+        <div className="md:col-span-3">
+          {credits && (
+            <CreditsUsageCard
+              creditsTotal={credits.credits_total}
+              creditsUsed={credits.credits_used}
+              resetDate={credits.reset_date}
+              planName={credits.plan_tier}
+            />
+          )}
+        </div>
       </div>
     </div>
   )

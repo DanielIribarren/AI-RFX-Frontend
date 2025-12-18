@@ -9,6 +9,7 @@ export function middleware(request: NextRequest) {
   // Define protected routes (workspace routes)
   const protectedRoutes = ['/dashboard', '/history', '/budget-settings', '/profile', '/rfx-result-wrapper-v2']
   const authRoutes = ['/login', '/signup']
+  const publicRoutes = ['/', '/pricing'] // KISS: Allow public access to landing and pricing
   
   const { pathname } = request.nextUrl
   
@@ -20,9 +21,11 @@ export function middleware(request: NextRequest) {
   // Check if current path is a protected route
   const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route))
   const isAuthRoute = authRoutes.some(route => pathname.startsWith(route))
+  const isPublicRoute = publicRoutes.includes(pathname)
   
   console.log('   Is protected route:', isProtectedRoute)
   console.log('   Is auth route:', isAuthRoute)
+  console.log('   Is public route:', isPublicRoute)
   
   // If user is not authenticated and trying to access protected route
   if (isProtectedRoute && !accessToken && !refreshToken) {
@@ -38,16 +41,11 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/dashboard', request.url))
   }
   
-  // If accessing root path
-  if (pathname === '/') {
-    // If authenticated, redirect to dashboard
-    if (accessToken || refreshToken) {
-      console.log('✅ Middleware: Root path with tokens, redirecting to /dashboard')
-      return NextResponse.redirect(new URL('/dashboard', request.url))
-    }
-    // If not authenticated, redirect to login
-    console.log('❌ Middleware: Root path without tokens, redirecting to /login')
-    return NextResponse.redirect(new URL('/login', request.url))
+  // KISS: Allow public routes for everyone
+  // The page itself will handle redirect if user is authenticated
+  if (isPublicRoute) {
+    console.log('✅ Middleware: Public route, allowing access')
+    return NextResponse.next()
   }
   
   console.log('✅ Middleware: Allowing request to continue')

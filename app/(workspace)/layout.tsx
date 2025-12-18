@@ -8,6 +8,7 @@ import { AiModelSelector } from "@/components/ai-model-selector";
 import { useRouter } from "next/navigation";
 import Breadcrumbs from "@/components/navigation/Breadcrumbs";
 import { RFXCurrencyProvider } from "@/contexts/RFXCurrencyContext";
+import { CreditsProvider } from "@/contexts/CreditsContext";
 import { useAuth } from "@/contexts/AuthContext";
 
 interface WorkspaceLayoutProps {
@@ -48,26 +49,28 @@ export default function WorkspaceLayout({ children }: WorkspaceLayoutProps) {
   return (
     <SidebarProvider>
       <RFXCurrencyProvider>
-        <AppSidebar
-          onNewRfx={() => router.push("/dashboard")}
-          onNavigateToHistory={() => router.push("/history")}
-          onNavigateToBudgetSettings={() => router.push("/budget-settings")}
-          onSelectRfx={(id) => router.push(`/rfx-result-wrapper-v2/data/${id}`)}
-          currentView={undefined} // Will be removed after full migration
-        />
-        <SidebarInset className="bg-white">
-          <header className="flex h-14 shrink-0 items-center gap-2 border-b border-gray-200/60 px-4 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
-            <SidebarTrigger className="-ml-1 text-gray-500 hover:text-gray-700" />
-            <Separator orientation="vertical" className="mr-2 h-4 bg-gray-300" />
-            <Breadcrumbs />
-            
-            {/* AI Model Selector in Header */}
-            <div className="ml-auto">
-              <AiModelSelector selectedModel="chatgpt-4o" onModelChange={(model) => console.log("Model changed:", model)} />
-            </div>
-          </header>
-          <div className="flex flex-1 flex-col bg-white">{children}</div>
-        </SidebarInset>
+        <CreditsProvider>
+          <AppSidebar
+            onNewRfx={() => router.push("/dashboard")}
+            onNavigateToHistory={() => router.push("/history")}
+            onNavigateToBudgetSettings={() => router.push("/budget-settings")}
+            onSelectRfx={(id) => router.push(`/rfx-result-wrapper-v2/data/${id}`)}
+            currentView={undefined} // Will be removed after full migration
+          />
+          <SidebarInset className="bg-white">
+            <header className="flex h-14 shrink-0 items-center gap-2 border-b border-gray-200/60 px-4 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
+              <SidebarTrigger className="-ml-1 text-gray-500 hover:text-gray-700" />
+              <Separator orientation="vertical" className="mr-2 h-4 bg-gray-300" />
+              <Breadcrumbs />
+              
+              {/* AI Model Selector in Header */}
+              <div className="ml-auto">
+                <AiModelSelector selectedModel="chatgpt-4o" onModelChange={(model) => console.log("Model changed:", model)} />
+              </div>
+            </header>
+            <div className="flex flex-1 flex-col bg-white">{children}</div>
+          </SidebarInset>
+        </CreditsProvider>
       </RFXCurrencyProvider>
     </SidebarProvider>
   );

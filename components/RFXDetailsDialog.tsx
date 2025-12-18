@@ -219,30 +219,35 @@ const RFXDetailsDialog = ({ rfxId, isOpen, onClose, rfxData, onViewFullAnalysis 
   // Fetch complete RFX data function with debugging
   const fetchCompleteRFXData = async (rfxId: string) => {
     try {
-      const url = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001'}/api/rfx/${rfxId}`
-      console.log("🔍 DEBUG RFXDetailsDialog: Fetching RFX data from URL:", url)
+      // ✅ Verificar autenticación antes de hacer peticiones
+      const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
+      if (!token) {
+        console.warn('⚠️ No access token found in RFXDetailsDialog, cannot fetch data');
+        setError("Sesión expirada. Por favor, inicia sesión nuevamente.");
+        return null;
+      }
+
+      console.log("🔍 DEBUG RFXDetailsDialog: Fetching RFX data for ID:", rfxId)
       
-      const response = await fetch(url)
-      console.log("🔍 DEBUG RFXDetailsDialog: Response status:", response.status)
-      console.log("🔍 DEBUG RFXDetailsDialog: Response ok:", response.ok)
+      // ✅ Usar api.getRFXById() que incluye el token automáticamente
+      const result = await api.getRFXById(rfxId)
+      console.log("🔍 DEBUG RFXDetailsDialog: Response status:", result.status)
+      console.log("🔍 DEBUG RFXDetailsDialog: Response data keys:", result.data ? Object.keys(result.data) : 'no data')
+      console.log("🔍 DEBUG RFXDetailsDialog: generated_html in response:", result.data?.generated_html)
       
-      if (response.ok) {
-        const result = await response.json()
-        console.log("🔍 DEBUG RFXDetailsDialog: Raw API response:", JSON.stringify(result, null, 2))
-        console.log("🔍 DEBUG RFXDetailsDialog: Response status field:", result.status)
-        console.log("🔍 DEBUG RFXDetailsDialog: Response data keys:", result.data ? Object.keys(result.data) : 'no data')
-        console.log("🔍 DEBUG RFXDetailsDialog: generated_html in response:", result.data?.generated_html)
-        
-        if (result.status === "success") {
-          return result.data
-        } else {
-          console.error("❌ RFXDetailsDialog API returned error status:", result.message)
-        }
+      if (result.status === "success" && result.data) {
+        return result.data
       } else {
-        console.error("❌ RFXDetailsDialog HTTP error:", response.status, response.statusText)
+        console.error("❌ RFXDetailsDialog API returned error status:", result.message)
+        setError(result.message || "Error al cargar datos del RFX")
       }
     } catch (error) {
       console.error("❌ RFXDetailsDialog Error fetching complete RFX data:", error)
+      if (error instanceof APIError && error.status === 401) {
+        setError("Sesión expirada. Por favor, inicia sesión nuevamente.")
+      } else {
+        setError("Error al cargar la información del RFX")
+      }
     }
     return null
   }

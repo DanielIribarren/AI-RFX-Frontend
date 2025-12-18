@@ -149,7 +149,7 @@ const AppSidebar = forwardRef<AppSidebarRef, AppSidebarProps>(
         
         return transformedData
       },
-      { key: 'sidebar-recent-rfx', expiryMinutes: 5 }
+      { key: 'sidebar-recent-rfx', expiryMinutes: 1 } // Reducido a 1 minuto para mayor frescura
     )
     
     // Expose refresh method to parent components

@@ -9,7 +9,8 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { AlertCircle, Loader2, CheckCircle } from "lucide-react"
+import { AlertCircle, Loader2, CheckCircle, CreditCard, ArrowLeft } from "lucide-react"
+import { PLANS } from "@/constants/organization"
 
 // Componente de carga mientras se resuelve useSearchParams
 function LoadingFallback() {
@@ -38,6 +39,10 @@ function SignupContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const redirectTo = searchParams.get('redirect') || '/dashboard'
+  const selectedPlan = searchParams.get('plan') // KISS: Simple plan detection
+  
+  // KISS: Determinar página anterior para botón "Volver"
+  const backUrl = searchParams.get('from') || '/'
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -60,9 +65,15 @@ function SignupContent() {
       await signup(email, password, fullName, companyName || undefined)
       setSuccess(true)
       
-      // Redirigir después de 2 segundos
+      // KISS: Simple redirect logic
       setTimeout(() => {
-        router.push(redirectTo)
+        // If user selected a paid plan, go to checkout
+        if (selectedPlan && selectedPlan !== 'free') {
+          router.push(`/checkout?plan=${selectedPlan}`)
+        } else {
+          // Otherwise, go to dashboard
+          router.push(redirectTo)
+        }
       }, 2000)
     } catch (err: any) {
       setError(err.message || "Error al crear la cuenta. Por favor intenta nuevamente.")
@@ -97,6 +108,16 @@ function SignupContent() {
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 py-8">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
+          {/* KISS: Botón volver */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => router.push(backUrl)}
+            className="w-fit mb-2"
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Volver
+          </Button>
           <CardTitle className="text-2xl font-bold text-center">Crear Cuenta</CardTitle>
           <CardDescription className="text-center">
             Completa el formulario para registrarte
@@ -104,6 +125,17 @@ function SignupContent() {
         </CardHeader>
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
+            {/* KISS: Simple plan indicator */}
+            {selectedPlan && selectedPlan !== 'free' && (
+              <Alert className="bg-blue-50 border-blue-200">
+                <CreditCard className="h-4 w-4 text-blue-600" />
+                <AlertDescription className="text-blue-900">
+                  Selected plan: <strong>{PLANS[selectedPlan as keyof typeof PLANS]?.name || selectedPlan}</strong>
+                  {' '}({PLANS[selectedPlan as keyof typeof PLANS]?.priceLabel}/month)
+                </AlertDescription>
+              </Alert>
+            )}
+            
             {error && (
               <Alert variant="destructive">
                 <AlertCircle className="h-4 w-4" />

@@ -201,8 +201,16 @@ export const authService = {
   // Logout
   logout() {
     this.clearTokens()
+    // ✅ Limpiar TODO el cache del sidebar y otros datos
     if (typeof window !== 'undefined') {
-      window.location.href = '/login'
+      localStorage.removeItem('sidebar-recent-rfx')
+      // Limpiar cualquier otro cache que pueda existir
+      Object.keys(localStorage).forEach(key => {
+        if (key.startsWith('sidebar-') || key.startsWith('cache-')) {
+          localStorage.removeItem(key)
+        }
+      })
+      window.location.href = '/' // KISS: Redirect to landing page
     }
   },
 

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { RefreshCw, Download, Maximize2, Minimize2, FileText, Info } from "lucide-react"
+import { LowCreditsAlert } from "@/components/credits/LowCreditsAlert"
 
 interface ProposalTabProps {
   htmlContent: string
@@ -12,6 +13,10 @@ interface ProposalTabProps {
   isLoadingProposal: boolean
   onRegenerate: () => void
   onDownload: () => void
+  // Credits props
+  hasEnoughCredits?: boolean
+  currentCredits?: number
+  requiredCredits?: number
 }
 
 export function ProposalTab({
@@ -19,7 +24,10 @@ export function ProposalTab({
   isRegenerating,
   isLoadingProposal,
   onRegenerate,
-  onDownload
+  onDownload,
+  hasEnoughCredits = true,
+  currentCredits = 0,
+  requiredCredits = 0
 }: ProposalTabProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const contentRef = useRef<HTMLDivElement>(null)
@@ -74,10 +82,20 @@ export function ProposalTab({
                 onClick={onRegenerate} 
                 className="gap-2"
                 size="lg"
+                disabled={!hasEnoughCredits}
               >
                 <RefreshCw className="h-4 w-4" />
                 Generar con IA
               </Button>
+              {!hasEnoughCredits && (
+                <div className="mt-4">
+                  <LowCreditsAlert
+                    currentCredits={currentCredits}
+                    requiredCredits={requiredCredits}
+                    variant="compact"
+                  />
+                </div>
+              )}
             </>
           )}
         </Card>
@@ -113,9 +131,10 @@ export function ProposalTab({
             <Button
               size="sm"
               onClick={onRegenerate}
-              disabled={isRegenerating}
+              disabled={isRegenerating || !hasEnoughCredits}
               variant="outline"
               className="gap-2"
+              title={!hasEnoughCredits ? "Créditos insuficientes" : "Regenerar propuesta"}
             >
               <RefreshCw className={`h-4 w-4 ${isRegenerating ? 'animate-spin' : ''}`} />
               Regenerar Propuesta

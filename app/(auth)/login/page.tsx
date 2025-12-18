@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { AlertCircle, Loader2 } from "lucide-react"
+import { AlertCircle, Loader2, ArrowLeft } from "lucide-react"
 
 // Componente de carga mientras se resuelve useSearchParams
 function LoadingFallback() {
@@ -35,6 +35,9 @@ function LoginContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const redirectTo = searchParams.get('redirect') || '/dashboard'
+  
+  // KISS: Determinar página anterior para botón "Volver"
+  const backUrl = searchParams.get('from') || '/'
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -55,6 +58,16 @@ function LoginContent() {
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
+          {/* KISS: Botón volver */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => router.push(backUrl)}
+            className="w-fit mb-2"
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Volver
+          </Button>
           <CardTitle className="text-2xl font-bold text-center">Iniciar Sesión</CardTitle>
           <CardDescription className="text-center">
             Ingresa tus credenciales para acceder a tu cuenta

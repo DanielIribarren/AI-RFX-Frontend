@@ -8,6 +8,8 @@ import { ArrowLeft, Download, CheckCircle, Eye, Settings, FileText } from "lucid
 import type { PricingConfigFormData } from "@/types/pricing-v2"
 import { useRFXCurrencyCompatible } from "@/contexts/RFXCurrencyContext"
 import { useAuth } from "@/contexts/AuthContext"
+import { useCredits } from "@/contexts/CreditsContext"
+import { LowCreditsAlert } from "@/components/credits/LowCreditsAlert"
 import { transformHtmlUrls } from "@/utils/transform-html-urls"
 
 // Import tab components
@@ -112,6 +114,9 @@ export default function BudgetGenerationView({
   // Auth context for company ID
   const { user } = useAuth()
   const companyId = user?.id
+  
+  // Credits context
+  const { credits, checkCredits } = useCredits()
   
   // Currency hook
   const { 
@@ -249,6 +254,9 @@ export default function BudgetGenerationView({
               isLoadingProposal={isLoadingProposal}
               onRegenerate={onGenerateProposal}
               onDownload={onDownloadPDF}
+              hasEnoughCredits={credits ? checkCredits(propuesta ? 30 : 50) : true}
+              currentCredits={credits?.credits_available || 0}
+              requiredCredits={propuesta ? 30 : 50}
             />
           </TabsContent>
         </Tabs>

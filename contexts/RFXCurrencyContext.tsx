@@ -69,6 +69,13 @@ export function RFXCurrencyProvider({ children }: RFXCurrencyProviderProps) {
     } else {
       // Fetch current currency from backend
       try {
+        // ✅ Verificar autenticación antes de hacer peticiones
+        const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
+        if (!token) {
+          console.warn('⚠️ No access token found in RFXCurrencyContext, skipping currency fetch');
+          return; // Continue with default currency
+        }
+
         const response = await api.getRFXById(rfxId)
         if (response.status === "success" && response.data) {
           const backendCurrency = (response.data as any)?.currency

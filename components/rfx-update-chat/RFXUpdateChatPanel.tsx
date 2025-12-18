@@ -10,12 +10,17 @@ import { X, Minimize2, Maximize2, Paperclip, Send, Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { api } from "@/lib/api"
 import { toast } from "sonner"
+import { useCredits } from "@/contexts/CreditsContext"
+import { LowCreditsAlert } from "@/components/credits/LowCreditsAlert"
 import type {
   ChatMessage,
   RFXChange,
   ChatResponse,
   RFXUpdateChatPanelProps
 } from "./types"
+
+// Costo de un mensaje de chat (según documentación)
+const CHAT_MESSAGE_COST = 5
 
 export default function RFXUpdateChatPanel({
   isOpen,
@@ -24,6 +29,9 @@ export default function RFXUpdateChatPanel({
   rfxData,
   onUpdate
 }: RFXUpdateChatPanelProps) {
+  // ==================== HOOKS ====================
+  const { credits, checkCredits, refreshCredits } = useCredits()
+  
   // ==================== ESTADO ====================
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [inputValue, setInputValue] = useState("")
@@ -50,9 +58,9 @@ export default function RFXUpdateChatPanel({
 
   // ==================== EFECTOS ====================
 
-  // Cargar historial al abrir
+  // Cargar historial al abrir o cuando cambia el rfxId
   useEffect(() => {
-    if (isOpen && messages.length === 0) {
+    if (isOpen) {
       loadChatHistory()
     }
   }, [isOpen, rfxId])
@@ -74,9 +82,12 @@ export default function RFXUpdateChatPanel({
   const loadChatHistory = async () => {
     setIsLoadingHistory(true)
     try {
+      console.log('📜 Loading chat history for RFX:', rfxId)
       const response = await api.chat.getHistory(rfxId)
+      console.log('📥 Chat history response:', response)
 
       if (response.messages && response.messages.length === 0) {
+        console.log('💬 No messages in history, showing welcome message')
         // Mensaje de bienvenida
         setMessages([{
           id: "welcome",
@@ -95,10 +106,11 @@ Escribe tu solicitud abajo ↓`,
           metadata: { type: "welcome" }
         }])
       } else {
+        console.log(`✅ Loaded ${response.messages?.length || 0} messages from history`)
         setMessages(response.messages || [])
       }
     } catch (error) {
-      console.error("Error loading chat history:", error)
+      console.error("❌ Error loading chat history:", error)
       setMessages([{
         id: "welcome",
         role: "assistant",
@@ -159,11 +171,16 @@ Escribe tu solicitud abajo ↓`,
         filesToSend
       )
 
+      // Debug: Log de la respuesta completa
+      console.log('📥 Chat response received:', response);
+      console.log('📝 Message field:', response.message);
+      console.log('🔍 Response type:', typeof response);
+      
       // Agregar respuesta de la IA
       const assistantMessage: ChatMessage = {
         id: crypto.randomUUID(),
         role: "assistant",
-        content: response.message,
+        content: response.message || JSON.stringify(response, null, 2),
         timestamp: new Date().toISOString(),
         metadata: {
           confidence: response.confidence,
@@ -173,6 +190,7 @@ Escribe tu solicitud abajo ↓`,
         }
       }
 
+      console.log('💬 Assistant message content:', assistantMessage.content);
       setMessages(prev => [...prev, assistantMessage])
 
       // ⭐ APLICAR CAMBIOS INMEDIATAMENTE (si no requiere confirmación)
@@ -182,6 +200,9 @@ Escribe tu solicitud abajo ↓`,
           description: response.changes.map(c => c.description).join(', ')
         })
       }
+
+      // Refrescar créditos después de enviar mensaje
+      await refreshCredits()
 
     } catch (error) {
       console.error("Error sending message:", error)
@@ -468,6 +489,17 @@ Por favor, intenta de nuevo o reformula tu solicitud.`,
 
           {/* Input Area */}
           <div className="p-4 border-t shrink-0">
+            {/* Low Credits Alert */}
+            {credits && !checkCredits(CHAT_MESSAGE_COST) && (
+              <div className="mb-3">
+                <LowCreditsAlert
+                  currentCredits={credits.credits_available}
+                  requiredCredits={CHAT_MESSAGE_COST}
+                  variant="compact"
+                />
+              </div>
+            )}
+
             {/* Archivos adjuntos preview */}
             {attachedFiles.length > 0 && (
               <div className="flex flex-wrap gap-2 mb-3">
@@ -512,9 +544,13 @@ Por favor, intenta de nuevo o reformula tu solicitud.`,
               </div>
               <Button
                 size="icon"
-                disabled={!inputValue.trim() || isTyping}
+                disabled={!inputValue.trim() || isTyping || (credits ? !checkCredits(CHAT_MESSAGE_COST) : false)}
                 onClick={handleSendMessage}
-                title="Enviar mensaje"
+                title={
+                  credits && !checkCredits(CHAT_MESSAGE_COST)
+                    ? "Créditos insuficientes"
+                    : "Enviar mensaje"
+                }
                 className="h-[52px] w-[52px] rounded-xl shrink-0"
               >
                 {isTyping ? (

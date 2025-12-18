@@ -10,6 +10,8 @@ function getAuthHeaders(): HeadersInit {
   
   if (token) {
     headers['Authorization'] = `Bearer ${token}`;
+  } else {
+    console.warn('⚠️ No access token found in localStorage');
   }
   
   return headers;
@@ -18,10 +20,14 @@ function getAuthHeaders(): HeadersInit {
 // ⭐ Enhanced fetch with automatic token injection and refresh
 async function fetchWithAuth(url: string, options: RequestInit = {}): Promise<Response> {
   // Add auth headers
-  const headers = {
+  const headers: HeadersInit = {
     ...getAuthHeaders(),
     ...options.headers,
   };
+  
+  // Debug: Log request details
+  const hasToken = 'Authorization' in headers;
+  console.log(`🔍 fetchWithAuth: ${options.method || 'GET'} ${url} | Token: ${hasToken ? '✅' : '❌'}`);
   
   let response = await fetch(url, {
     ...options,
@@ -61,6 +67,8 @@ async function fetchWithAuth(url: string, options: RequestInit = {}): Promise<Re
           if (typeof window !== 'undefined') {
             window.location.href = '/login';
           }
+          // Throw error to stop execution
+          throw new Error('Authentication failed - redirecting to login');
         }
       } catch (error) {
         console.error('❌ Error refreshing token:', error);
@@ -68,6 +76,8 @@ async function fetchWithAuth(url: string, options: RequestInit = {}): Promise<Re
         if (typeof window !== 'undefined') {
           window.location.href = '/login';
         }
+        // Throw error to stop execution
+        throw new Error('Authentication failed - redirecting to login');
       }
     } else {
       console.error('❌ No refresh token available, redirecting to login');
@@ -75,6 +85,8 @@ async function fetchWithAuth(url: string, options: RequestInit = {}): Promise<Re
       if (typeof window !== 'undefined') {
         window.location.href = '/login';
       }
+      // Throw error to stop execution
+      throw new Error('Authentication required - redirecting to login');
     }
   }
   
@@ -429,7 +441,7 @@ export const api = {
   // NEW: Get latest RFX with optimized pagination and JWT
   async getLatestRFX(limit: number = 10): Promise<RFXLatestResponse> {
     try {
-      const url = `${API_BASE_URL}/api/rfx/latest${limit !== 10 ? `?limit=${limit}` : ''}`;
+      const url = `${API_BASE_URL}/api/rfx/latest?limit=${limit}`;
       const response = await fetchWithAuth(url);
       return handleResponse<RFXLatestResponse>(response);
     } catch (error) {
@@ -816,7 +828,28 @@ export const api = {
           throw new APIError(errorMessage, response.status);
         }
         
-        return await response.json();
+        const data = await response.json();
+        
+        // Si el backend devuelve el JSON como string, parsearlo
+        if (typeof data === 'string') {
+          try {
+            return JSON.parse(data);
+          } catch {
+            console.error('Failed to parse chat response as JSON:', data);
+            return data;
+          }
+        }
+        
+        // Si data.data es un string, parsearlo también
+        if (data.data && typeof data.data === 'string') {
+          try {
+            data.data = JSON.parse(data.data);
+          } catch {
+            console.error('Failed to parse data.data as JSON:', data.data);
+          }
+        }
+        
+        return data;
       } catch (error) {
         if (error instanceof APIError) {
           throw error;

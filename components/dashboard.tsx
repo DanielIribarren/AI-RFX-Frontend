@@ -223,6 +223,14 @@ export default function Dashboard() {
   // 🆕 NUEVA FUNCIÓN: Manejar navegación al análisis completo desde el historial
   const handleViewFullAnalysis = async (rfxId: string, rfxData: any) => {
     try {
+      // ✅ Verificar autenticación antes de hacer peticiones
+      const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
+      if (!token) {
+        console.warn('⚠️ No access token found, redirecting to login');
+        window.location.href = '/login';
+        return;
+      }
+
       console.log("🔍 Loading full analysis for RFX:", rfxId)
       
       // 🔍 DEBUG: Log input parameters to trace UUID vs name issue

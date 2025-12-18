@@ -132,25 +132,44 @@ export default function RfxDataPage() {
     try {
       console.log("🔄 Refreshing RFX data:", backendData.data.id);
 
-      // Get updated products data with profits and costs
+      // Get complete updated RFX data (includes all fields + products)
+      const rfxResponse = await api.getRFXById(backendData.data.id);
       const productsResponse = await api.getProductsWithProfits(backendData.data.id);
 
-      if (productsResponse.status === "success" && productsResponse.data) {
-        // Update backendData with fresh products
+      if (rfxResponse.status === "success" && rfxResponse.data) {
+        // Combine RFX data with complete products data
         const updatedData = {
-          ...backendData.data,
-          products: productsResponse.data.products || productsResponse.data
+          ...rfxResponse.data,
+          products: productsResponse.data?.products || productsResponse.data || rfxResponse.data.products
         };
 
-        setBackendData({ ...backendData, data: updatedData });
+        setBackendData({ ...rfxResponse, data: updatedData });
 
         // Extract updated individual products
         const updatedProducts = extractIndividualProducts(updatedData);
         setProductosIndividuales(updatedProducts);
 
-        console.log("✅ RFX data refreshed successfully with updated products");
+        // Update extracted data fields (fecha, lugar, cliente, etc.)
+        setExtractedData({
+          solicitante: updatedData.requester_name || (updatedData as any)?.nombre_solicitante || "",
+          email: updatedData.email || "",
+          productos: updatedData.products?.map((p: any) => 
+            `${p.product_name || p.nombre} (${p.quantity || p.cantidad} ${p.unit || p.unidad})`
+          ).join(', ') || "",
+          fechaEntrega: updatedData.delivery_date || (updatedData as any)?.fecha || "",
+          lugarEntrega: updatedData.location || (updatedData as any)?.lugar || "",
+          nombreEmpresa: updatedData.company_name || (updatedData as any)?.nombre_empresa || "",
+          emailEmpresa: (updatedData as any)?.email_empresa || "",
+          telefonoEmpresa: (updatedData as any)?.telefono_empresa || "",
+          telefonoSolicitante: (updatedData as any)?.telefono_solicitante || "",
+          cargoSolicitante: (updatedData as any)?.cargo_solicitante || "",
+          requirements: (updatedData as any)?.requirements || "",
+          requirementsConfidence: (updatedData as any)?.requirements_confidence || 0.0
+        });
+
+        console.log("✅ RFX data refreshed successfully (products + extracted fields)");
       } else {
-        console.warn("Could not refresh products data");
+        console.warn("Could not refresh RFX data");
       }
     } catch (error) {
       console.error("Error refreshing RFX data:", error);
@@ -464,6 +483,15 @@ export default function RfxDataPage() {
     const loadRfxData = async () => {
       if (!id) {
         setError("ID de RFX no válido");
+        setIsLoading(false);
+        return;
+      }
+
+      // ✅ Verificar autenticación antes de hacer peticiones
+      const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
+      if (!token) {
+        console.warn('⚠️ No access token found, redirecting to login');
+        router.push('/login');
         setIsLoading(false);
         return;
       }

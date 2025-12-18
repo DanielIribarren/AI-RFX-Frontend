@@ -483,6 +483,15 @@ export default function RfxBudgetPage() {
         return;
       }
 
+      // ✅ Verificar autenticación antes de hacer peticiones
+      const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
+      if (!token) {
+        console.warn('⚠️ No access token found, redirecting to login');
+        router.push('/login');
+        setIsLoading(false);
+        return;
+      }
+
       try {
         console.log("🔍 Loading RFX data for budget view, ID:", id);
         

@@ -1,5 +1,6 @@
-import { redirect } from "next/navigation";
+/**
+ * Home Page (KISS approach)
+ * Exports the landing page component directly
+ */
 
-export default function Home() {
-  redirect("/dashboard");
-}
+export { LandingPage as default } from '@/components/landing-page';

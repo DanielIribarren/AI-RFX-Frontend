@@ -157,7 +157,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }
 
   const logout = () => {
-    authService.logout()
+    authService.logout() // Ya limpia tokens y cache internamente
     setUser(null)
     // Clear cookies
     document.cookie = 'access_token=; path=/; max-age=0'

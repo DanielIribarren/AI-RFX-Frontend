@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { api, RFXResponse, ProposalRequest, useAPICall } from "@/lib/api"
 import { useCurrency } from "@/hooks/use-currency"
+import { useCredits } from "@/contexts/CreditsContext"
 import { pricingApiV2, pricingConverter, pricingDefaults } from "@/lib/api-pricing-v2"
 import {
   getFrontendPricingConfig,
@@ -103,6 +104,9 @@ export default function RfxResultsWrapperV2({
   useApiCalculations = true,
   useRealBackend = false
 }: RfxResultsWrapperV2Props) {
+
+  // Credits context
+  const { credits, checkCredits, refreshCredits } = useCredits()
 
   // Current view state
   const [currentView, setCurrentView] = useState<ViewMode>(ViewMode.DATA)
@@ -659,6 +663,17 @@ export default function RfxResultsWrapperV2({
 
     // Determinar si es primera generación o regeneración
     const isFirstGeneration = !propuesta || propuesta.trim().length === 0
+    
+    // Determinar costo de créditos según tipo de operación
+    const GENERATION_COST = 50 // Costo de generar propuesta
+    const REGENERATION_COST = 30 // Costo de regenerar propuesta
+    const requiredCredits = isFirstGeneration ? GENERATION_COST : REGENERATION_COST
+
+    // Validar créditos suficientes
+    if (credits && !checkCredits(requiredCredits)) {
+      alert(`Créditos insuficientes. Necesitas ${requiredCredits} créditos para ${isFirstGeneration ? 'generar' : 'regenerar'} la propuesta. Tienes ${credits.credits_available} disponibles.`)
+      return
+    }
 
     if (isFirstGeneration) {
       setIsLoadingProposal(true)
@@ -723,6 +738,9 @@ export default function RfxResultsWrapperV2({
         if (onProposalGenerated) {
           await onProposalGenerated()
         }
+
+        // Refrescar créditos después de generar propuesta
+        await refreshCredits()
       }
     } catch (error) {
       console.error("Error regenerating proposal:", error)
@@ -951,6 +969,13 @@ export default function RfxResultsWrapperV2({
 
         // If we have an RFX ID, fetch complete data to get real product IDs
         if (data.id) {
+          // ✅ Verificar autenticación antes de hacer peticiones
+          const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
+          if (!token) {
+            console.warn('⚠️ No access token found in rfx-results-wrapper-v2, skipping data fetch');
+            return; // Use data passed as prop instead
+          }
+
           const fetchedData = await fetchCompleteRFXData(data.id)
           if (fetchedData) {
             completeData = fetchedData

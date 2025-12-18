@@ -11,7 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { User, Settings, LogOut, ChevronUp } from "lucide-react"
+import { User, Settings, LogOut, ChevronUp, Building2 } from "lucide-react"
 import { useRouter } from "next/navigation"
 
 export function SidebarUser() {
@@ -39,6 +39,10 @@ export function SidebarUser() {
 
   const handleNavigateToSettings = () => {
     router.push("/budget-settings")
+  }
+
+  const handleNavigateToOrganization = () => {
+    router.push("/settings/organization")
   }
 
   return (
@@ -82,6 +86,10 @@ export function SidebarUser() {
           <DropdownMenuItem onClick={handleNavigateToProfile}>
             <User className="mr-2 h-4 w-4" />
             <span>Profile</span>
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={handleNavigateToOrganization}>
+            <Building2 className="mr-2 h-4 w-4" />
+            <span>Organization</span>
           </DropdownMenuItem>
           <DropdownMenuItem onClick={handleNavigateToSettings}>
             <Settings className="mr-2 h-4 w-4" />
