@@ -3,6 +3,9 @@
  * General configuration, plan info, members management, and danger zone
  */
 
+// Force dynamic rendering - this page requires authentication
+export const dynamic = 'force-dynamic';
+
 import { redirect } from 'next/navigation';
 import { OrganizationGeneralSettings } from '@/components/organization/OrganizationGeneralSettings';
 import { CreditsUsageCard } from '@/components/credits/CreditsUsageCard';

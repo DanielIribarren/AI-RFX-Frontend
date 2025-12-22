@@ -3,6 +3,9 @@
  * Shows CTA to create org if user is not in one, otherwise redirects to general settings
  */
 
+// Force dynamic rendering - this page requires authentication
+export const dynamic = 'force-dynamic';
+
 import { redirect } from 'next/navigation';
 import { CreateOrganizationCTA } from '@/components/organization/CreateOrganizationCTA';
 import { getCurrentOrganization } from '@/lib/api-organizations';
