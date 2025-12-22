@@ -19,7 +19,61 @@ function getAuthHeaders(): HeadersInit {
 
 // ⭐ Enhanced fetch with automatic token injection and refresh
 async function fetchWithAuth(url: string, options: RequestInit = {}): Promise<Response> {
-  // Add auth headers
+  // ✅ CRITICAL: Check if token is expired BEFORE making the request
+  if (typeof window !== 'undefined') {
+    const token = localStorage.getItem('access_token');
+    const refreshToken = localStorage.getItem('refresh_token');
+    
+    if (token && refreshToken) {
+      // Check if token is expired or about to expire
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        const expirationTime = payload.exp * 1000; // Convert to milliseconds
+        const currentTime = Date.now();
+        const isExpired = currentTime >= (expirationTime - 5 * 60 * 1000); // 5 min buffer
+        
+        if (isExpired) {
+          console.log('⚠️ fetchWithAuth: Token expired, refreshing before request...');
+          try {
+            const refreshResponse = await fetch(`${API_BASE_URL}/api/auth/refresh`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ refresh_token: refreshToken }),
+            });
+            
+            if (refreshResponse.ok) {
+              const data = await refreshResponse.json();
+              if (data.access_token) {
+                localStorage.setItem('access_token', data.access_token);
+                if (data.refresh_token) {
+                  localStorage.setItem('refresh_token', data.refresh_token);
+                }
+                console.log('✅ fetchWithAuth: Token refreshed successfully before request');
+              }
+            } else {
+              console.error('❌ fetchWithAuth: Token refresh failed, clearing tokens');
+              localStorage.clear();
+              if (typeof window !== 'undefined') {
+                window.location.href = '/login';
+              }
+              throw new Error('Authentication failed - redirecting to login');
+            }
+          } catch (error) {
+            console.error('❌ fetchWithAuth: Error refreshing token:', error);
+            localStorage.clear();
+            if (typeof window !== 'undefined') {
+              window.location.href = '/login';
+            }
+            throw new Error('Authentication failed - redirecting to login');
+          }
+        }
+      } catch (error) {
+        console.error('❌ fetchWithAuth: Error checking token expiration:', error);
+      }
+    }
+  }
+  
+  // Add auth headers (with potentially refreshed token)
   const headers: HeadersInit = {
     ...getAuthHeaders(),
     ...options.headers,

@@ -221,6 +221,13 @@ const RFXDetailsDialog = ({ rfxId, isOpen, onClose, rfxData, onViewFullAnalysis 
     try {
       // ✅ Verificar autenticación antes de hacer peticiones
       const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
+      console.log("🔍 DEBUG RFXDetailsDialog: Token check:", {
+        hasWindow: typeof window !== 'undefined',
+        hasToken: !!token,
+        tokenLength: token?.length || 0,
+        tokenPreview: token ? `${token.substring(0, 20)}...` : 'null'
+      });
+      
       if (!token) {
         console.warn('⚠️ No access token found in RFXDetailsDialog, cannot fetch data');
         setError("Sesión expirada. Por favor, inicia sesión nuevamente.");
@@ -228,6 +235,7 @@ const RFXDetailsDialog = ({ rfxId, isOpen, onClose, rfxData, onViewFullAnalysis 
       }
 
       console.log("🔍 DEBUG RFXDetailsDialog: Fetching RFX data for ID:", rfxId)
+      console.log("🔍 DEBUG RFXDetailsDialog: About to call api.getRFXById() with token present")
       
       // ✅ Usar api.getRFXById() que incluye el token automáticamente
       const result = await api.getRFXById(rfxId)
