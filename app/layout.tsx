@@ -7,7 +7,7 @@ import { AuthProvider } from "@/contexts/AuthContext"
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" })
 
 export const metadata = {
-  title: "RFx Analyzer",
+  title: "Budy AI",
   description: "Aplicación para el análisis de documentos RFX",
     generator: 'v0.dev'
 }

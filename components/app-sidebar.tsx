@@ -239,7 +239,7 @@ const AppSidebar = forwardRef<AppSidebarRef, AppSidebarProps>(
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <FileText className="h-5 w-5 text-gray-700" />
-            <span className="font-medium text-gray-900 group-data-[collapsible=icon]:hidden">RFx Analyzer</span>
+            <span className="font-medium text-gray-900 group-data-[collapsible=icon]:hidden">Budy AI</span>
           </div>
           <Button
             variant="ghost"
