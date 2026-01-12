@@ -41,13 +41,20 @@ function LoginContent() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    console.log('🔐 [LOGIN PAGE] Form submitted')
+    console.log('🔐 [LOGIN PAGE] Email:', email)
+    console.log('🔐 [LOGIN PAGE] Redirect to:', redirectTo)
+    
     setError("")
     setLoading(true)
 
     try {
+      console.log('🔐 [LOGIN PAGE] Calling login...')
       await login(email, password)
+      console.log('✅ [LOGIN PAGE] Login successful, redirecting to:', redirectTo)
       router.push(redirectTo)
     } catch (err: any) {
+      console.error('❌ [LOGIN PAGE] Login failed:', err)
       setError(err.message || "Login failed. Please check your credentials.")
     } finally {
       setLoading(false)

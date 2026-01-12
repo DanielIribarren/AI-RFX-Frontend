@@ -1,12 +1,7 @@
-/**
- * Public Pricing Page (KISS approach)
- * Simple landing page showing plans - no auth required
- * Reuses: PublicHeader, Card, Button, PLANS
- */
-
 'use client';
 
 import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { PublicHeader } from '@/components/public-header';
@@ -15,51 +10,45 @@ import { PLANS } from '@/constants/organization';
 
 export default function PricingPage() {
   const router = useRouter();
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   
-  // Simple: Check if user is logged in
-  const isAuthenticated = typeof window !== 'undefined' && localStorage.getItem('access_token');
+  useEffect(() => {
+    const token = localStorage.getItem('access_token');
+    setIsAuthenticated(!!token);
+  }, []);
   
   const handleSelectPlan = (planKey: string) => {
-    // KISS: Simple logic
     if (planKey === 'free') {
-      // Free plan - go to signup with from param
       router.push('/signup?from=/pricing');
       return;
     }
     
     if (planKey === 'enterprise') {
-      // Enterprise - contact sales
       alert('Contact sales@sabra.com for Enterprise plan');
       return;
     }
     
-    // Paid plans
     if (isAuthenticated) {
-      // Logged in - go to checkout
       router.push(`/checkout?plan=${planKey}`);
     } else {
-      // Not logged in - signup with plan + from param
       router.push(`/signup?plan=${planKey}&from=/pricing`);
     }
   };
   
   return (
     <div className="min-h-screen bg-white">
-      {/* Reuse PublicHeader */}
       <PublicHeader />
 
-      {/* Hero Section - Simple */}
-      <div className="max-w-7xl mx-auto px-6 py-16 text-center">
-        <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+      <div className="max-w-7xl mx-auto px-6 py-24 text-center">
+        <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
           Simple, Transparent Pricing
         </h1>
-        <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+        <p className="text-xl text-gray-600 max-w-2xl mx-auto mb-16">
           Choose the plan that fits your needs. No hidden fees.
         </p>
       </div>
 
-      {/* Plans Grid - Reuse existing design */}
-      <div className="max-w-7xl mx-auto px-6 pb-16">
+      <div className="max-w-7xl mx-auto px-6 pb-24">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {Object.entries(PLANS).map(([key, plan]) => (
             <Card 
@@ -109,10 +98,9 @@ export default function PricingPage() {
         </div>
       </div>
 
-      {/* Simple Footer */}
       <footer className="border-t border-gray-200 py-8">
         <div className="max-w-7xl mx-auto px-6 text-center text-sm text-gray-600">
-          <p>© 2024 AI-RFX. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} AI-RFX. All rights reserved.</p>
         </div>
       </footer>
     </div>

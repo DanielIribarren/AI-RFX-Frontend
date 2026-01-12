@@ -70,6 +70,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }, [])
 
   const login = async (email: string, password: string) => {
+    console.log('🔐 [AUTH CONTEXT] Starting login...')
     setLoading(true)
     try {
       // Use Next.js API route instead of direct backend call
@@ -80,31 +81,52 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         credentials: 'include', // Important: include cookies
       })
       
+      console.log('🔐 [AUTH CONTEXT] Login response status:', res.status)
+      
       const response: AuthResponse = await res.json()
+      console.log('🔐 [AUTH CONTEXT] Login response data:', {
+        status: response.status,
+        message: response.message,
+        hasAccessToken: !!response.access_token,
+        hasRefreshToken: !!response.refresh_token,
+        hasUser: !!response.user,
+      })
       
       if (!res.ok) {
+        console.error('❌ [AUTH CONTEXT] Login failed:', response.message)
         throw new Error(response.message || 'Login failed')
       }
       
       // Save tokens in localStorage
       if (response.access_token) {
+        console.log('💾 [AUTH CONTEXT] Saving access token to localStorage')
         localStorage.setItem('access_token', response.access_token)
       }
       if (response.refresh_token) {
+        console.log('💾 [AUTH CONTEXT] Saving refresh token to localStorage')
         localStorage.setItem('refresh_token', response.refresh_token)
       }
       
-      // Save tokens in cookies for middleware
+      // Note: Cookies are already set by the API route
+      // But we set them again here for redundancy
       if (response.access_token) {
+        console.log('🍪 [AUTH CONTEXT] Setting access token cookie')
         document.cookie = `access_token=${response.access_token}; path=/; max-age=86400; SameSite=Lax`
       }
       if (response.refresh_token) {
+        console.log('🍪 [AUTH CONTEXT] Setting refresh token cookie')
         document.cookie = `refresh_token=${response.refresh_token}; path=/; max-age=604800; SameSite=Lax`
       }
       
       if (response.user) {
+        console.log('✅ [AUTH CONTEXT] User logged in:', response.user.email)
         setUser(response.user)
+      } else {
+        console.warn('⚠️ [AUTH CONTEXT] No user data in response')
       }
+    } catch (error) {
+      console.error('❌ [AUTH CONTEXT] Login error:', error)
+      throw error
     } finally {
       setLoading(false)
     }

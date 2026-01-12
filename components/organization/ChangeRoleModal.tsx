@@ -35,7 +35,7 @@ interface Props {
 }
 
 export function ChangeRoleModal({ member, organizationId, isOpen, onClose }: Props) {
-  const { changeRole, isUpdating } = useOrganizationMembers(organizationId);
+  const { changeRole, isChangingRole } = useOrganizationMembers();
   const [selectedRole, setSelectedRole] = useState<OrganizationRole>(member.role);
   
   const handleSubmit = async () => {
@@ -45,7 +45,7 @@ export function ChangeRoleModal({ member, organizationId, isOpen, onClose }: Pro
     }
     
     try {
-      await changeRole(member.user_id, selectedRole);
+      await changeRole(member.user_id, selectedRole, member.user.name || member.user.email);
       onClose();
     } catch (error) {
       // Error already handled by hook
@@ -54,7 +54,7 @@ export function ChangeRoleModal({ member, organizationId, isOpen, onClose }: Pro
   };
   
   const handleClose = () => {
-    if (!isUpdating) {
+    if (!isChangingRole) {
       setSelectedRole(member.role);
       onClose();
     }
@@ -85,7 +85,7 @@ export function ChangeRoleModal({ member, organizationId, isOpen, onClose }: Pro
             <Select
               value={selectedRole}
               onValueChange={(value) => setSelectedRole(value as OrganizationRole)}
-              disabled={isUpdating}
+              disabled={isChangingRole}
             >
               <SelectTrigger className="mt-1">
                 <SelectValue placeholder="Select a role" />
@@ -127,17 +127,17 @@ export function ChangeRoleModal({ member, organizationId, isOpen, onClose }: Pro
             type="button"
             variant="outline"
             onClick={handleClose}
-            disabled={isUpdating}
+            disabled={isChangingRole}
           >
             Cancel
           </Button>
           <Button 
             type="button"
             onClick={handleSubmit}
-            disabled={isUpdating || selectedRole === member.role}
+            disabled={isChangingRole || selectedRole === member.role}
             className="bg-black hover:bg-gray-800 text-white"
           >
-            {isUpdating ? 'Updating...' : 'Update Role'}
+            {isChangingRole ? 'Updating...' : 'Update Role'}
           </Button>
         </DialogFooter>
       </DialogContent>
