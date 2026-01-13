@@ -80,10 +80,10 @@ export default function BudgetSettingsPage() {
       </div>
 
       {/* Info Section */}
-      <Card className="border-blue-200 bg-blue-50">
+      <Card className="border-primary/20 bg-primary/5">
         <CardContent className="pt-6">
           <div className="flex items-start gap-3">
-            <AlertCircle className="h-5 w-5 text-blue-600 mt-0.5" />
+            <AlertCircle className="h-5 w-5 text-primary mt-0.5" />
             <div className="space-y-1">
               <h4 className="font-semibold text-blue-900">¿Cómo funciona?</h4>
               <p className="text-sm text-blue-800">

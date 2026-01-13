@@ -16,9 +16,9 @@ const statusBadgeVariants = cva(
         warning:
           "border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100",
         info:
-          "border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100",
+          "border-primary/20 bg-primary/5 text-primary-dark hover:bg-primary/10",
         loading:
-          "border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100",
+          "border-primary/20 bg-primary/5 text-primary-dark hover:bg-primary/10",
         neutral:
           "border-gray-200 bg-gray-50 text-gray-700 hover:bg-gray-100",
       },

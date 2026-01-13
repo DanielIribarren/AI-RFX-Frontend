@@ -227,8 +227,8 @@ export default function BrandingPreview({ companyId }: BrandingPreviewProps) {
     return (
       <div className="text-center p-8 border-2 border-dashed border-gray-300 rounded-lg bg-gray-50">
         <div className="space-y-3">
-          <div className="mx-auto w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-            <Layout className="h-6 w-6 text-blue-500" />
+          <div className="mx-auto w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
+            <Layout className="h-6 w-6 text-primary-light" />
           </div>
           <div>
             <h3 className="text-sm font-medium text-gray-900">No hay configuración de presupuesto</h3>

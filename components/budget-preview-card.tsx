@@ -374,14 +374,14 @@ export default function BudgetPreviewCard({
         {calculations.cost_per_person_enabled && calculations.headcount > 0 && (
           <>
             <Separator />
-            <div className="bg-blue-50 rounded-lg p-3">
+            <div className="bg-primary/5 rounded-lg p-3">
               <div className="flex justify-between items-center">
                 <div>
                   <p className="text-sm font-medium text-blue-800 flex items-center gap-2">
                     <Users className="h-4 w-4" />
                     Costo por persona
                   </p>
-                  <p className="text-xs text-blue-600">
+                  <p className="text-xs text-primary">
                     {calculations.headcount} personas • Base: {getCalculationBaseDisplay(config.calculation_base)}
                   </p>
                 </div>

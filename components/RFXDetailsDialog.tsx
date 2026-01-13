@@ -91,8 +91,8 @@ const getStatusDisplay = (status: string) => {
       };
     case 'In progress':
       return {
-        icon: <Clock className="h-4 w-4 text-blue-500" />,
-        className: 'text-blue-700 bg-blue-100 border-blue-200',
+        icon: <Clock className="h-4 w-4 text-primary-light" />,
+        className: 'text-primary-dark bg-primary/10 border-primary/20',
         label: 'En Progreso'
       };
     case 'Completed':
@@ -417,7 +417,7 @@ const RFXDetailsDialog = ({ rfxId, isOpen, onClose, rfxData, onViewFullAnalysis 
                         onViewFullAnalysis(rfxId, rfxData)
                         onClose()
                       }}
-                      className="gap-2 bg-blue-600 hover:bg-blue-700 text-white"
+                      className="gap-2 bg-primary hover:bg-primary-dark text-white"
                     >
                       <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -576,7 +576,7 @@ const RFXDetailsDialog = ({ rfxId, isOpen, onClose, rfxData, onViewFullAnalysis 
                 <CardContent>
                   {propuesta ? (
                     <div className="border rounded-lg overflow-hidden">
-                      <div className="mb-2 text-xs text-blue-600 bg-blue-50 p-2 rounded">
+                      <div className="mb-2 text-xs text-primary bg-primary/5 p-2 rounded">
                         DEBUG RFXDetailsDialog: Propuesta encontrada, longitud: {propuesta.length} caracteres
                       </div>
                       <ScrollArea className="h-96">

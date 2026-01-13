@@ -93,8 +93,8 @@ export function EditableTitle({
           onBlur={handleSave}
           disabled={isSaving}
           className={cn(
-            "text-3xl font-bold text-gray-900 bg-transparent border-b-2 border-blue-500 outline-none",
-            "focus:border-blue-600 transition-colors",
+            "text-3xl font-bold text-gray-900 bg-transparent border-b-2 border-primary-light outline-none",
+            "focus:border-primary transition-colors",
             isSaving && "opacity-50 cursor-not-allowed",
             className
           )}
@@ -111,7 +111,7 @@ export function EditableTitle({
     <div className="group flex items-center gap-2">
       <h1 
         className={cn(
-          "text-3xl font-bold text-gray-900 cursor-pointer hover:text-blue-600 transition-colors",
+          "text-3xl font-bold text-gray-900 cursor-pointer hover:text-primary transition-colors",
           className
         )}
         onClick={() => !disabled && setIsEditing(true)}

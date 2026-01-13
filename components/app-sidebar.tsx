@@ -80,7 +80,7 @@ const getStatusIcon = (status: string) => {
     case 'Draft':
       return <FileText className="h-3 w-3 text-gray-500 flex-shrink-0 mt-0.5 group-data-[collapsible=icon]:hidden" />;
     case 'In progress':
-      return <Clock className="h-3 w-3 text-blue-500 flex-shrink-0 mt-0.5 group-data-[collapsible=icon]:hidden" />;
+      return <Clock className="h-3 w-3 text-primary-light flex-shrink-0 mt-0.5 group-data-[collapsible=icon]:hidden" />;
     case 'Completed':
       return <CheckCircle className="h-3 w-3 text-green-500 flex-shrink-0 mt-0.5 group-data-[collapsible=icon]:hidden" />;
     case 'Cancelled':
@@ -234,12 +234,14 @@ const AppSidebar = forwardRef<AppSidebarRef, AppSidebarProps>(
     }
 
   return (
-    <Sidebar collapsible="icon" className="border-r bg-gray-50/40">
-      <SidebarHeader className="border-b border-gray-200/60 px-3 py-3">
+    <Sidebar collapsible="icon" className="border-r border-gray-200/60 bg-white">
+      <SidebarHeader className="border-b border-gray-200/60 px-3 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <FileText className="h-5 w-5 text-gray-700" />
-            <span className="font-medium text-gray-900 group-data-[collapsible=icon]:hidden">Budy AI</span>
+            <div className="bg-brand-gradient p-1.5 rounded-lg shadow-sm">
+              <FileText className="h-4 w-4 text-white" />
+            </div>
+            <span className="font-bold text-gray-900 group-data-[collapsible=icon]:hidden">Budy AI</span>
           </div>
           <Button
             variant="ghost"
@@ -260,7 +262,7 @@ const AppSidebar = forwardRef<AppSidebarRef, AppSidebarProps>(
               <SidebarMenuItem>
                 <SidebarMenuButton
                   onClick={onNewRfx}
-                  className="w-full bg-white text-gray-900 font-medium h-9 rounded-lg shadow-sm hover:bg-gray-50 hover:shadow-md transition-all duration-200 ease-in-out border border-gray-200"
+                  className="w-full bg-brand-gradient text-white font-semibold h-10 rounded-xl shadow-md hover:shadow-lg hover:scale-[1.02] transition-all duration-200 ease-out border-0"
                 >
                   <Plus className="h-4 w-4" />
                   <span>New RFX</span>
@@ -278,7 +280,7 @@ const AppSidebar = forwardRef<AppSidebarRef, AppSidebarProps>(
                 <SidebarMenuButton
                   onClick={onNavigateToHistory}
                   isActive={currentView === "history"}
-                  className="w-full justify-start text-gray-700 hover:bg-gray-100 h-8 rounded-md"
+                  className="w-full justify-start text-gray-700 hover:bg-primary/5 hover:text-primary h-9 rounded-lg transition-all duration-200 data-[active=true]:bg-primary/10 data-[active=true]:text-primary data-[active=true]:font-semibold"
                 >
                   <MessageSquare className="h-4 w-4" />
                   <span>RFX History</span>
@@ -288,7 +290,7 @@ const AppSidebar = forwardRef<AppSidebarRef, AppSidebarProps>(
                 <SidebarMenuButton
                   onClick={onNavigateToBudgetSettings}
                   isActive={currentView === "budget-settings"}
-                  className="w-full justify-start text-gray-700 hover:bg-gray-100 h-8 rounded-md"
+                  className="w-full justify-start text-gray-700 hover:bg-primary/5 hover:text-primary h-9 rounded-lg transition-all duration-200 data-[active=true]:bg-primary/10 data-[active=true]:text-primary data-[active=true]:font-semibold"
                 >
                   <Settings className="h-4 w-4" />
                   <span>Budget Settings</span>
@@ -300,7 +302,7 @@ const AppSidebar = forwardRef<AppSidebarRef, AppSidebarProps>(
 
         {/* Recent RFX */}
         <SidebarGroup>
-          <SidebarGroupLabel className="text-xs font-medium text-gray-500 mb-2 px-0">Recents</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-xs font-semibold text-gray-900 mb-3 px-0 uppercase tracking-wider">Recents</SidebarGroupLabel>
           <SidebarGroupContent>
             {isLoading ? (
               <div className="px-2 py-4 text-center group-data-[collapsible=icon]:hidden">
@@ -316,7 +318,7 @@ const AppSidebar = forwardRef<AppSidebarRef, AppSidebarProps>(
                   <SidebarMenuItem key={rfx.id}>
                     <SidebarMenuButton
                       onClick={() => onSelectRfx?.(rfx.id)}
-                      className="w-full justify-start h-auto py-2 px-2 text-left hover:bg-gray-100 rounded-md group"
+                      className="w-full justify-start h-auto py-2.5 px-3 text-left hover:bg-primary/5 hover:border-l-2 hover:border-l-primary rounded-lg group transition-all duration-200"
                     >
                       <div className="flex items-start gap-2 w-full min-w-0">
                         <div className="flex-1 min-w-0">

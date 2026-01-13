@@ -53,7 +53,7 @@ function InlineEditableText({
           onChange={(e) => setEditValue(e.target.value)}
           onKeyDown={handleKeyDown}
           onBlur={handleBlur}
-          className="h-7 w-24 text-xs text-center border-blue-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+          className="h-7 w-24 text-xs text-center border-blue-400 focus:border-primary-light focus:ring-1 focus:ring-primary"
           autoFocus
           onClick={(e) => e.stopPropagation()}
         />
@@ -63,7 +63,7 @@ function InlineEditableText({
 
   return (
     <div 
-      className="cursor-pointer hover:bg-blue-50 rounded px-2 py-1 transition-colors duration-200 text-center" 
+      className="cursor-pointer hover:bg-primary/5 rounded px-2 py-1 transition-colors duration-200 text-center" 
       onClick={handleEdit}
       title="Click para editar"
     >
@@ -181,7 +181,7 @@ function InlineEditableCell({
             min={min}
             step={step}
             className={cn(
-              "h-7 w-20 text-xs text-center border-blue-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500",
+              "h-7 w-20 text-xs text-center border-blue-400 focus:border-primary-light focus:ring-1 focus:ring-primary",
               currencySymbol && "pl-5"
             )}
             autoFocus
@@ -195,7 +195,7 @@ function InlineEditableCell({
   return (
     <div 
       className={cn(
-        "cursor-pointer hover:bg-blue-50 rounded px-2 py-1 transition-colors duration-200 text-center",
+        "cursor-pointer hover:bg-primary/5 rounded px-2 py-1 transition-colors duration-200 text-center",
         className
       )}
       onClick={handleEdit}
@@ -285,7 +285,7 @@ export default function ProductTable({
                 <div className="flex items-center gap-2 flex-wrap">
                   <span className="text-sm font-medium text-gray-900">{producto.nombre}</span>
                   {producto.isNew && (
-                    <Badge variant="secondary" className="text-xs bg-blue-100 text-blue-700 border-blue-200">
+                    <Badge variant="secondary" className="text-xs bg-primary/10 text-primary-dark border-primary/20">
                       <Sparkles className="h-3 w-3 mr-1" />
                       Nuevo
                     </Badge>
@@ -298,7 +298,7 @@ export default function ProductTable({
                   )}
                 </div>
                 {producto.isQuantityModified && (
-                  <div className="text-xs text-blue-600 font-medium mt-1">Cantidad modificada</div>
+                  <div className="text-xs text-primary font-medium mt-1">Cantidad modificada</div>
                 )}
                 {needsPriceReview && (
                   <div className="text-xs text-amber-600 font-medium flex items-center gap-1 mt-1">
@@ -403,7 +403,7 @@ export default function ProductTable({
 
               {/* Margen de Ganancia - 1 columna */}
               <div className="col-span-1 text-center">
-                <div className="text-sm text-blue-600 font-medium">
+                <div className="text-sm text-primary font-medium">
                   {producto.margen_ganancia?.toFixed(1) || "0.0"}%
                 </div>
               </div>
@@ -431,7 +431,7 @@ export default function ProductTable({
       </div>
 
       {/* Resumen de Totales */}
-      <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+      <div className="mt-6 bg-primary/5 border border-primary/20 rounded-lg p-4">
         <div className="grid grid-cols-3 gap-4 text-center">
           <div>
             <div className="text-sm text-gray-600">Total Ganancia</div>
@@ -446,7 +446,7 @@ export default function ProductTable({
           </div>
           <div>
             <div className="text-sm text-gray-600">Margen Promedio</div>
-            <div className="text-xl font-bold text-blue-600">
+            <div className="text-xl font-bold text-primary">
               {productos.length > 0 
                 ? (productos.reduce((sum, p) => sum + (p.margen_ganancia || 0), 0) / productos.length).toFixed(1)
                 : "0.0"}%

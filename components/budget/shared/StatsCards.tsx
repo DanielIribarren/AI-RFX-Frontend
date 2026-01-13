@@ -15,11 +15,11 @@ export function StatsCards({ subtotal, coordination, total, currencySymbol = "‚Ç
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-      <Card className="border-blue-200 bg-gradient-to-br from-blue-50 to-blue-100">
+      <Card className="border-primary/20 bg-gradient-to-br from-blue-50 to-blue-100">
         <CardContent className="p-6">
           <div className="flex items-center justify-between">
             <div className="space-y-1">
-              <p className="text-sm font-medium text-blue-600">
+              <p className="text-sm font-medium text-primary">
                 Subtotal Productos
               </p>
               <p className="text-2xl font-bold text-blue-900">
@@ -35,7 +35,7 @@ export function StatsCards({ subtotal, coordination, total, currencySymbol = "‚Ç
         <CardContent className="p-6">
           <div className="flex items-center justify-between">
             <div className="space-y-1">
-              <p className="text-sm font-medium text-purple-600">
+              <p className="text-sm font-medium text-primary">
                 Coordinaci√≥n
               </p>
               <p className="text-2xl font-bold text-purple-900">

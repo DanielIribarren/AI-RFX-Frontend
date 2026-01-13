@@ -1108,7 +1108,7 @@ export default function RfxResultsWrapperV2({
           </p>
           <button
             onClick={onNewRfx}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium"
+            className="bg-primary hover:bg-primary-dark text-white px-6 py-2 rounded-lg font-medium"
           >
             Procesar Nuevo RFX
           </button>
@@ -1118,30 +1118,115 @@ export default function RfxResultsWrapperV2({
   }
 
   // Función para aplicar cambios del chat
-  const handleChatUpdate = (changes: RFXChange[]) => {
-    changes.forEach(change => {
+  const handleChatUpdate = async (changes: RFXChange[]) => {
+    console.log('🔄 Applying chat changes:', changes)
+    
+    // Detectar tipos de cambios
+    const changeTypes = new Set(changes.map(c => c.type))
+    
+    for (const change of changes) {
       switch (change.type) {
         case "add_product":
-          // Handle add product - would need onAddProduct prop
-          console.log("Add product from chat:", change.data)
+          // Agregar producto al estado local
+          const cantidad = change.data.cantidad || change.data.quantity || 1
+          const newProduct: ProductoIndividual = {
+            id: change.data.id || crypto.randomUUID(),
+            nombre: change.data.nombre || change.data.name,
+            cantidad: cantidad,
+            cantidadOriginal: cantidad,
+            cantidadEditada: cantidad,
+            precio: change.data.precio || change.data.price || 0,
+            unidad: change.data.unidad || change.data.unit || 'unidades',
+            isQuantityModified: false
+          }
+          setProductosIndividuales(prev => [...prev, newProduct])
+          console.log('✅ Product added to local state:', newProduct)
+          
+          // Persistir en backend
+          if (backendData?.data?.id) {
+            try {
+              await api.addProduct(backendData.data.id, newProduct)
+              console.log('✅ Product persisted to backend')
+            } catch (error) {
+              console.error('❌ Error persisting product:', error)
+            }
+          }
           break
 
         case "update_product":
-          // Handle update product
-          console.log("Update product from chat:", change.data)
+          // Actualizar producto en estado local
+          const { product_id, field, value } = change.data
+          setProductosIndividuales(prev =>
+            prev.map(p => p.id === product_id ? { ...p, [field]: value } : p)
+          )
+          console.log('✅ Product updated in local state:', { product_id, field, value })
+          
+          // Persistir en backend
+          if (backendData?.data?.id) {
+            try {
+              await api.updateProductField(backendData.data.id, product_id, field, value)
+              console.log('✅ Product update persisted to backend')
+            } catch (error) {
+              console.error('❌ Error persisting product update:', error)
+            }
+          }
           break
 
         case "delete_product":
-          // Handle delete product
-          console.log("Delete product from chat:", change.target)
+          // Eliminar producto del estado local
+          const productId = change.data?.product_id || change.target
+          setProductosIndividuales(prev => prev.filter(p => p.id !== productId))
+          console.log('✅ Product deleted from local state:', productId)
+          
+          // Persistir en backend
+          if (backendData?.data?.id) {
+            try {
+              await api.deleteProduct(backendData.data.id, productId)
+              console.log('✅ Product deletion persisted to backend')
+            } catch (error) {
+              console.error('❌ Error persisting product deletion:', error)
+            }
+          }
           break
 
         case "update_field":
-          // Update field of RFX
-          handleFieldSave(change.target as keyof ExtractedData, change.data.newValue)
+          // Actualizar campo del RFX
+          const fieldName = change.data?.field || change.target
+          const fieldValue = change.data?.value || change.data?.newValue
+          
+          setExtractedData(prev => ({ ...prev, [fieldName]: fieldValue }))
+          console.log('✅ RFX field updated in local state:', { fieldName, fieldValue })
+          
+          // Persistir en backend
+          try {
+            await handleFieldSave(fieldName as keyof ExtractedData, fieldValue)
+            console.log('✅ RFX field update persisted to backend')
+          } catch (error) {
+            console.error('❌ Error persisting field update:', error)
+          }
           break
       }
-    })
+    }
+    
+    // Solo refrescar datos completos si hubo cambios en productos (para recalcular ganancias)
+    if (changeTypes.has('add_product') || 
+        changeTypes.has('update_product') || 
+        changeTypes.has('delete_product')) {
+      console.log('🔄 Refreshing products data for profit calculations')
+      if (backendData?.data?.id) {
+        try {
+          // Recargar productos con ganancias actualizadas
+          const productsResponse = await api.getProductsWithProfits(backendData.data.id)
+          const updatedProducts = extractIndividualProducts(productsResponse.data.products || productsResponse.data)
+          setProductosIndividuales(updatedProducts)
+          console.log('✅ Products data refreshed')
+        } catch (error) {
+          console.error('❌ Error refreshing products data:', error)
+        }
+      }
+    } else {
+      console.log('ℹ️ No product changes, skipping full refresh')
+    }
   }
 
   // Render the appropriate view

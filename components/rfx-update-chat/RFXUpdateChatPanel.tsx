@@ -86,7 +86,10 @@ export default function RFXUpdateChatPanel({
       const response = await api.chat.getHistory(rfxId)
       console.log('📥 Chat history response:', response)
 
-      if (response.messages && response.messages.length === 0) {
+      // Backend devuelve 'history' no 'messages'
+      const historyMessages = response.history || response.messages || []
+
+      if (historyMessages.length === 0) {
         console.log('💬 No messages in history, showing welcome message')
         // Mensaje de bienvenida
         setMessages([{
@@ -106,8 +109,42 @@ Escribe tu solicitud abajo ↓`,
           metadata: { type: "welcome" }
         }])
       } else {
-        console.log(`✅ Loaded ${response.messages?.length || 0} messages from history`)
-        setMessages(response.messages || [])
+        console.log(`✅ Loaded ${historyMessages.length} messages from history`)
+        
+        // Mapear formato del backend al formato del frontend
+        const formattedMessages = historyMessages.flatMap((item: any) => {
+          const messages = []
+          
+          // Mensaje del usuario
+          if (item.user_message) {
+            messages.push({
+              id: `${item.rfx_id}-user-${item.created_at}`,
+              role: "user",
+              content: item.user_message,
+              timestamp: item.created_at,
+              files: item.user_files || []
+            })
+          }
+          
+          // Mensaje del asistente
+          if (item.assistant_message) {
+            messages.push({
+              id: `${item.rfx_id}-assistant-${item.created_at}`,
+              role: "assistant",
+              content: item.assistant_message,
+              timestamp: item.created_at,
+              metadata: {
+                confidence: item.confidence,
+                changes: item.changes_applied,
+                requiresConfirmation: item.requires_confirmation
+              }
+            })
+          }
+          
+          return messages
+        })
+        
+        setMessages(formattedMessages)
       }
     } catch (error) {
       console.error("❌ Error loading chat history:", error)

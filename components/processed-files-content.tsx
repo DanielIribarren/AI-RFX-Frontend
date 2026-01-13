@@ -88,14 +88,14 @@ export default function ProcessedFilesContent({
       <Card>
         <CardHeader>
           <CardTitle className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-            <FileText className="h-5 w-5 text-blue-500" />
+            <FileText className="h-5 w-5 text-primary-light" />
             Resumen de Procesamiento
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg">
-              <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+            <div className="flex items-center gap-3 p-3 bg-primary/5 rounded-lg">
+              <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
                 📁
               </div>
               <div>
@@ -117,9 +117,9 @@ export default function ProcessedFilesContent({
             </div>
             
             {receivedAt && (
-              <div className="flex items-center gap-3 p-3 bg-purple-50 rounded-lg">
-                <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
-                  <Calendar className="h-5 w-5 text-purple-600" />
+              <div className="flex items-center gap-3 p-3 bg-primary/5 rounded-lg">
+                <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
+                  <Calendar className="h-5 w-5 text-primary" />
                 </div>
                 <div>
                   <p className="text-sm text-gray-600">Fecha de Recepción</p>
@@ -215,7 +215,7 @@ export default function ProcessedFilesContent({
                       </div>
                       <div>
                         <span className="text-gray-500">Extracción:</span>
-                        <span className="ml-1 text-blue-600 font-medium">IA + OCR</span>
+                        <span className="ml-1 text-primary font-medium">IA + OCR</span>
                       </div>
                     </div>
                   </div>

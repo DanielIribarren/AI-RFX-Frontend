@@ -290,14 +290,14 @@ export default function RfxChatInput({ onFileProcessed, onRFXProcessed, isLoadin
 
       {/* Processing Progress */}
       {isProcessing && (
-        <Card className="border-blue-200 bg-blue-50">
+        <Card className="border-primary/20 bg-primary/5">
           <CardContent className="p-4">
             <div className="flex items-center gap-3 mb-2">
-              <Loader2 className="h-4 w-4 animate-spin text-blue-600" />
+              <Loader2 className="h-4 w-4 animate-spin text-primary" />
               <span className="text-sm font-medium text-blue-800">🤖 Procesando RFX con IA...</span>
             </div>
             <Progress value={uploadProgress} className="w-full h-2" />
-            <p className="text-xs text-blue-600 mt-1">Extrayendo información y generando propuesta comercial</p>
+            <p className="text-xs text-primary mt-1">Extrayendo información y generando propuesta comercial</p>
           </CardContent>
         </Card>
       )}

@@ -92,7 +92,7 @@ export function PreviewTab({ productos, config, formatPrice, currencySymbol = "â
                   </td>
                 </tr>
                 {config.coordination_enabled && (
-                  <tr className="bg-purple-50">
+                  <tr className="bg-primary/5">
                     <td colSpan={4} className="p-3 text-sm font-medium text-right text-purple-700">
                       {config.coordination_description} ({(config.coordination_rate * 100).toFixed(0)}%):
                     </td>

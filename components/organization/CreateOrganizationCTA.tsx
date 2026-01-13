@@ -61,11 +61,11 @@ export function CreateOrganizationCTA() {
         </div>
         
         {/* Contact Message */}
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 max-w-md mx-auto">
+        <div className="bg-primary/5 border border-primary/20 rounded-lg p-4 max-w-md mx-auto">
           <p className="text-sm text-blue-900 font-medium">
             To create an organization, please contact us
           </p>
-          <p className="text-xs text-blue-700 mt-1">
+          <p className="text-xs text-primary-dark mt-1">
             We are currently in testing mode and organization creation requires approval.
           </p>
         </div>

@@ -39,7 +39,7 @@ export function PricingTab({ config, onConfigChange, onSave, isDisabled, isLoadi
         <div className="flex items-center justify-end gap-2 text-sm">
           {saveStatus === 'saving' && (
             <>
-              <div className="h-2 w-2 rounded-full bg-blue-500 animate-pulse" />
+              <div className="h-2 w-2 rounded-full bg-primary-light animate-pulse" />
               <span className="text-muted-foreground">Guardando...</span>
             </>
           )}

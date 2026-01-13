@@ -1,4 +1,5 @@
 import { Upload, Sparkles, FileText, Download } from 'lucide-react'
+import { BrandCard } from '@/components/brand-card'
 
 export function HowItWorks() {
   const steps = [
@@ -25,13 +26,13 @@ export function HowItWorks() {
   ]
 
   return (
-    <section className="py-20 bg-gray-50">
+    <section className="py-20">
       <div className="max-w-7xl mx-auto px-6">
         <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+          <h2 className="text-3xl md:text-4xl font-bold text-black mb-4 tracking-tight">
             Cómo Funciona
           </h2>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+          <p className="text-lg text-gray-700 max-w-2xl mx-auto">
             De solicitud a propuesta profesional en 4 pasos simples
           </p>
         </div>
@@ -40,24 +41,24 @@ export function HowItWorks() {
           {steps.map((step, index) => {
             const Icon = step.icon
             return (
-              <div 
+              <BrandCard 
                 key={index} 
-                className="bg-white p-6 rounded-lg border-2 border-gray-200 hover:border-black transition-colors"
+                className="p-6 hover:shadow-strong transition-all"
               >
                 <div className="flex items-start gap-4">
-                  <div className="bg-black text-white p-3 rounded-lg flex-shrink-0">
-                    <Icon className="h-6 w-6" />
+                  <div className="bg-indigo-600 p-3 rounded-xl flex-shrink-0 shadow-[0_0_20px_rgba(79,70,229,0.3)]">
+                    <Icon className="h-6 w-6 text-white" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-bold text-gray-900 mb-2">
+                    <h3 className="text-xl font-bold text-black mb-2">
                       {index + 1}. {step.title}
                     </h3>
-                    <p className="text-gray-600">
+                    <p className="text-gray-700">
                       {step.description}
                     </p>
                   </div>
                 </div>
-              </div>
+              </BrandCard>
             )
           })}
         </div>

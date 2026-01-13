@@ -36,21 +36,23 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-50 p-4">
-      <div className="w-full space-y-8">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 via-white to-purple-50/30 p-4">
+      <div className="w-full space-y-10">
         {/* Header */}
-        <div className="text-center space-y-4">
-          <div className="flex items-center justify-center gap-3">
-            <div className="text-blue-600">
-              <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
+        <div className="text-center space-y-5">
+          <div className="flex items-center justify-center gap-3 animate-float">
+            <div className="bg-brand-gradient p-3 rounded-2xl shadow-lg">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="white">
                 <path d="M12 2L13.09 8.26L20 9L13.09 9.74L12 16L10.91 9.74L4 9L10.91 8.26L12 2Z" />
               </svg>
             </div>
-            <h1 className="text-4xl font-bold text-gray-900">RFX Analyzer</h1>
+            <h1 className="text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-900 via-gray-800 to-primary">
+              RFX Analyzer
+            </h1>
           </div>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Procesa documentos RFX con inteligencia artificial. Escribe instrucciones específicas o adjunta
-            archivos para comenzar.
+          <p className="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
+            Procesa documentos RFX con <span className="text-brand-gradient font-semibold">inteligencia artificial</span>. 
+            Escribe instrucciones específicas o adjunta archivos para comenzar.
           </p>
         </div>
 
@@ -62,10 +64,10 @@ export default function DashboardPage() {
         />
 
         {/* Feature Cards */}
-        <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-            <div className="text-blue-600 mb-3">
-              <svg className="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+          <div className="group card-elevated-lg p-7 hover-lift hover-glow-brand cursor-default">
+            <div className="bg-gradient-to-br from-primary/10 to-primary/5 p-4 rounded-2xl mb-4 w-fit group-hover:scale-110 transition-transform duration-300">
+              <svg className="h-8 w-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -74,15 +76,15 @@ export default function DashboardPage() {
                 />
               </svg>
             </div>
-            <h3 className="font-semibold text-gray-900 mb-2">Procesamiento Inteligente</h3>
-            <p className="text-sm text-gray-600">
+            <h3 className="font-bold text-gray-900 mb-2 text-lg">Procesamiento Inteligente</h3>
+            <p className="text-sm text-gray-600 leading-relaxed">
               Extrae automáticamente información clave de documentos RFX usando IA avanzada.
             </p>
           </div>
 
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-            <div className="text-green-600 mb-3">
-              <svg className="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="group card-elevated-lg p-7 hover-lift hover-glow-brand cursor-default border-brand-accent">
+            <div className="bg-gradient-to-br from-primary to-primary-dark p-4 rounded-2xl mb-4 w-fit group-hover:scale-110 transition-transform duration-300 shadow-lg">
+              <svg className="h-8 w-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -91,15 +93,18 @@ export default function DashboardPage() {
                 />
               </svg>
             </div>
-            <h3 className="font-semibold text-gray-900 mb-2">Generación Automática</h3>
-            <p className="text-sm text-gray-600">
+            <h3 className="font-bold text-gray-900 mb-2 text-lg flex items-center gap-2">
+              Generación Automática
+              <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium">Popular</span>
+            </h3>
+            <p className="text-sm text-gray-600 leading-relaxed">
               Crea propuestas comerciales personalizadas basadas en los requisitos identificados.
             </p>
           </div>
 
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-            <div className="text-purple-600 mb-3">
-              <svg className="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="group card-elevated-lg p-7 hover-lift hover-glow-brand cursor-default">
+            <div className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 p-4 rounded-2xl mb-4 w-fit group-hover:scale-110 transition-transform duration-300">
+              <svg className="h-8 w-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -108,8 +113,8 @@ export default function DashboardPage() {
                 />
               </svg>
             </div>
-            <h3 className="font-semibold text-gray-900 mb-2">Análisis Competitivo</h3>
-            <p className="text-sm text-gray-600">
+            <h3 className="font-bold text-gray-900 mb-2 text-lg">Análisis Competitivo</h3>
+            <p className="text-sm text-gray-600 leading-relaxed">
               Identifica factores clave de competitividad y oportunidades de mejora.
             </p>
           </div>

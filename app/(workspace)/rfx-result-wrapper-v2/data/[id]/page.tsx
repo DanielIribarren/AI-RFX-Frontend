@@ -597,7 +597,7 @@ export default function RfxDataPage() {
     return (
       <div className="container mx-auto px-4 py-6">
         <div className="text-center py-12 bg-white rounded-lg border border-gray-200">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
           <h2 className="text-xl font-semibold text-gray-900 mb-2">
             Cargando datos del RFX...
           </h2>
@@ -648,7 +648,7 @@ export default function RfxDataPage() {
           </p>
           <button 
             onClick={() => router.push("/dashboard")}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium"
+            className="bg-primary hover:bg-primary-dark text-white px-6 py-2 rounded-lg font-medium"
           >
             Volver al Dashboard
           </button>

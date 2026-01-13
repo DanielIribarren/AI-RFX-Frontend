@@ -210,7 +210,7 @@ export default function InlineEditableField({
               {/* Indicador de edición */}
               {!disabled && (
                 <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                  <div className="flex items-center gap-1 text-blue-600 bg-blue-50 px-2 py-1 rounded-md text-xs">
+                  <div className="flex items-center gap-1 text-primary bg-primary/5 px-2 py-1 rounded-md text-xs">
                     <Edit3 className="h-3 w-3" />
                     <span className="hidden sm:inline">Editar</span>
                   </div>

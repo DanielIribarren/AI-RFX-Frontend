@@ -95,7 +95,7 @@ export default function CasosDeEstudioPage() {
                       <p className="text-xs text-gray-600">Tiempo ahorrado</p>
                     </div>
                     <div className="text-center">
-                      <div className="flex items-center gap-1 text-blue-600">
+                      <div className="flex items-center gap-1 text-primary">
                         <TrendingDown className="h-4 w-4" />
                         <span className="text-2xl font-bold">{caseStudy.metrics.responseRate}</span>
                       </div>

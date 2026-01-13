@@ -286,14 +286,14 @@ export default function ProductFormDialog({
           </div>
 
           {/* Preview del subtotal */}
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <div className="bg-primary/5 border border-primary/20 rounded-lg p-4">
             <div className="flex items-center justify-between">
               <span className="text-sm font-medium text-blue-800">Subtotal calculado:</span>
               <span className="text-lg font-semibold text-blue-900">
                 {currencySymbol}{(formData.cantidad * formData.precio).toFixed(2)}
               </span>
             </div>
-            <div className="text-xs text-blue-600 mt-1">
+            <div className="text-xs text-primary mt-1">
               {formData.cantidad} {formData.unidad} × {currencySymbol}{formData.precio.toFixed(2)}
             </div>
           </div>

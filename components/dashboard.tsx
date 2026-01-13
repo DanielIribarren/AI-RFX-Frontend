@@ -341,7 +341,7 @@ export default function Dashboard() {
               {/* Header */}
               <div className="text-center space-y-4">
                 <div className="flex items-center justify-center gap-3">
-                  <div className="text-blue-600">
+                  <div className="text-primary">
                     <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
                       <path d="M12 2L13.09 8.26L20 9L13.09 9.74L12 16L10.91 9.74L4 9L10.91 8.26L12 2Z" />
                     </svg>
@@ -364,7 +364,7 @@ export default function Dashboard() {
               {/* Feature Cards */}
               <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
                 <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-                  <div className="text-blue-600 mb-3">
+                  <div className="text-primary mb-3">
                     <svg className="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path
                         strokeLinecap="round"
@@ -398,7 +398,7 @@ export default function Dashboard() {
                 </div>
 
                 <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-                  <div className="text-purple-600 mb-3">
+                  <div className="text-primary mb-3">
                     <svg className="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path
                         strokeLinecap="round"

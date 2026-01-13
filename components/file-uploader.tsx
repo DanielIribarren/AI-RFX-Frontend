@@ -254,8 +254,8 @@ export default function FileUploader({ onFileProcessed, onRFXProcessed, isLoadin
             </div>
           </div>
 
-          <div className="rounded-full bg-blue-100 p-3">
-            <FileText className="h-8 w-8 text-blue-600" />
+          <div className="rounded-full bg-primary/10 p-3">
+            <FileText className="h-8 w-8 text-primary" />
           </div>
           <h2 className="text-xl font-semibold">📄 Procesador RFX con IA</h2>
           <p className="text-sm text-gray-500 text-center max-w-md">
@@ -363,7 +363,7 @@ export default function FileUploader({ onFileProcessed, onRFXProcessed, isLoadin
           ) : fileName && (isLoading || isUploading) ? (
             <div className="w-full space-y-4">
               <div className="flex items-center space-x-2">
-                <FileText className="h-5 w-5 text-blue-600" />
+                <FileText className="h-5 w-5 text-primary" />
                 <span>{fileName}</span>
               </div>
               <div className="flex justify-center">
@@ -376,7 +376,7 @@ export default function FileUploader({ onFileProcessed, onRFXProcessed, isLoadin
             <div className="w-full space-y-4">
               {(fileName || (allowTextOnly && textContent.trim())) && (
                 <div className="flex items-center space-x-2">
-                  <FileText className="h-5 w-5 text-blue-600" />
+                  <FileText className="h-5 w-5 text-primary" />
                   <span>
                     {fileName || (allowTextOnly && textContent.trim() ? 
                       `Texto ingresado (${textContent.length} caracteres)` : "")}
@@ -411,7 +411,7 @@ export default function FileUploader({ onFileProcessed, onRFXProcessed, isLoadin
           ) : fileName ? (
             <div className="w-full space-y-4">
               <div className="flex items-center space-x-2">
-                <FileText className="h-5 w-5 text-blue-600" />
+                <FileText className="h-5 w-5 text-primary" />
                 <span>{fileName}</span>
               </div>
               <div className="flex justify-center">

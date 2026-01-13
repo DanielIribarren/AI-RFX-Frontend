@@ -279,7 +279,7 @@ export default function DataExtractionContent({
           <CardTitle className="text-lg font-semibold text-gray-800 flex items-center gap-2">
             Requirements Específicos
             {extractedData.requirementsConfidence > 0 && (
-              <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full ml-2">
+              <span className="text-xs bg-primary/10 text-blue-800 px-2 py-1 rounded-full ml-2">
                 Confianza: {(extractedData.requirementsConfidence * 100).toFixed(0)}%
               </span>
             )}
@@ -351,7 +351,7 @@ export default function DataExtractionContent({
             <CardDescription>
               Configure precios y cantidades. Los cambios se guardan automáticamente.
               {productosIndividuales.some(p => p.isQuantityModified) && (
-                <span className="mt-1 text-blue-600 font-medium flex items-center gap-1">
+                <span className="mt-1 text-primary font-medium flex items-center gap-1">
                   <Edit3 className="h-3 w-3" />
                   {productosIndividuales.filter(p => p.isQuantityModified).length} producto(s) con cantidades modificadas
                 </span>

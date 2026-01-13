@@ -120,8 +120,8 @@ export default function RFXDataView({
     <div className="container mx-auto px-4 py-6 space-y-6">
       {/* Data Quality Alert */}
       {validationMetadata && (
-        <Alert className="border-blue-200 bg-blue-50">
-          <CheckCircle className="h-4 w-4 text-blue-600" />
+        <Alert className="border-primary/20 bg-primary/5">
+          <CheckCircle className="h-4 w-4 text-primary" />
           <AlertDescription className="text-blue-800">
             <div className="flex items-center gap-2">
               <BarChart3 className="h-4 w-4" />

@@ -91,7 +91,7 @@ const getStatusBadgeProps = (status: RFXDisplayStatus) => {
     case 'In progress':
       return {
         variant: 'secondary' as const,
-        className: 'bg-blue-100 text-blue-800 hover:bg-blue-100',
+        className: 'bg-primary/10 text-primary hover:bg-primary/10 font-medium',
         icon: <Clock className="h-3 w-3 mr-1" />
       };
     case 'Completed':
@@ -455,50 +455,55 @@ const RfxHistory = forwardRef<RfxHistoryRef, RfxHistoryProps>(
   }
 
   return (
-    <div className="container mx-auto px-4 py-6 max-w-4xl">
+    <div className="container mx-auto px-4 py-8 max-w-5xl">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-        <h1 className="text-2xl font-semibold text-gray-900">Your RFX history</h1>
-        <Button onClick={onNewRfx} className="gap-2 bg-gray-900 hover:bg-gray-800 self-start sm:self-auto">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 mb-1">Your RFX History</h1>
+          <p className="text-gray-600">Manage and review your processed documents</p>
+        </div>
+        <Button onClick={onNewRfx} className="gap-2 bg-brand-gradient hover:opacity-90 shadow-md hover:shadow-lg transition-all duration-200 self-start sm:self-auto h-11 px-6 rounded-xl font-semibold">
           <Plus className="h-4 w-4" />
           New RFX
         </Button>
       </div>
 
       {/* Search Bar */}
-      <div className="relative mb-6">
-        <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+      <div className="relative mb-8">
+        <Search className="absolute left-5 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
         <Input
           type="text"
-          placeholder="Search your RFXs..."
+          placeholder="Search by title, client, or products..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="pl-11 h-12 text-base border-gray-300 rounded-full bg-gray-50 focus:bg-white focus:border-blue-500 transition-colors"
+          className="pl-14 h-14 text-base border-gray-200 rounded-2xl bg-white shadow-sm focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-200"
         />
       </div>
 
       {/* Results Summary */}
-      <div className="mb-4">
-        <p className="text-sm text-gray-600">
-          You have {historyItems.length} processed RFX{historyItems.length !== 1 ? "s" : ""}{" "}
+      <div className="mb-6">
+        <p className="text-sm font-medium text-gray-600">
+          {historyItems.length} total RFX{historyItems.length !== 1 ? "s" : ""}{" "}
           {filteredRfxs.length !== historyItems.length && (
-            <span>
-              • Showing {filteredRfxs.length} result{filteredRfxs.length !== 1 ? "s" : ""}
+            <span className="text-primary">
+              • {filteredRfxs.length} result{filteredRfxs.length !== 1 ? "s" : ""} found
             </span>
           )}
         </p>
       </div>
 
       {/* RFX List */}
-      <div className="space-y-3">
+      <div className="space-y-4">
         {filteredRfxs.length === 0 ? (
-          <Card className="border border-gray-200">
-            <CardContent className="flex flex-col items-center justify-center py-8">
-              <Search className="h-8 w-8 text-gray-400 mb-3" />
-              <h3 className="text-lg font-medium mb-2">No RFXs found</h3>
+          <Card className="card-elevated-lg">
+            <CardContent className="flex flex-col items-center justify-center py-12">
+              <div className="bg-gray-100 p-4 rounded-2xl mb-4">
+                <Search className="h-8 w-8 text-gray-400" />
+              </div>
+              <h3 className="text-lg font-semibold mb-2">No RFXs found</h3>
               <p className="text-gray-600 text-center">
                 Try adjusting your search terms or{" "}
-                <button onClick={() => setSearchQuery("")} className="text-blue-600 hover:text-blue-800 underline">
+                <button onClick={() => setSearchQuery("")} className="text-primary hover:text-primary-dark underline font-medium">
                   clear the search
                 </button>
               </p>
@@ -508,10 +513,10 @@ const RfxHistory = forwardRef<RfxHistoryRef, RfxHistoryProps>(
           filteredRfxs.map((rfx) => (
             <Card
               key={rfx.id}
-              className={`border transition-all duration-200 cursor-pointer hover:shadow-md hover:border-gray-300 ${
+              className={`group border-2 transition-all duration-300 cursor-pointer hover-lift ${
                 selectedRfx === rfx.id
-                  ? "border-blue-500 bg-blue-50/50 shadow-sm"
-                  : "border-gray-200 hover:bg-gray-50/50"
+                  ? "border-primary bg-primary/5 shadow-brand"
+                  : "border-gray-200/60 hover:border-primary/30 hover:shadow-lg"
               }`}
               onClick={() => handleRfxClick(rfx)}
             >
@@ -538,7 +543,7 @@ const RfxHistory = forwardRef<RfxHistoryRef, RfxHistoryProps>(
                         <span className="font-medium">{rfx.client}</span> • {rfx.rfxId}
                       </p>
                       {rfx.empresa?.nombre_empresa && (
-                        <p className="text-xs text-blue-600">
+                        <p className="text-xs text-primary">
                           🏢 {rfx.empresa.nombre_empresa}
                           {rfx.empresa.email_empresa && (
                             <span className="text-gray-500 ml-2">• {rfx.empresa.email_empresa}</span>
@@ -611,7 +616,7 @@ const RfxHistory = forwardRef<RfxHistoryRef, RfxHistoryProps>(
 
       {/* Navigation Helper */}
       {filteredRfxs.length > 0 && (
-        <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+        <div className="mt-6 p-4 bg-primary/5 rounded-lg border border-primary/20">
           <p className="text-sm text-blue-800">
             <strong>Tip:</strong> Click on any RFX to view its detailed analysis and generated proposal.
           </p>

@@ -23,7 +23,7 @@ const AI_MODELS = [
     name: "Gemini",
     provider: "Google",
     description: "Multimodal AI with strong analytical capabilities",
-    color: "bg-blue-500",
+    color: "bg-primary-light",
   },
 ]
 
@@ -69,7 +69,7 @@ export function AiModelSelector({ selectedModel, onModelChange }: AiModelSelecto
                 <p className="text-xs text-gray-600 mt-0.5">{model.description}</p>
               </div>
             </div>
-            {selectedModel === model.id && <Check className="h-4 w-4 text-blue-600 flex-shrink-0" />}
+            {selectedModel === model.id && <Check className="h-4 w-4 text-primary flex-shrink-0" />}
           </DropdownMenuItem>
         ))}
         <div className="border-t border-gray-100 mt-2 pt-2">

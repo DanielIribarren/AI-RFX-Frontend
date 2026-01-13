@@ -23,7 +23,7 @@ const BudgetGenerationView = dynamic(() => import("@/components/budget-generatio
   loading: () => (
     <div className="container mx-auto px-4 py-6">
       <div className="text-center py-12 bg-white rounded-lg border border-gray-200">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
         <h2 className="text-xl font-semibold text-gray-900 mb-2">
           Cargando vista de presupuesto...
         </h2>
@@ -551,7 +551,7 @@ export default function RfxBudgetPage() {
     return (
       <div className="container mx-auto px-4 py-6">
         <div className="text-center py-12 bg-white rounded-lg border border-gray-200">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
           <h2 className="text-xl font-semibold text-gray-900 mb-2">
             Cargando datos del presupuesto...
           </h2>
@@ -602,7 +602,7 @@ export default function RfxBudgetPage() {
           </p>
           <button 
             onClick={() => router.push("/dashboard")}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium"
+            className="bg-primary hover:bg-primary-dark text-white px-6 py-2 rounded-lg font-medium"
           >
             Volver al Dashboard
           </button>
@@ -655,7 +655,7 @@ export default function RfxBudgetPage() {
             >
               Datos
             </a>
-            <span className="whitespace-nowrap py-2 px-1 border-b-2 border-blue-500 text-blue-600 font-medium text-sm">
+            <span className="whitespace-nowrap py-2 px-1 border-b-2 border-primary-light text-primary font-medium text-sm">
               Presupuesto
             </span>
           </nav>

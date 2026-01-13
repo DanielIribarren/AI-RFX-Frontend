@@ -415,7 +415,7 @@ export default function PricingConfigurationCard({
           </div>
           
           {localConfig.coordination_enabled && (
-            <div className="ml-4 pl-4 border-l-2 border-blue-200 space-y-4">
+            <div className="ml-4 pl-4 border-l-2 border-primary/20 space-y-4">
               {/* Coordination Type */}
               <div className="space-y-2">
                 <Label className="text-sm font-medium">Tipo de Coordinación</Label>
@@ -476,7 +476,7 @@ export default function PricingConfigurationCard({
 
               {/* Advanced Options */}
               {showAdvanced && (
-                <div className="space-y-3 p-3 bg-blue-50 rounded-lg">
+                <div className="space-y-3 p-3 bg-primary/5 rounded-lg">
                   <h5 className="text-sm font-medium text-blue-800">Opciones Avanzadas</h5>
                   
                   <div className="flex items-center space-x-2">

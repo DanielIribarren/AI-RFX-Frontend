@@ -7,30 +7,38 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Button } from '@/components/ui/button';
+import { BrandButton } from '@/components/brand-button';
+import { BrandBadge } from '@/components/brand-badge';
+import { Sparkles } from 'lucide-react';
 
 export function PublicHeader() {
   const pathname = usePathname();
   
   return (
-    <header className="border-b border-gray-200 bg-white">
+    <header className="sticky top-0 z-50 border-b border-brand-border bg-white/60 backdrop-blur-xl">
       <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
         {/* Logo */}
-        <Link href="/" className="text-xl font-bold text-gray-900 hover:text-gray-700 transition-colors">
-          AI-RFX
-        </Link>
+        <div className="flex items-center gap-3">
+          <Link href="/" className="text-xl font-bold text-black hover:text-indigo-600 transition-colors">
+            AI-RFX
+          </Link>
+          <BrandBadge variant="indigo" className="hidden sm:inline-flex items-center gap-1">
+            <Sparkles className="h-3 w-3" />
+            Nuevo APU
+          </BrandBadge>
+        </div>
         
         {/* Navigation */}
         <nav className="hidden md:flex items-center gap-6">
           <Link
             href="/pricing"
-            className="text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors"
+            className="text-sm font-medium text-gray-700 hover:text-indigo-600 transition-colors"
           >
             Pricing
           </Link>
           <Link
             href="/casos-de-estudio"
-            className="text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors"
+            className="text-sm font-medium text-gray-700 hover:text-indigo-600 transition-colors"
           >
             Casos
           </Link>
@@ -39,19 +47,20 @@ export function PublicHeader() {
         {/* Auth Buttons */}
         <div className="flex items-center gap-3">
           <Link href={`/login?from=${pathname}`}>
-            <Button 
-              variant="ghost" 
-              className="text-gray-700 hover:text-gray-900"
+            <BrandButton 
+              variant="secondary"
+              size="sm"
             >
               Log in
-            </Button>
+            </BrandButton>
           </Link>
           <Link href={`/signup?from=${pathname}`}>
-            <Button 
-              className="bg-black hover:bg-gray-800 text-white"
+            <BrandButton 
+              variant="primary"
+              size="sm"
             >
               Sign up
-            </Button>
+            </BrandButton>
           </Link>
         </div>
       </div>

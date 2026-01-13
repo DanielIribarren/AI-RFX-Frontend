@@ -56,7 +56,7 @@ export function SidebarUser() {
             <div className="flex items-center gap-3 w-full">
               <Avatar className="h-8 w-8 flex-shrink-0">
                 <AvatarImage src="" alt={user.full_name} />
-                <AvatarFallback className="bg-blue-600 text-white text-xs font-medium">
+                <AvatarFallback className="bg-primary text-white text-xs font-medium">
                   {getInitials(user.full_name)}
                 </AvatarFallback>
               </Avatar>
