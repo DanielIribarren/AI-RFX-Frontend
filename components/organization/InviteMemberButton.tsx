@@ -21,7 +21,7 @@ export function InviteMemberButton({ organizationId }: Props) {
     <>
       <Button 
         onClick={() => setIsModalOpen(true)}
-        className="bg-black hover:bg-gray-800 text-white"
+        className="bg-foreground hover:bg-gray-800 text-background"
       >
         <UserPlus className="w-4 h-4 mr-2" />
         Invite Member

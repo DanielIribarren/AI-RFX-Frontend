@@ -10,8 +10,8 @@ import { Plus, Search, AlertCircle, RefreshCw, FileText, Clock, CheckCircle, Arc
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { api, APIError, useAPICall, type RFXHistoryItem } from "@/lib/api"
 import RFXDetailsDialog from "./RFXDetailsDialog"
-import { DeleteConfirmationDialog } from "./delete-confirmation-dialog"
-import { ToastNotification, ToastType } from "./toast-notification"
+import { DeleteConfirmationDialog } from "@/components/shared/DeleteConfirmationDialog"
+import { showSuccessToast, showErrorToast } from "@/lib/toast"
 
 // Enum para estados posibles de RFX en la base de datos
 type RFXDatabaseStatus = 'draft' | 'in_progress' | 'completed' | 'cancelled' | 'expired';
@@ -85,7 +85,7 @@ const getStatusBadgeProps = (status: RFXDisplayStatus) => {
     case 'Draft':
       return {
         variant: 'secondary' as const,
-        className: 'bg-gray-100 text-gray-800 hover:bg-gray-100',
+        className: 'bg-muted text-gray-800 hover:bg-gray-100',
         icon: <FileText className="h-3 w-3 mr-1" />
       };
     case 'In progress':
@@ -115,7 +115,7 @@ const getStatusBadgeProps = (status: RFXDisplayStatus) => {
     default:
       return {
         variant: 'secondary' as const,
-        className: 'bg-gray-100 text-gray-800 hover:bg-gray-100',
+        className: 'bg-muted text-gray-800 hover:bg-gray-100',
         icon: <Clock className="h-3 w-3 mr-1" />
       };
   }
@@ -142,19 +142,6 @@ const RfxHistory = forwardRef<RfxHistoryRef, RfxHistoryProps>(
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
     const [rfxToDelete, setRfxToDelete] = useState<{ id: string; title: string } | null>(null)
     const [isDeleting, setIsDeleting] = useState(false)
-    
-    // Toast notification state
-    const [toast, setToast] = useState<{
-      isOpen: boolean
-      type: ToastType
-      title: string
-      message?: string
-    }>({
-      isOpen: false,
-      type: "success",
-      title: "",
-      message: "",
-    })
     
     // Use the new API error handler
     const { handleAPIError } = useAPICall()
@@ -325,9 +312,7 @@ const RfxHistory = forwardRef<RfxHistoryRef, RfxHistoryProps>(
         setRfxToDelete(null)
         
         // Show success toast
-        setToast({
-          isOpen: true,
-          type: "success",
+        showSuccessToast({
           title: "RFX eliminado",
           message: `"${rfxToDelete.title}" ha sido eliminado exitosamente`,
         })
@@ -357,9 +342,7 @@ const RfxHistory = forwardRef<RfxHistoryRef, RfxHistoryProps>(
         }
         
         // Show error toast
-        setToast({
-          isOpen: true,
-          type: "error",
+        showErrorToast({
           title: errorTitle,
           message: errorMessage,
         })
@@ -391,7 +374,7 @@ const RfxHistory = forwardRef<RfxHistoryRef, RfxHistoryProps>(
 
         <div className="space-y-3">
           {[1, 2, 3, 4, 5].map((i) => (
-            <Card key={i} className="border border-gray-200">
+            <Card key={i} className="border border">
               <CardContent className="p-4">
                 <div className="space-y-2">
                   <Skeleton className="h-5 w-3/4" />
@@ -420,7 +403,7 @@ const RfxHistory = forwardRef<RfxHistoryRef, RfxHistoryProps>(
           <CardContent className="flex flex-col items-center justify-center py-12">
             <AlertCircle className="h-12 w-12 text-red-500 mb-4" />
             <h3 className="text-lg font-semibold mb-2">Error loading RFX history</h3>
-            <p className="text-gray-600 mb-4 text-center">We couldn't load your RFX history. Please try again.</p>
+            <p className="text-muted-foreground mb-4 text-center">We couldn't load your RFX history. Please try again.</p>
             <Button onClick={handleRetry} variant="outline" className="gap-2">
               <RefreshCw className="h-4 w-4" />
               Try again
@@ -444,9 +427,9 @@ const RfxHistory = forwardRef<RfxHistoryRef, RfxHistoryProps>(
 
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
-            <FileText className="h-12 w-12 text-gray-400 mb-4" />
+            <FileText className="h-12 w-12 text-muted-foreground/60 mb-4" />
             <h3 className="text-lg font-semibold mb-2">No RFX history yet</h3>
-            <p className="text-gray-600 mb-6 text-center">
+            <p className="text-muted-foreground mb-6 text-center">
               Start by processing your first RFX document to see it appear here.
             </p>
             <Button onClick={onNewRfx} className="gap-2">
@@ -465,7 +448,7 @@ const RfxHistory = forwardRef<RfxHistoryRef, RfxHistoryProps>(
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 mb-1">Your RFX History</h1>
-          <p className="text-gray-600">Manage and review your processed documents</p>
+          <p className="text-muted-foreground">Manage and review your processed documents</p>
         </div>
         <Button onClick={onNewRfx} className="gap-2 bg-brand-gradient hover:opacity-90 shadow-md hover:shadow-lg transition-all duration-200 self-start sm:self-auto h-11 px-6 rounded-xl font-semibold">
           <Plus className="h-4 w-4" />
@@ -475,19 +458,19 @@ const RfxHistory = forwardRef<RfxHistoryRef, RfxHistoryProps>(
 
       {/* Search Bar */}
       <div className="relative mb-8">
-        <Search className="absolute left-5 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+        <Search className="absolute left-5 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground/60" />
         <Input
           type="text"
           placeholder="Search by title, client, or products..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="pl-14 h-14 text-base border-gray-200 rounded-2xl bg-white shadow-sm focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-200"
+          className="pl-14 h-14 text-base border rounded-2xl bg-background shadow-sm focus:bg-background focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-200"
         />
       </div>
 
       {/* Results Summary */}
       <div className="mb-6">
-        <p className="text-sm font-medium text-gray-600">
+        <p className="text-sm font-medium text-muted-foreground">
           {historyItems.length} total RFX{historyItems.length !== 1 ? "s" : ""}{" "}
           {filteredRfxs.length !== historyItems.length && (
             <span className="text-primary">
@@ -502,11 +485,11 @@ const RfxHistory = forwardRef<RfxHistoryRef, RfxHistoryProps>(
         {filteredRfxs.length === 0 ? (
           <Card className="card-elevated-lg">
             <CardContent className="flex flex-col items-center justify-center py-12">
-              <div className="bg-gray-100 p-4 rounded-2xl mb-4">
-                <Search className="h-8 w-8 text-gray-400" />
+              <div className="bg-muted p-4 rounded-2xl mb-4">
+                <Search className="h-8 w-8 text-muted-foreground/60" />
               </div>
               <h3 className="text-lg font-semibold mb-2">No RFXs found</h3>
-              <p className="text-gray-600 text-center">
+              <p className="text-muted-foreground text-center">
                 Try adjusting your search terms or{" "}
                 <button onClick={() => setSearchQuery("")} className="text-primary hover:text-primary-dark underline font-medium">
                   clear the search
@@ -544,14 +527,14 @@ const RfxHistory = forwardRef<RfxHistoryRef, RfxHistoryProps>(
                       })()}
                     </div>
                     <div className="space-y-1">
-                      <p className="text-sm text-gray-600">
+                      <p className="text-sm text-muted-foreground">
                         <span className="font-medium">{rfx.client}</span> • {rfx.rfxId}
                       </p>
                       {rfx.empresa?.nombre_empresa && (
                         <p className="text-xs text-primary">
                           🏢 {rfx.empresa.nombre_empresa}
                           {rfx.empresa.email_empresa && (
-                            <span className="text-gray-500 ml-2">• {rfx.empresa.email_empresa}</span>
+                            <span className="text-muted-foreground ml-2">• {rfx.empresa.email_empresa}</span>
                           )}
                         </p>
                       )}
@@ -568,12 +551,12 @@ const RfxHistory = forwardRef<RfxHistoryRef, RfxHistoryProps>(
                           </div>
                           <span>Procesado por {rfx.processed_by.name || 'Usuario Desconocido'}</span>
                           {rfx.processed_by.username && (
-                            <span className="text-gray-500">(@{rfx.processed_by.username})</span>
+                            <span className="text-muted-foreground">(@{rfx.processed_by.username})</span>
                           )}
                         </div>
                       )}
-                      <p className="text-sm text-gray-500 line-clamp-1">{rfx.productos}</p>
-                      <p className="text-xs text-gray-400">
+                      <p className="text-sm text-muted-foreground line-clamp-1">{rfx.productos}</p>
+                      <p className="text-xs text-muted-foreground/60">
                         Last activity {rfx.lastActivity}
                       </p>
                     </div>
@@ -583,12 +566,12 @@ const RfxHistory = forwardRef<RfxHistoryRef, RfxHistoryProps>(
                       variant="ghost"
                       size="sm"
                       onClick={(e) => handleDeleteRFX(rfx.id, rfx.title, e)}
-                      className="h-8 w-8 p-0 text-gray-400 hover:text-red-600 hover:bg-red-50"
+                      className="h-8 w-8 p-0 text-muted-foreground/60 hover:text-destructive hover:bg-red-50"
                       title="Eliminar RFX"
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
-                    <FileText className="h-5 w-5 text-gray-400" />
+                    <FileText className="h-5 w-5 text-muted-foreground/60" />
                   </div>
                 </div>
               </CardContent>
@@ -647,15 +630,6 @@ const RfxHistory = forwardRef<RfxHistoryRef, RfxHistoryProps>(
         title="Eliminar RFX"
         itemName={rfxToDelete?.title || ""}
         isDeleting={isDeleting}
-      />
-
-      {/* Toast Notification */}
-      <ToastNotification
-        isOpen={toast.isOpen}
-        onClose={() => setToast(prev => ({ ...prev, isOpen: false }))}
-        type={toast.type}
-        title={toast.title}
-        message={toast.message}
       />
     </div>
   )

@@ -101,7 +101,7 @@ export default async function OrganizationGeneralPage() {
       {/* Header */}
       <div className="w-full">
         <h1 className="text-2xl font-bold text-gray-900">General Settings</h1>
-        <p className="text-gray-600 mt-1">
+        <p className="text-muted-foreground mt-1">
           Manage your organization details and plan
         </p>
       </div>
@@ -130,7 +130,7 @@ export default async function OrganizationGeneralPage() {
         <div className="w-full flex items-center justify-between">
           <div>
             <h2 className="text-xl font-bold text-gray-900">Team Members</h2>
-            <p className="text-gray-600 mt-1">
+            <p className="text-muted-foreground mt-1">
               Manage your team and invite new members
             </p>
           </div>

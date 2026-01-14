@@ -43,7 +43,7 @@ export function RemoveMemberModal({ member, organizationId, isOpen, onClose }: P
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-red-600 flex items-center gap-2">
+          <DialogTitle className="text-destructive flex items-center gap-2">
             <AlertTriangle className="w-5 h-5" />
             Remove Member
           </DialogTitle>
@@ -54,11 +54,11 @@ export function RemoveMemberModal({ member, organizationId, isOpen, onClose }: P
         
         <div className="space-y-4">
           {/* Member Info */}
-          <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
+          <div className="bg-secondary border border rounded-lg p-3">
             <p className="font-medium text-gray-900">
               {member.user.name || 'Unknown'}
             </p>
-            <p className="text-sm text-gray-600">{member.user.email}</p>
+            <p className="text-sm text-muted-foreground">{member.user.email}</p>
           </div>
           
           {/* Warning */}
@@ -88,7 +88,7 @@ export function RemoveMemberModal({ member, organizationId, isOpen, onClose }: P
             variant="destructive"
             onClick={handleRemove}
             disabled={isRemoving}
-            className="bg-red-600 hover:bg-red-700"
+            className="bg-destructive hover:bg-red-700"
           >
             {isRemoving ? 'Removing...' : 'Remove Member'}
           </Button>

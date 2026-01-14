@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import RfxChatInput from "@/components/rfx-chat-input";
+import RfxChatInput from "@/components/features/rfx/RFXChatInput";
 import { useRouter } from "next/navigation";
 import type { RFXResponse } from "@/lib/api";
 
@@ -50,7 +50,7 @@ export default function DashboardPage() {
               RFX Analyzer
             </h1>
           </div>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
             Procesa documentos RFX con <span className="text-brand-gradient font-semibold">inteligencia artificial</span>. 
             Escribe instrucciones específicas o adjunta archivos para comenzar.
           </p>
@@ -77,14 +77,14 @@ export default function DashboardPage() {
               </svg>
             </div>
             <h3 className="font-bold text-gray-900 mb-2 text-lg">Procesamiento Inteligente</h3>
-            <p className="text-sm text-gray-600 leading-relaxed">
+            <p className="text-sm text-muted-foreground leading-relaxed">
               Extrae automáticamente información clave de documentos RFX usando IA avanzada.
             </p>
           </div>
 
           <div className="group card-elevated-lg p-7 hover-lift hover-glow-brand cursor-default border-brand-accent">
             <div className="bg-gradient-to-br from-primary to-primary-dark p-4 rounded-2xl mb-4 w-fit group-hover:scale-110 transition-transform duration-300 shadow-lg">
-              <svg className="h-8 w-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="h-8 w-8 text-background" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -97,7 +97,7 @@ export default function DashboardPage() {
               Generación Automática
               <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium">Popular</span>
             </h3>
-            <p className="text-sm text-gray-600 leading-relaxed">
+            <p className="text-sm text-muted-foreground leading-relaxed">
               Crea propuestas comerciales personalizadas basadas en los requisitos identificados.
             </p>
           </div>
@@ -114,7 +114,7 @@ export default function DashboardPage() {
               </svg>
             </div>
             <h3 className="font-bold text-gray-900 mb-2 text-lg">Análisis Competitivo</h3>
-            <p className="text-sm text-gray-600 leading-relaxed">
+            <p className="text-sm text-muted-foreground leading-relaxed">
               Identifica factores clave de competitividad y oportunidades de mejora.
             </p>
           </div>

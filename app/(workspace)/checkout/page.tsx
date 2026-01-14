@@ -123,13 +123,13 @@ function CheckoutContent() {
                   <PlanBadge plan={planKey as any} />
                   <h3 className="text-xl font-bold text-gray-900">{plan.name} Plan</h3>
                 </div>
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-muted-foreground">
                   Monthly subscription - billed monthly
                 </p>
               </div>
               <div className="text-right">
                 <p className="text-2xl font-bold text-gray-900">{plan.priceLabel}</p>
-                <p className="text-sm text-gray-600">/month</p>
+                <p className="text-sm text-muted-foreground">/month</p>
               </div>
             </div>
 
@@ -153,11 +153,11 @@ function CheckoutContent() {
             {/* Billing Info */}
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Subtotal</span>
+                <span className="text-muted-foreground">Subtotal</span>
                 <span className="font-medium text-gray-900">{plan.priceLabel}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Tax</span>
+                <span className="text-muted-foreground">Tax</span>
                 <span className="font-medium text-gray-900">$0.00</span>
               </div>
               <Separator />
@@ -274,7 +274,7 @@ function CheckoutContent() {
 function LoadingFallback() {
   return (
     <div className="flex flex-1 items-center justify-center p-6">
-      <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+      <Loader2 className="h-8 w-8 animate-spin text-muted-foreground/60" />
     </div>
   );
 }

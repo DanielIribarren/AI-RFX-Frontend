@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { useAuth } from "@/contexts/AuthContext"
-import { TransformedHtmlContent } from "@/components/transformed-html-content"
+import { TransformedHtmlContent } from "@/components/shared/TransformedHtmlContent"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { AlertCircle, CheckCircle, Clock, FileText, XCircle, AlertTriangle } from "lucide-react"
@@ -85,8 +85,8 @@ const getStatusDisplay = (status: string) => {
   switch (status) {
     case 'Draft':
       return {
-        icon: <FileText className="h-4 w-4 text-gray-500" />,
-        className: 'text-gray-700 bg-gray-100 border-gray-200',
+        icon: <FileText className="h-4 w-4 text-muted-foreground" />,
+        className: 'text-gray-700 bg-muted border-gray-200',
         label: 'Borrador'
       };
     case 'In progress':
@@ -115,8 +115,8 @@ const getStatusDisplay = (status: string) => {
       };
     default:
       return {
-        icon: <Clock className="h-4 w-4 text-gray-500" />,
-        className: 'text-gray-700 bg-gray-100 border-gray-200',
+        icon: <Clock className="h-4 w-4 text-muted-foreground" />,
+        className: 'text-gray-700 bg-muted border-gray-200',
         label: 'En Progreso'
       };
   }
@@ -286,8 +286,8 @@ const RFXDetailsDialog = ({ rfxId, isOpen, onClose, rfxData, onViewFullAnalysis 
   // Simple read-only field component - clean display without validation indicators
   const ReadOnlyField = ({ value, label }: { value: string, label: string }) => {
     return (
-      <div className="py-3 px-3 rounded-lg bg-gray-50 border border-gray-200">
-        <dt className="text-sm font-medium text-gray-600 mb-1">{label}</dt>
+      <div className="py-3 px-3 rounded-lg bg-secondary border border">
+        <dt className="text-sm font-medium text-muted-foreground mb-1">{label}</dt>
         <dd className={`text-sm font-medium ${value ? 'text-gray-900' : 'text-gray-400'}`}>
           {value || "No disponible"}
         </dd>
@@ -376,13 +376,13 @@ const RFXDetailsDialog = ({ rfxId, isOpen, onClose, rfxData, onViewFullAnalysis 
           <div className="flex items-center justify-center py-8">
             <div className="text-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
-              <p className="text-gray-600 mt-2">Cargando detalles del RFX...</p>
+              <p className="text-muted-foreground mt-2">Cargando detalles del RFX...</p>
             </div>
           </div>
         ) : error ? (
           <div className="py-8">
             <Alert className="border-red-200 bg-red-50">
-              <AlertCircle className="h-4 w-4 text-red-600" />
+              <AlertCircle className="h-4 w-4 text-destructive" />
               <AlertDescription className="text-red-800">
                 {error}
               </AlertDescription>
@@ -395,7 +395,7 @@ const RFXDetailsDialog = ({ rfxId, isOpen, onClose, rfxData, onViewFullAnalysis 
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                   <h2 className="text-xl font-bold text-gray-900">Detalles del RFX</h2>
-                  <p className="text-lg text-gray-600 mt-1">
+                  <p className="text-lg text-muted-foreground mt-1">
                     {extractedData.solicitante} • {formatFechaCreacion(fechaCreacion)}
                   </p>
                 </div>
@@ -417,7 +417,7 @@ const RFXDetailsDialog = ({ rfxId, isOpen, onClose, rfxData, onViewFullAnalysis 
                         onViewFullAnalysis(rfxId, rfxData)
                         onClose()
                       }}
-                      className="gap-2 bg-primary hover:bg-primary-dark text-white"
+                      className="gap-2 bg-primary hover:bg-primary-dark text-background"
                     >
                       <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -467,7 +467,7 @@ const RFXDetailsDialog = ({ rfxId, isOpen, onClose, rfxData, onViewFullAnalysis 
                       )}
                     </div>
                   ) : (
-                    <p className="text-sm text-gray-500 italic">
+                    <p className="text-sm text-muted-foreground italic">
                       No se encontraron datos específicos de la empresa
                     </p>
                   )}
@@ -503,7 +503,7 @@ const RFXDetailsDialog = ({ rfxId, isOpen, onClose, rfxData, onViewFullAnalysis 
                         <div key={producto.id} className="flex items-center justify-between py-3 border-b border-gray-100 last:border-b-0">
                           <div className="flex-1">
                             <h4 className="text-sm font-medium text-gray-900">{producto.nombre}</h4>
-                            <p className="text-xs text-gray-500">
+                            <p className="text-xs text-muted-foreground">
                               {producto.cantidad} {producto.unidad}
                             </p>
                           </div>
@@ -511,7 +511,7 @@ const RFXDetailsDialog = ({ rfxId, isOpen, onClose, rfxData, onViewFullAnalysis 
                             <div className="text-sm font-semibold text-gray-900">
                               €{producto.precio.toFixed(2)}
                             </div>
-                            <div className="text-xs text-gray-500">
+                            <div className="text-xs text-muted-foreground">
                               por {producto.unidad}
                             </div>
                           </div>
@@ -519,7 +519,7 @@ const RFXDetailsDialog = ({ rfxId, isOpen, onClose, rfxData, onViewFullAnalysis 
                       ))}
                     </div>
                   ) : (
-                    <p className="text-sm text-gray-500 italic">
+                    <p className="text-sm text-muted-foreground italic">
                       No hay productos con costos configurados
                     </p>
                   )}
@@ -546,10 +546,10 @@ const RFXDetailsDialog = ({ rfxId, isOpen, onClose, rfxData, onViewFullAnalysis 
                       
                       {proposalCosts.length > 0 && (
                         <div className="space-y-2">
-                          <h4 className="text-sm font-medium text-gray-600 mb-3">Desglose</h4>
+                          <h4 className="text-sm font-medium text-muted-foreground mb-3">Desglose</h4>
                           {proposalCosts.map((cost, index) => (
                             <div key={index} className="flex justify-between text-sm">
-                              <span className="text-gray-600">
+                              <span className="text-muted-foreground">
                                 {cost.product_name} ({cost.quantity} {cost.unit || 'unidades'})
                               </span>
                               <span className="font-medium">€{cost.subtotal}</span>
@@ -586,7 +586,7 @@ const RFXDetailsDialog = ({ rfxId, isOpen, onClose, rfxData, onViewFullAnalysis 
                       </ScrollArea>
                     </div>
                   ) : (
-                    <div className="text-center py-8 text-gray-500">
+                    <div className="text-center py-8 text-muted-foreground">
                       <p>No hay propuesta generada para este RFX</p>
                     </div>
                   )}

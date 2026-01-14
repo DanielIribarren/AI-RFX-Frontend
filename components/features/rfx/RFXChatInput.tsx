@@ -275,8 +275,8 @@ export default function RfxChatInput({ onFileProcessed, onRFXProcessed, isLoadin
       <div className="flex items-center justify-center gap-2 text-xs">
         {serviceStatus === 'checking' && (
           <>
-            <div className="animate-spin h-3 w-3 border border-gray-300 border-t-blue-600 rounded-full"></div>
-            <span className="text-gray-500">Verificando servicio RFX...</span>
+            <div className="animate-spin h-3 w-3 border border-input border-t-blue-600 rounded-full"></div>
+            <span className="text-muted-foreground">Verificando servicio RFX...</span>
           </>
         )}
         {serviceStatus === "online" && (
@@ -288,7 +288,7 @@ export default function RfxChatInput({ onFileProcessed, onRFXProcessed, isLoadin
         {serviceStatus === "offline" && (
           <>
             <WifiOff className="h-3 w-3 text-red-500" />
-            <span className="text-red-600">Servicio RFX no disponible</span>
+            <span className="text-destructive">Servicio RFX no disponible</span>
           </>
         )}
       </div>
@@ -317,16 +317,16 @@ export default function RfxChatInput({ onFileProcessed, onRFXProcessed, isLoadin
       )}
 
       {/* Main Input Card */}
-      <Card className="border border-gray-200 shadow-sm">
+      <Card className="border border shadow-sm">
         <CardContent className="p-0">
           {/* Attached Files Preview */}
           {attachedFiles.length > 0 && (
-            <div className="p-4 border-b border-gray-100 bg-gray-50">
+            <div className="p-4 border-b border-gray-100 bg-secondary">
               <div className="flex flex-wrap gap-2">
                 {attachedFiles.map((attachedFile) => (
                   <div
                     key={attachedFile.id}
-                    className="flex items-center gap-2 bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm"
+                    className="flex items-center gap-2 bg-background border border rounded-lg px-3 py-2 text-sm"
                   >
                     {attachedFile.preview ? (
                       <img
@@ -345,7 +345,7 @@ export default function RfxChatInput({ onFileProcessed, onRFXProcessed, isLoadin
                       variant="ghost"
                       size="sm"
                       onClick={() => removeFile(attachedFile.id)}
-                      className="h-5 w-5 p-0 text-gray-400 hover:text-gray-600"
+                      className="h-5 w-5 p-0 text-muted-foreground/60 hover:text-muted-foreground"
                     >
                       <X className="h-3 w-3" />
                     </Button>
@@ -359,7 +359,7 @@ export default function RfxChatInput({ onFileProcessed, onRFXProcessed, isLoadin
                     variant="ghost"
                     size="sm"
                     onClick={() => setAttachedFiles([])}
-                    className="text-xs text-gray-500 hover:text-gray-700"
+                    className="text-xs text-muted-foreground hover:text-gray-700"
                   >
                     Quitar todos los archivos
                   </Button>
@@ -376,7 +376,7 @@ export default function RfxChatInput({ onFileProcessed, onRFXProcessed, isLoadin
               onChange={(e) => setMessage(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder="Describe tu RFX o adjunta documentos para procesarlos con IA..."
-              className="min-h-[60px] max-h-[200px] resize-none border-0 shadow-none focus-visible:ring-0 text-base placeholder:text-gray-400"
+              className="min-h-[60px] max-h-[200px] resize-none border-0 shadow-none focus-visible:ring-0 text-base placeholder:text-muted-foreground/60"
               disabled={isProcessing || isLoading}
             />
           </div>
@@ -390,7 +390,7 @@ export default function RfxChatInput({ onFileProcessed, onRFXProcessed, isLoadin
                 size="sm"
                 onClick={handleFileAttach}
                 disabled={isProcessing || isLoading}
-                className="h-8 w-8 p-0 text-gray-500 hover:text-gray-700 hover:bg-gray-100"
+                className="h-8 w-8 p-0 text-muted-foreground hover:text-gray-700 hover:bg-muted"
               >
                 <Paperclip className="h-4 w-4" />
               </Button>
@@ -407,7 +407,7 @@ export default function RfxChatInput({ onFileProcessed, onRFXProcessed, isLoadin
 
               {/* Status Text */}
               {attachedFiles.length > 0 && (
-                <span className="text-xs text-gray-500">
+                <span className="text-xs text-muted-foreground">
                   {attachedFiles.length} archivo{attachedFiles.length !== 1 ? "s" : ""} adjunto
                   {attachedFiles.length !== 1 ? "s" : ""}
                 </span>
@@ -440,12 +440,12 @@ export default function RfxChatInput({ onFileProcessed, onRFXProcessed, isLoadin
 
       {/* Helper Text */}
       <div className="text-center">
-        <p className="text-xs text-gray-500">
+        <p className="text-xs text-muted-foreground">
           Puedes escribir instrucciones específicas y adjuntar documentos RFX (PDF, DOCX, TXT, imágenes, Excel)
         </p>
-        <p className="text-xs text-gray-400 mt-1">
-          Presiona <kbd className="px-1 py-0.5 bg-gray-100 rounded text-xs">Enter</kbd> para enviar,
-          <kbd className="px-1 py-0.5 bg-gray-100 rounded text-xs ml-1">Shift + Enter</kbd> para nueva línea
+        <p className="text-xs text-muted-foreground/60 mt-1">
+          Presiona <kbd className="px-1 py-0.5 bg-muted rounded text-xs">Enter</kbd> para enviar,
+          <kbd className="px-1 py-0.5 bg-muted rounded text-xs ml-1">Shift + Enter</kbd> para nueva línea
         </p>
       </div>
     </div>

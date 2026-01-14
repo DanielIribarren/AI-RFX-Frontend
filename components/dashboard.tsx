@@ -1,13 +1,13 @@
 "use client"
 
 import { useState, useRef } from "react"
-import RfxChatInput from "@/components/rfx-chat-input"
+import RfxChatInput from "@/components/features/rfx/RFXChatInput"
 import type { RfxData, RfxResponse } from "@/types/rfx-types"
 import type { RFXResponse } from "@/lib/api"
-import RfxResultsWrapperV2 from "@/components/rfx-results-wrapper-v2"
-import RfxHistory, { RfxHistoryRef } from "@/components/rfx-history"
-import AppSidebar, { AppSidebarRef } from "@/components/app-sidebar"
-import { AiModelSelector } from "@/components/ai-model-selector"
+import RfxResultsWrapperV2 from "@/components/features/rfx/RFXResultsWrapperV2"
+import RfxHistory, { RfxHistoryRef } from "@/components/features/rfx/RFXHistory"
+import AppSidebar, { AppSidebarRef } from "@/components/layout/AppSidebar"
+import { AiModelSelector } from "@/components/shared/AIModelSelector"
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar"
 import { Separator } from "@/components/ui/separator"
 import {
@@ -348,7 +348,7 @@ export default function Dashboard() {
                   </div>
                   <h1 className="text-4xl font-bold text-gray-900">RFX Analyzer</h1>
                 </div>
-                <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+                <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
                   Procesa documentos RFX con inteligencia artificial. Escribe instrucciones específicas o adjunta
                   archivos para comenzar.
                 </p>
@@ -363,7 +363,7 @@ export default function Dashboard() {
 
               {/* Feature Cards */}
               <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-                <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                <div className="bg-background p-6 rounded-lg shadow-sm border border">
                   <div className="text-primary mb-3">
                     <svg className="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path
@@ -375,12 +375,12 @@ export default function Dashboard() {
                     </svg>
                   </div>
                   <h3 className="font-semibold text-gray-900 mb-2">Procesamiento Inteligente</h3>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-muted-foreground">
                     Extrae automáticamente información clave de documentos RFX usando IA avanzada.
                   </p>
                 </div>
 
-                <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                <div className="bg-background p-6 rounded-lg shadow-sm border border">
                   <div className="text-green-600 mb-3">
                     <svg className="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path
@@ -392,12 +392,12 @@ export default function Dashboard() {
                     </svg>
                   </div>
                   <h3 className="font-semibold text-gray-900 mb-2">Generación Automática</h3>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-muted-foreground">
                     Crea propuestas comerciales personalizadas basadas en los requisitos identificados.
                   </p>
                 </div>
 
-                <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                <div className="bg-background p-6 rounded-lg shadow-sm border border">
                   <div className="text-primary mb-3">
                     <svg className="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path
@@ -409,7 +409,7 @@ export default function Dashboard() {
                     </svg>
                   </div>
                   <h3 className="font-semibold text-gray-900 mb-2">Análisis Competitivo</h3>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-muted-foreground">
                     Identifica factores clave de competitividad y oportunidades de mejora.
                   </p>
                 </div>
@@ -429,9 +429,9 @@ export default function Dashboard() {
         onSelectRfx={handleSelectRfx}
         currentView={currentView}
       />
-      <SidebarInset className="bg-white">
+      <SidebarInset className="bg-background">
         <header className="flex h-14 shrink-0 items-center gap-2 border-b border-gray-200/60 px-4 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
-          <SidebarTrigger className="-ml-1 text-gray-500 hover:text-gray-700" />
+          <SidebarTrigger className="-ml-1 text-muted-foreground hover:text-gray-700" />
           <Separator orientation="vertical" className="mr-2 h-4 bg-gray-300" />
           <Breadcrumb>{getBreadcrumbItems()}</Breadcrumb>
 
@@ -440,7 +440,7 @@ export default function Dashboard() {
             <AiModelSelector selectedModel={aiModel} onModelChange={setAiModel} />
           </div>
         </header>
-        <div className="flex flex-1 flex-col bg-white">{renderCurrentView()}</div>
+        <div className="flex flex-1 flex-col bg-background">{renderCurrentView()}</div>
       </SidebarInset>
     </SidebarProvider>
   )

@@ -101,7 +101,7 @@ export function EditableTitle({
           style={{ width: `${Math.max(editValue.length * 20, 200)}px` }}
         />
         {isSaving && (
-          <div className="text-sm text-gray-500">Guardando...</div>
+          <div className="text-sm text-muted-foreground">Guardando...</div>
         )}
       </div>
     )
@@ -120,10 +120,10 @@ export function EditableTitle({
       </h1>
       <button
         onClick={() => setIsEditing(true)}
-        className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-gray-100 rounded"
+        className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-muted rounded"
         title="Editar título"
       >
-        <Pencil className="h-4 w-4 text-gray-500" />
+        <Pencil className="h-4 w-4 text-muted-foreground" />
       </button>
     </div>
   )

@@ -8,6 +8,9 @@ const nextConfig = {
   // ✅ Optimización de compilación con Turbopack
   experimental: {
     optimizePackageImports: ['lucide-react', '@radix-ui/react-icons'],
+    // 🔧 Desactiva el FileSystem Cache de Turbopack (evita errores .sst/.meta corruptos)
+    turbopackFileSystemCacheForDev: false,
+    turbopackFileSystemCacheForBuild: false,
   },
   
   // ✅ Optimización de imágenes para mejor performance

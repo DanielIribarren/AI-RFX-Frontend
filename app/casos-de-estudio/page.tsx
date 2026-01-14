@@ -1,6 +1,6 @@
 'use client'
 
-import { PublicHeader } from '@/components/public-header'
+import { PublicHeader } from '@/components/layout/PublicHeader'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Building2, TrendingDown, Clock, ArrowRight, CheckCircle } from 'lucide-react'
@@ -61,7 +61,7 @@ export default function CasosDeEstudioPage() {
   ]
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-background">
       <PublicHeader />
 
       <div className="max-w-7xl mx-auto px-6 py-24">
@@ -69,19 +69,19 @@ export default function CasosDeEstudioPage() {
           <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
             Casos de Éxito
           </h1>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
             Empresas que transformaron su proceso de RFX con IA
           </p>
         </div>
 
         <div className="space-y-8">
           {cases.map((caseStudy, index) => (
-            <Card key={index} className="border-2 hover:border-gray-300 transition-colors">
+            <Card key={index} className="border-2 hover:border-input transition-colors">
               <CardHeader>
                 <div className="flex items-start justify-between">
                   <div>
                     <CardTitle className="text-2xl mb-2">{caseStudy.company}</CardTitle>
-                    <p className="text-sm text-gray-600 flex items-center gap-2">
+                    <p className="text-sm text-muted-foreground flex items-center gap-2">
                       <Building2 className="h-4 w-4" />
                       {caseStudy.industry}
                     </p>
@@ -92,14 +92,14 @@ export default function CasosDeEstudioPage() {
                         <Clock className="h-4 w-4" />
                         <span className="text-2xl font-bold">{caseStudy.metrics.timeSaved}</span>
                       </div>
-                      <p className="text-xs text-gray-600">Tiempo ahorrado</p>
+                      <p className="text-xs text-muted-foreground">Tiempo ahorrado</p>
                     </div>
                     <div className="text-center">
                       <div className="flex items-center gap-1 text-primary">
                         <TrendingDown className="h-4 w-4" />
                         <span className="text-2xl font-bold">{caseStudy.metrics.responseRate}</span>
                       </div>
-                      <p className="text-xs text-gray-600">Más propuestas</p>
+                      <p className="text-xs text-muted-foreground">Más propuestas</p>
                     </div>
                   </div>
                 </div>
@@ -122,8 +122,8 @@ export default function CasosDeEstudioPage() {
                   </ul>
                 </div>
 
-                <div className="pt-4 border-t border-gray-200">
-                  <p className="text-sm text-gray-600">
+                <div className="pt-4 border-t border">
+                  <p className="text-sm text-muted-foreground">
                     <span className="font-semibold">ROI alcanzado en:</span> {caseStudy.metrics.roi}
                   </p>
                 </div>
@@ -132,29 +132,29 @@ export default function CasosDeEstudioPage() {
           ))}
         </div>
 
-        <div className="mt-16 text-center bg-gray-50 border-2 border-gray-200 rounded-lg p-12">
+        <div className="mt-16 text-center bg-secondary border-2 border rounded-lg p-12">
           <h2 className="text-3xl font-bold text-gray-900 mb-4">
             ¿Listo para transformar tu proceso de RFX?
           </h2>
-          <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
+          <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
             Únete a estas empresas y empieza a generar propuestas en minutos
           </p>
           <Button 
             size="lg"
-            className="bg-black hover:bg-gray-800 text-white text-lg px-8"
+            className="bg-foreground hover:bg-gray-800 text-background text-lg px-8"
             onClick={() => router.push('/signup')}
           >
             Prueba gratis 14 días
             <ArrowRight className="ml-2 h-5 w-5" />
           </Button>
-          <p className="text-sm text-gray-600 mt-4">
+          <p className="text-sm text-muted-foreground mt-4">
             Sin tarjeta de crédito • Cancela cuando quieras
           </p>
         </div>
       </div>
 
-      <footer className="border-t border-gray-200 py-8 mt-16">
-        <div className="max-w-7xl mx-auto px-6 text-center text-sm text-gray-600">
+      <footer className="border-t border py-8 mt-16">
+        <div className="max-w-7xl mx-auto px-6 text-center text-sm text-muted-foreground">
           <p>© {new Date().getFullYear()} AI-RFX. All rights reserved.</p>
         </div>
       </footer>

@@ -104,7 +104,7 @@ export function CreateOrganizationModal({ isOpen, onClose }: Props) {
                 className="mt-1"
               />
               {errors.name && (
-                <p className="text-sm text-red-600 mt-1">
+                <p className="text-sm text-destructive mt-1">
                   {errors.name.message}
                 </p>
               )}
@@ -118,11 +118,11 @@ export function CreateOrganizationModal({ isOpen, onClose }: Props) {
                 placeholder="acme-catering"
                 className="mt-1"
               />
-              <p className="text-sm text-gray-500 mt-1">
+              <p className="text-sm text-muted-foreground mt-1">
                 https://ai-rfx.com/org/{watch('slug') || 'your-slug'}
               </p>
               {errors.slug && (
-                <p className="text-sm text-red-600 mt-1">
+                <p className="text-sm text-destructive mt-1">
                   {errors.slug.message}
                 </p>
               )}
@@ -149,7 +149,7 @@ export function CreateOrganizationModal({ isOpen, onClose }: Props) {
               className="mt-1"
             />
             {errors.billing_email && (
-              <p className="text-sm text-red-600 mt-1">
+              <p className="text-sm text-destructive mt-1">
                 {errors.billing_email.message}
               </p>
             )}
@@ -157,8 +157,8 @@ export function CreateOrganizationModal({ isOpen, onClose }: Props) {
           
           {/* Warning about personal plan */}
           {hasPersonalPlan && (
-            <Alert className="border-gray-300 bg-gray-50">
-              <AlertCircle className="h-4 w-4 text-gray-600" />
+            <Alert className="border-input bg-secondary">
+              <AlertCircle className="h-4 w-4 text-muted-foreground" />
               <AlertDescription className="text-sm text-gray-700">
                 <p className="font-medium">Your personal plan will be canceled</p>
                 <p className="mt-1">
@@ -180,7 +180,7 @@ export function CreateOrganizationModal({ isOpen, onClose }: Props) {
             <Button 
               type="submit" 
               disabled={isCreating}
-              className="bg-black hover:bg-gray-800 text-white"
+              className="bg-foreground hover:bg-gray-800 text-background"
             >
               {isCreating ? 'Creating...' : 'Continue to Payment →'}
             </Button>

@@ -4,9 +4,9 @@ import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
 import type { RFXResponse } from "@/lib/api";
-import RFXDataView from "@/components/rfx-data-view";
+import RFXDataView from "@/components/features/rfx/RFXDataView";
 import { useRFXCurrency } from "@/contexts/RFXCurrencyContext";
-import RFXUpdateChatPanel from "@/components/rfx-update-chat/RFXUpdateChatPanel";
+import RFXUpdateChatPanel from "@/components/features/rfx/update-chat/RFXUpdateChatPanel";
 
 interface ProductoIndividual {
   id: string;
@@ -596,12 +596,12 @@ export default function RfxDataPage() {
   if (isLoading) {
     return (
       <div className="container mx-auto px-4 py-6">
-        <div className="text-center py-12 bg-white rounded-lg border border-gray-200">
+        <div className="text-center py-12 bg-background rounded-lg border border">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
           <h2 className="text-xl font-semibold text-gray-900 mb-2">
             Cargando datos del RFX...
           </h2>
-          <p className="text-gray-500">
+          <p className="text-muted-foreground">
             Por favor espere mientras cargamos la información.
           </p>
         </div>
@@ -612,21 +612,21 @@ export default function RfxDataPage() {
   if (error) {
     return (
       <div className="container mx-auto px-4 py-6">
-        <div className="text-center py-12 bg-white rounded-lg border border-red-200">
+        <div className="text-center py-12 bg-background rounded-lg border border-red-200">
           <h2 className="text-xl font-semibold text-red-900 mb-2">
             Error al cargar RFX
           </h2>
-          <p className="text-red-600 mb-6">{error}</p>
+          <p className="text-destructive mb-6">{error}</p>
           <div className="space-x-4">
             <button 
               onClick={() => window.location.reload()}
-              className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg font-medium"
+              className="bg-destructive hover:bg-red-700 text-background px-6 py-2 rounded-lg font-medium"
             >
               Reintentar
             </button>
             <button 
               onClick={() => router.push("/dashboard")}
-              className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-lg font-medium"
+              className="bg-gray-600 hover:bg-gray-700 text-background px-6 py-2 rounded-lg font-medium"
             >
               Volver al Dashboard
             </button>
@@ -639,16 +639,16 @@ export default function RfxDataPage() {
   if (!backendData) {
     return (
       <div className="container mx-auto px-4 py-6">
-        <div className="text-center py-12 bg-white rounded-lg border border-gray-200">
+        <div className="text-center py-12 bg-background rounded-lg border border">
           <h2 className="text-xl font-semibold text-gray-900 mb-2">
             No se encontraron datos
           </h2>
-          <p className="text-gray-500 mb-6">
+          <p className="text-muted-foreground mb-6">
             No se pudieron cargar los datos del RFX especificado.
           </p>
           <button 
             onClick={() => router.push("/dashboard")}
-            className="bg-primary hover:bg-primary-dark text-white px-6 py-2 rounded-lg font-medium"
+            className="bg-primary hover:bg-primary-dark text-background px-6 py-2 rounded-lg font-medium"
           >
             Volver al Dashboard
           </button>

@@ -3,8 +3,8 @@
 import { Separator } from "@/components/ui/separator"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Settings, Upload, Eye, AlertCircle, Loader2 } from "lucide-react"
-import BrandingUpload from "@/components/branding-upload"
-import BrandingPreview from "@/components/branding-preview"
+import BrandingUpload from "@/components/features/branding/BrandingUpload"
+import BrandingPreview from "@/components/features/branding/BrandingPreview"
 import { useAuth } from "@/contexts/AuthContext"
 
 export default function BudgetSettingsPage() {
@@ -16,8 +16,8 @@ export default function BudgetSettingsPage() {
     return (
       <div className="flex flex-1 items-center justify-center p-6">
         <div className="flex flex-col items-center gap-2">
-          <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
-          <p className="text-sm text-gray-600">Cargando...</p>
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground/60" />
+          <p className="text-sm text-muted-foreground">Cargando...</p>
         </div>
       </div>
     )
@@ -32,7 +32,7 @@ export default function BudgetSettingsPage() {
           Configure el branding y formato de sus propuestas comerciales para generar presupuestos personalizados.
         </p>
         {user.company_name && (
-          <p className="text-sm text-gray-500 mt-1">
+          <p className="text-sm text-muted-foreground mt-1">
             Empresa: <span className="font-medium">{user.company_name}</span>
           </p>
         )}

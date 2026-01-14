@@ -57,7 +57,7 @@ export function DeleteOrganizationModal({ organizationId, isOpen, onClose }: Pro
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-red-600 flex items-center gap-2">
+          <DialogTitle className="text-destructive flex items-center gap-2">
             <AlertTriangle className="w-5 h-5" />
             Delete Organization
           </DialogTitle>
@@ -110,7 +110,7 @@ export function DeleteOrganizationModal({ organizationId, isOpen, onClose }: Pro
             variant="destructive"
             onClick={handleDelete}
             disabled={!isConfirmed || isDeleting}
-            className="bg-red-600 hover:bg-red-700"
+            className="bg-destructive hover:bg-red-700"
           >
             {isDeleting ? 'Deleting...' : 'Delete Organization'}
           </Button>

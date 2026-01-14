@@ -14,10 +14,10 @@ import { AlertCircle, Loader2, ArrowLeft } from "lucide-react"
 // Componente de carga mientras se resuelve useSearchParams
 function LoadingFallback() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+    <div className="min-h-screen flex items-center justify-center bg-secondary">
       <div className="text-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-        <p className="text-gray-600">Cargando...</p>
+        <p className="text-muted-foreground">Cargando...</p>
       </div>
     </div>
   )
@@ -62,7 +62,7 @@ function LoginContent() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-secondary px-4">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
           {/* KISS: Botón volver */}
@@ -140,7 +140,7 @@ function LoginContent() {
               )}
             </Button>
             
-            <div className="text-sm text-center text-gray-600">
+            <div className="text-sm text-center text-muted-foreground">
               ¿No tienes una cuenta?{" "}
               <Link href="/signup" className="text-blue-600 hover:underline font-medium">
                 Regístrate aquí

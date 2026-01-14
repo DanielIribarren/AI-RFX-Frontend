@@ -6,8 +6,8 @@ import { Button } from "@/components/ui/button"
 import { CurrencySelector } from "@/components/ui/currency-selector"
 import { RefreshCw, Plus, DollarSign, FileText, Lightbulb, Edit3 } from "lucide-react"
 import InlineEditableField from "@/components/ui/inline-editable-field"
-import ProductTable from "@/components/product-table"
-import ProductFormDialog from "@/components/product-form-dialog"
+import ProductTable from "@/components/features/products/ProductTable"
+import ProductFormDialog from "@/components/features/products/ProductFormDialog"
 import { useRFXCurrencyCompatible } from "@/contexts/RFXCurrencyContext"
 import { StatusBadge } from "@/components/ui/status-badge"
 
@@ -236,7 +236,7 @@ export default function DataExtractionContent({
               />
             )}
             {!extractedData.nombreEmpresa && !extractedData.emailEmpresa && !extractedData.telefonoEmpresa && (
-              <div className="text-sm text-gray-500 italic py-4 flex items-center gap-2">
+              <div className="text-sm text-muted-foreground italic py-4 flex items-center gap-2">
                 <FileText className="h-4 w-4" />
                 <span>No se encontraron datos específicos de la empresa en el documento. Puede agregarlos manualmente.</span>
               </div>
@@ -307,7 +307,7 @@ export default function DataExtractionContent({
               />
             )}
             {!extractedData.requirements && (
-              <div className="text-xs text-gray-500 mt-2 flex items-start gap-2">
+              <div className="text-xs text-muted-foreground mt-2 flex items-start gap-2">
                 <Lightbulb className="h-3 w-3 mt-0.5 flex-shrink-0" />
                 <span>Ejemplos: "Personal con +5 años experiencia", "Sin frutos secos por alergias", "Presupuesto máximo €500"</span>
               </div>
@@ -327,7 +327,7 @@ export default function DataExtractionContent({
               <div className="ml-auto flex items-center gap-3">
                 {/* Currency selector */}
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-gray-600">Moneda:</span>
+                  <span className="text-sm text-muted-foreground">Moneda:</span>
                   <CurrencySelector 
                     value={selectedCurrency} 
                     onValueChange={handleCurrencyChange}
@@ -339,7 +339,7 @@ export default function DataExtractionContent({
                 {onAddProduct && (
                   <Button 
                     onClick={() => setIsAddingProduct(true)}
-                    className="gap-2 bg-white hover:bg-gray-50 border-gray-200 text-gray-700 hover:text-gray-800 shadow-sm"
+                    className="gap-2 bg-background hover:bg-secondary border text-gray-700 hover:text-gray-800 shadow-sm"
                     disabled={isDisabled}
                   >
                     <Plus className="h-4 w-4" />
@@ -376,10 +376,10 @@ export default function DataExtractionContent({
             
             {/* Save costs button */}
             {onSaveProductCosts && (
-              <div className="pt-4 border-t border-gray-200">
+              <div className="pt-4 border-t border">
                 <Button 
                   onClick={onSaveProductCosts} 
-                  className="gap-2 bg-gray-800 hover:bg-gray-900 text-white shadow-sm"
+                  className="gap-2 bg-gray-800 hover:bg-gray-900 text-background shadow-sm"
                   disabled={isDisabled || productosIndividuales.length === 0 || isSavingCosts}
                 >
                   {isSavingCosts ? (

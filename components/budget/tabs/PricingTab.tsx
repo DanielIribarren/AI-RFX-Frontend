@@ -52,7 +52,7 @@ export function PricingTab({ config, onConfigChange, onSave, isDisabled, isLoadi
           {saveStatus === 'error' && (
             <>
               <div className="h-2 w-2 rounded-full bg-red-500" />
-              <span className="text-red-600">Error al guardar</span>
+              <span className="text-destructive">Error al guardar</span>
             </>
           )}
         </div>
@@ -68,8 +68,8 @@ export function PricingTab({ config, onConfigChange, onSave, isDisabled, isLoadi
                 <Badge 
                   variant="secondary"
                   className={config.coordination_enabled 
-                    ? "bg-green-500 hover:bg-green-600 text-white border-green-500" 
-                    : "bg-gray-100 text-gray-600 border-gray-300"
+                    ? "bg-green-500 hover:bg-green-600 text-background border-green-500" 
+                    : "bg-muted text-muted-foreground border-input"
                   }
                 >
                   {config.coordination_enabled ? "Activo" : "Inactivo"}
@@ -172,8 +172,8 @@ export function PricingTab({ config, onConfigChange, onSave, isDisabled, isLoadi
                 <Badge 
                   variant="secondary"
                   className={config.cost_per_person_enabled 
-                    ? "bg-green-500 hover:bg-green-600 text-white border-green-500" 
-                    : "bg-gray-100 text-gray-600 border-gray-300"
+                    ? "bg-green-500 hover:bg-green-600 text-background border-green-500" 
+                    : "bg-muted text-muted-foreground border-input"
                   }
                 >
                   {config.cost_per_person_enabled ? "Activo" : "Inactivo"}
@@ -242,8 +242,8 @@ export function PricingTab({ config, onConfigChange, onSave, isDisabled, isLoadi
                 <Badge 
                   variant="secondary"
                   className={config.taxes_enabled 
-                    ? "bg-green-500 hover:bg-green-600 text-white border-green-500" 
-                    : "bg-gray-100 text-gray-600 border-gray-300"
+                    ? "bg-green-500 hover:bg-green-600 text-background border-green-500" 
+                    : "bg-muted text-muted-foreground border-input"
                   }
                 >
                   {config.taxes_enabled ? "Activo" : "Inactivo"}

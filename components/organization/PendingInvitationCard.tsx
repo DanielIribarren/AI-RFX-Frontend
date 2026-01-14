@@ -40,11 +40,11 @@ export function PendingInvitationCard({ invitation, canManage }: Props) {
   );
   
   return (
-    <div className="p-4 flex items-center justify-between hover:bg-gray-50 transition-colors">
+    <div className="p-4 flex items-center justify-between hover:bg-secondary transition-colors">
       <div className="flex items-center gap-3 flex-1">
         {/* Icon */}
-        <div className="flex-shrink-0 w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
-          <Mail className="w-5 h-5 text-gray-600" />
+        <div className="flex-shrink-0 w-10 h-10 bg-muted rounded-full flex items-center justify-center">
+          <Mail className="w-5 h-5 text-muted-foreground" />
         </div>
         
         {/* Info */}
@@ -52,7 +52,7 @@ export function PendingInvitationCard({ invitation, canManage }: Props) {
           <p className="font-medium text-gray-900 truncate">
             {invitation.email}
           </p>
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-muted-foreground">
             Invited by {invitation.invited_by.name || invitation.invited_by.email}
             {' • '}
             Expires in {daysUntilExpiry} {daysUntilExpiry === 1 ? 'day' : 'days'}
@@ -71,7 +71,7 @@ export function PendingInvitationCard({ invitation, canManage }: Props) {
             size="sm"
             onClick={handleResend}
             disabled={isProcessing}
-            className="border-gray-300"
+            className="border-input"
           >
             <RefreshCw className="w-4 h-4 mr-1" />
             Resend
@@ -81,7 +81,7 @@ export function PendingInvitationCard({ invitation, canManage }: Props) {
             size="sm"
             onClick={handleCancel}
             disabled={isProcessing}
-            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+            className="text-destructive hover:text-red-700 hover:bg-red-50"
           >
             <X className="w-4 h-4 mr-1" />
             Cancel

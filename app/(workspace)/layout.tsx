@@ -1,12 +1,12 @@
 "use client";
 
 import { ReactNode } from "react";
-import AppSidebar from "@/components/app-sidebar";
+import AppSidebar from "@/components/layout/AppSidebar";
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
-import { AiModelSelector } from "@/components/ai-model-selector";
+import { AiModelSelector } from "@/components/shared/AIModelSelector";
 import { useRouter } from "next/navigation";
-import Breadcrumbs from "@/components/navigation/Breadcrumbs";
+import Breadcrumbs from "@/components/layout/navigation/Breadcrumbs";
 import { RFXCurrencyProvider } from "@/contexts/RFXCurrencyContext";
 import { CreditsProvider } from "@/contexts/CreditsContext";
 import { useAuth } from "@/contexts/AuthContext";

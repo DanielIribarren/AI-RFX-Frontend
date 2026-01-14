@@ -3,4 +3,4 @@
  * Exports the landing page component directly
  */
 
-export { LandingPage as default } from '@/components/landing-page';
+export { LandingPage as default } from '@/components/marketing/LandingPage';

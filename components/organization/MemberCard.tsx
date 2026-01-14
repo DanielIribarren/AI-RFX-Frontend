@@ -43,7 +43,7 @@ export function MemberCard({ member, organizationId, currentUserRole, canManage 
   
   return (
     <>
-      <div className="p-4 flex items-center justify-between hover:bg-gray-50 transition-colors">
+      <div className="p-4 flex items-center justify-between hover:bg-secondary transition-colors">
         <div className="flex items-center gap-3 flex-1">
           {/* Avatar */}
           <Avatar className="h-10 w-10">
@@ -58,7 +58,7 @@ export function MemberCard({ member, organizationId, currentUserRole, canManage 
             <p className="font-medium text-gray-900 truncate">
               {member.user.name || 'Unknown'}
             </p>
-            <p className="text-sm text-gray-600 truncate">
+            <p className="text-sm text-muted-foreground truncate">
               {member.user.email}
             </p>
           </div>
@@ -85,7 +85,7 @@ export function MemberCard({ member, organizationId, currentUserRole, canManage 
               {canRemove && (
                 <DropdownMenuItem 
                   onClick={() => setIsRemoveModalOpen(true)}
-                  className="text-red-600 focus:text-red-600 focus:bg-red-50"
+                  className="text-destructive focus:text-destructive focus:bg-red-50"
                 >
                   <UserMinus className="h-4 w-4 mr-2" />
                   Remove Member

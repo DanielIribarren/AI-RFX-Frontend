@@ -1,6 +1,6 @@
 "use client";
 
-import RfxHistory from "@/components/rfx-history";
+import RfxHistory from "@/components/features/rfx/RFXHistory";
 import { useRouter } from "next/navigation";
 
 export default function HistoryPage() {

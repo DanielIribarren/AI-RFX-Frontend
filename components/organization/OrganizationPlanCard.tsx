@@ -34,7 +34,7 @@ export function OrganizationPlanCard({
   };
   
   return (
-    <div className="border border-gray-200 rounded-lg p-6 bg-white">
+    <div className="border border rounded-lg p-6 bg-background">
       <h2 className="text-lg font-semibold text-gray-900 mb-4">
         Current Plan
       </h2>
@@ -46,7 +46,7 @@ export function OrganizationPlanCard({
             <PlanBadge plan={organization.plan_tier} />
             <div>
               <h3 className="font-semibold text-gray-900">{plan.name} Plan</h3>
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-muted-foreground">
                 {plan.priceLabel}
                 {plan.price !== null && '/month'}
               </p>
@@ -57,7 +57,7 @@ export function OrganizationPlanCard({
             <Button 
               variant="outline" 
               onClick={handleChangePlan}
-              className="border-gray-300"
+              className="border-input"
             >
               Change Plan
             </Button>
@@ -65,11 +65,11 @@ export function OrganizationPlanCard({
         </div>
         
         {/* Features */}
-        <div className="pt-4 border-t border-gray-200">
+        <div className="pt-4 border-t border">
           <ul className="space-y-2 text-sm text-gray-700">
             {plan.features.map((feature, i) => (
               <li key={i} className="flex items-start gap-2">
-                <span className="text-gray-400">•</span>
+                <span className="text-muted-foreground/60">•</span>
                 <span>{feature}</span>
               </li>
             ))}
@@ -78,7 +78,7 @@ export function OrganizationPlanCard({
         
         {/* Usage Indicator */}
         {organization.max_users !== null && (
-          <div className="pt-4 border-t border-gray-200">
+          <div className="pt-4 border-t border">
             <LimitIndicator
               current={currentMemberCount}
               max={organization.max_users}

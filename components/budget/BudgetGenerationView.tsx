@@ -13,9 +13,9 @@ import { LowCreditsAlert } from "@/components/credits/LowCreditsAlert"
 import { transformHtmlUrls } from "@/utils/transform-html-urls"
 
 // Import tab components
-import { PreviewTab } from "./budget/tabs/PreviewTab"
-import { PricingTab } from "./budget/tabs/PricingTab"
-import { ProposalTab } from "./budget/tabs/ProposalTab"
+import { PreviewTab } from "./tabs/PreviewTab"
+import { PricingTab } from "./tabs/PricingTab"
+import { ProposalTab } from "./tabs/ProposalTab"
 
 interface ProductoIndividual {
   id: string

@@ -7,7 +7,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { BrandButton } from '@/components/brand-button';
+import { Button } from '@/components/ui/button';
 import { BrandBadge } from '@/components/brand-badge';
 import { Sparkles } from 'lucide-react';
 
@@ -15,11 +15,11 @@ export function PublicHeader() {
   const pathname = usePathname();
   
   return (
-    <header className="sticky top-0 z-50 border-b border-brand-border bg-white/60 backdrop-blur-xl">
+    <header className="sticky top-0 z-50 border-b bg-background/60 backdrop-blur-xl">
       <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
         {/* Logo */}
         <div className="flex items-center gap-3">
-          <Link href="/" className="text-xl font-bold text-black hover:text-indigo-600 transition-colors">
+          <Link href="/" className="text-xl font-bold text-foreground hover:text-primary transition-colors">
             AI-RFX
           </Link>
           <BrandBadge variant="indigo" className="hidden sm:inline-flex items-center gap-1">
@@ -32,13 +32,13 @@ export function PublicHeader() {
         <nav className="hidden md:flex items-center gap-6">
           <Link
             href="/pricing"
-            className="text-sm font-medium text-gray-700 hover:text-indigo-600 transition-colors"
+            className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors"
           >
             Pricing
           </Link>
           <Link
             href="/casos-de-estudio"
-            className="text-sm font-medium text-gray-700 hover:text-indigo-600 transition-colors"
+            className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors"
           >
             Casos
           </Link>
@@ -47,20 +47,20 @@ export function PublicHeader() {
         {/* Auth Buttons */}
         <div className="flex items-center gap-3">
           <Link href={`/login?from=${pathname}`}>
-            <BrandButton 
-              variant="secondary"
+            <Button 
+              variant="brand-outline"
               size="sm"
             >
               Log in
-            </BrandButton>
+            </Button>
           </Link>
           <Link href={`/signup?from=${pathname}`}>
-            <BrandButton 
-              variant="primary"
+            <Button 
+              variant="brand"
               size="sm"
             >
               Sign up
-            </BrandButton>
+            </Button>
           </Link>
         </div>
       </div>

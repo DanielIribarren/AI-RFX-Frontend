@@ -53,7 +53,7 @@ export function TabsComponent({ children, defaultTab, className }: TabsComponent
   return (
     <div className={cn("tabs-container", className)}>
       {/* Tabs Header */}
-      <div className="tabs-header border-b border-gray-200">
+      <div className="tabs-header border-b border">
         <nav className="flex space-x-8" aria-label="Tabs">
           {tabs.map((tab) => (
             <button
@@ -63,7 +63,7 @@ export function TabsComponent({ children, defaultTab, className }: TabsComponent
                 "whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200",
                 activeTab === tab.id
                   ? "border-primary-light text-primary"
-                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                  : "border-transparent text-muted-foreground hover:text-gray-700 hover:border-input"
               )}
               aria-current={activeTab === tab.id ? "page" : undefined}
             >

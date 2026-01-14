@@ -27,7 +27,7 @@ export function EmptyState({
       className
     )}>
       {/* Icon */}
-      <div className="text-5xl mb-4 text-gray-400">
+      <div className="text-5xl mb-4 text-muted-foreground/60">
         {icon}
       </div>
       
@@ -37,7 +37,7 @@ export function EmptyState({
       </h3>
       
       {/* Description */}
-      <p className="text-sm text-gray-600 max-w-md mb-6">
+      <p className="text-sm text-muted-foreground max-w-md mb-6">
         {description}
       </p>
       

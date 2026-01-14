@@ -168,7 +168,7 @@ function InlineEditableCell({
       <div className="relative inline-flex items-center gap-1 w-full justify-center">
         <div className="relative flex items-center">
           {currencySymbol && (
-            <span className="absolute left-2 text-xs text-gray-500 font-medium pointer-events-none">
+            <span className="absolute left-2 text-xs text-muted-foreground font-medium pointer-events-none">
               {currencySymbol}
             </span>
           )}
@@ -229,7 +229,7 @@ export default function ProductTable({
   
   if (productos.length === 0) {
     return (
-      <div className="text-center py-8 text-gray-500 flex items-center justify-center gap-2">
+      <div className="text-center py-8 text-muted-foreground flex items-center justify-center gap-2">
         <FileText className="h-5 w-5" />
         <span>No hay productos disponibles para configurar costos.</span>
       </div>
@@ -239,7 +239,7 @@ export default function ProductTable({
   return (
     <div className="space-y-4">
       {/* Header de Tabla */}
-      <div className="grid grid-cols-12 gap-3 items-center py-3 px-4 bg-gray-50/50 rounded-lg text-xs font-medium text-gray-600 border border-gray-100">
+      <div className="grid grid-cols-12 gap-3 items-center py-3 px-4 bg-gray-50/50 rounded-lg text-xs font-medium text-muted-foreground border border-gray-100">
         <div className="col-span-3">Producto</div>
         <div className="col-span-1 text-center">Cant.</div>
         <div className="col-span-1 text-center">Unidad</div>
@@ -275,7 +275,7 @@ export default function ProductTable({
                 "grid grid-cols-12 gap-3 items-center py-3 px-4 border rounded-lg transition-all duration-200",
                 needsPriceReview 
                   ? "border-amber-200 bg-amber-50/50 hover:border-amber-300 hover:bg-amber-50/80" 
-                  : "border-gray-100 hover:border-gray-200 hover:bg-gray-50/30",
+                  : "border-gray-100 hover:border hover:bg-gray-50/30",
                 producto.isNew && "animate-glow-blue",
                 producto.isModified && "animate-glow-yellow"
               )}
@@ -321,7 +321,7 @@ export default function ProductTable({
                       className="w-full text-center"
                     />
                     {producto.isQuantityModified && (
-                      <span className="text-xs text-gray-500 mt-1">
+                      <span className="text-xs text-muted-foreground mt-1">
                         (Original: {producto.cantidadOriginal})
                       </span>
                     )}
@@ -398,7 +398,7 @@ export default function ProductTable({
                 <div className="text-sm text-green-600 font-medium">
                   {currencySymbol}{producto.ganancia_unitaria?.toFixed(2) || "0.00"}
                 </div>
-                <div className="text-xs text-gray-500">por unidad</div>
+                <div className="text-xs text-muted-foreground">por unidad</div>
               </div>
 
               {/* Margen de Ganancia - 1 columna */}
@@ -418,7 +418,7 @@ export default function ProductTable({
                 {onDeleteProduct && isEditable && (
                   <Button
                     onClick={() => onDeleteProduct(producto.id)}
-                    className="h-6 w-6 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 bg-transparent border-0"
+                    className="h-6 w-6 p-0 text-destructive hover:text-red-700 hover:bg-red-50 bg-transparent border-0"
                     title="Eliminar producto"
                   >
                     <Trash2 className="h-3 w-3" />
@@ -434,7 +434,7 @@ export default function ProductTable({
       <div className="mt-6 bg-primary/5 border border-primary/20 rounded-lg p-4">
         <div className="grid grid-cols-3 gap-4 text-center">
           <div>
-            <div className="text-sm text-gray-600">Total Ganancia</div>
+            <div className="text-sm text-muted-foreground">Total Ganancia</div>
             <div className="text-xl font-bold text-green-600">
               {currencySymbol}{productos.reduce((sum, p) => {
                 // Usar total_profit del backend si está disponible, sino calcular
@@ -445,7 +445,7 @@ export default function ProductTable({
             </div>
           </div>
           <div>
-            <div className="text-sm text-gray-600">Margen Promedio</div>
+            <div className="text-sm text-muted-foreground">Margen Promedio</div>
             <div className="text-xl font-bold text-primary">
               {productos.length > 0 
                 ? (productos.reduce((sum, p) => sum + (p.margen_ganancia || 0), 0) / productos.length).toFixed(1)
@@ -453,7 +453,7 @@ export default function ProductTable({
             </div>
           </div>
           <div>
-            <div className="text-sm text-gray-600">Total Productos</div>
+            <div className="text-sm text-muted-foreground">Total Productos</div>
             <div className="text-xl font-bold text-gray-800">
               {productos.reduce((sum, p) => sum + (p.cantidadEditada ?? p.cantidadOriginal ?? p.cantidad ?? 1), 0)}
             </div>
@@ -462,7 +462,7 @@ export default function ProductTable({
       </div>
 
       {/* Información adicional */}
-      <div className="mt-3 text-xs text-gray-500 text-center flex items-center justify-center gap-2">
+      <div className="mt-3 text-xs text-muted-foreground text-center flex items-center justify-center gap-2">
         <Lightbulb className="h-3 w-3" />
         <span>Haz clic en cualquier cantidad, precio o unidad para editarlo. Los cambios se guardan automáticamente al salir del campo o presionar Enter.</span>
       </div>

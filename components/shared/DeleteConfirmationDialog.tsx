@@ -35,7 +35,7 @@ export function DeleteConfirmationDialog({
         <AlertDialogHeader>
           <div className="flex items-center gap-3 mb-2">
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-100">
-              <AlertTriangle className="h-5 w-5 text-red-600" />
+              <AlertTriangle className="h-5 w-5 text-destructive" />
             </div>
             <AlertDialogTitle className="text-xl">{title}</AlertDialogTitle>
           </div>
@@ -43,7 +43,7 @@ export function DeleteConfirmationDialog({
             ¿Estás seguro de que deseas eliminar <span className="font-semibold text-gray-900">"{itemName}"</span>?
             <br />
             <br />
-            <span className="text-red-600 font-medium">Esta acción no se puede deshacer.</span>
+            <span className="text-destructive font-medium">Esta acción no se puede deshacer.</span>
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
@@ -54,7 +54,7 @@ export function DeleteConfirmationDialog({
               onConfirm()
             }}
             disabled={isDeleting}
-            className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
+            className="bg-destructive hover:bg-red-700 focus:ring-red-600"
           >
             {isDeleting ? "Eliminando..." : "Eliminar"}
           </AlertDialogAction>

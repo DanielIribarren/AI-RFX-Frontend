@@ -29,13 +29,13 @@ export function PlanSelector({ selected, onChange }: Props) {
             'relative border-2 rounded-lg p-4 text-left transition-all hover:border-gray-400',
             selected === plan.id
               ? 'border-black bg-gray-50'
-              : 'border-gray-200 bg-white'
+              : 'border bg-white'
           )}
         >
           {/* Popular Badge */}
           {plan.popular && (
             <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-              <span className="bg-black text-white text-xs font-medium px-3 py-1 rounded-full">
+              <span className="bg-foreground text-background text-xs font-medium px-3 py-1 rounded-full">
                 Most Popular
               </span>
             </div>
@@ -50,7 +50,7 @@ export function PlanSelector({ selected, onChange }: Props) {
               <p className="text-2xl font-bold text-gray-900 mt-1">
                 {plan.priceLabel}
                 {plan.price !== null && (
-                  <span className="text-sm font-normal text-gray-600">/mo</span>
+                  <span className="text-sm font-normal text-muted-foreground">/mo</span>
                 )}
               </p>
             </div>
@@ -59,7 +59,7 @@ export function PlanSelector({ selected, onChange }: Props) {
             <ul className="space-y-2">
               {plan.features.map((feature, i) => (
                 <li key={i} className="flex items-start gap-2 text-sm text-gray-700">
-                  <Check className="w-4 h-4 text-black mt-0.5 flex-shrink-0" />
+                  <Check className="w-4 h-4 text-foreground mt-0.5 flex-shrink-0" />
                   <span>{feature}</span>
                 </li>
               ))}
@@ -69,8 +69,8 @@ export function PlanSelector({ selected, onChange }: Props) {
           {/* Selected Indicator */}
           {selected === plan.id && (
             <div className="absolute top-3 right-3">
-              <div className="w-6 h-6 bg-black rounded-full flex items-center justify-center">
-                <Check className="w-4 h-4 text-white" />
+              <div className="w-6 h-6 bg-foreground rounded-full flex items-center justify-center">
+                <Check className="w-4 h-4 text-background" />
               </div>
             </div>
           )}

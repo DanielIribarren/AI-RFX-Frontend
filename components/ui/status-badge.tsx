@@ -20,7 +20,7 @@ const statusBadgeVariants = cva(
         loading:
           "border-primary/20 bg-primary/5 text-primary-dark hover:bg-primary/10",
         neutral:
-          "border-gray-200 bg-gray-50 text-gray-700 hover:bg-gray-100",
+          "border bg-secondary text-gray-700 hover:bg-muted",
       },
     },
     defaultVariants: {

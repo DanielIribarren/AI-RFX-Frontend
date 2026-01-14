@@ -1,7 +1,7 @@
 import "@/app/globals.css"
 import { Inter } from "next/font/google"
 import { cn } from "@/lib/utils"
-import { ThemeProvider } from "@/components/theme-provider"
+import { ThemeProvider } from "@/components/providers/ThemeProvider"
 import { AuthProvider } from "@/contexts/AuthContext"
 import { Toaster } from "@/components/ui/sonner"
 import Script from 'next/script'

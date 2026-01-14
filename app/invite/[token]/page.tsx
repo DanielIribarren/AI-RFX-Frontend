@@ -45,7 +45,7 @@ export default async function AcceptInvitationPage({
   const { invitation, hasPersonalPlan } = await getInvitationData(params.token);
   
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
+    <div className="min-h-screen bg-secondary flex items-center justify-center p-6">
       <AcceptInvitationCard 
         invitation={invitation}
         hasPersonalPlan={hasPersonalPlan}

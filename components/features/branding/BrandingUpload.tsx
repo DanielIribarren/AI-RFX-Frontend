@@ -224,7 +224,7 @@ export default function BrandingUpload({ companyId }: BrandingUploadProps) {
       <div className="space-y-2">
         <label className="text-sm font-medium">Logo de la Empresa</label>
         <div 
-          className="border-2 border-dashed border-gray-300 rounded-lg p-4 hover:border-gray-400 transition-colors cursor-pointer"
+          className="border-2 border-dashed border-input rounded-lg p-4 hover:border-gray-400 transition-colors cursor-pointer"
           onClick={() => logoInputRef.current?.click()}
         >
           <input
@@ -237,12 +237,12 @@ export default function BrandingUpload({ companyId }: BrandingUploadProps) {
           />
           
           <div className="flex flex-col items-center gap-2">
-            <Image className="h-8 w-8 text-gray-400" />
+            <Image className="h-8 w-8 text-muted-foreground/60" />
             <div className="text-center">
               <p className="text-sm font-medium text-gray-700">
                 {logoFile ? logoFile.name : 'Click para subir logo'}
               </p>
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-muted-foreground">
                 PNG, JPG, JPEG, SVG, WebP (máx. 5MB)
               </p>
             </div>
@@ -250,11 +250,11 @@ export default function BrandingUpload({ companyId }: BrandingUploadProps) {
         </div>
         
         {logoFile && (
-          <div className="flex items-center justify-between p-2 bg-gray-50 rounded">
+          <div className="flex items-center justify-between p-2 bg-secondary rounded">
             <div className="flex items-center gap-2">
               <Image className="h-4 w-4" />
               <span className="text-sm">{logoFile.name}</span>
-              <span className="text-xs text-gray-500">
+              <span className="text-xs text-muted-foreground">
                 ({(logoFile.size / 1024 / 1024).toFixed(2)} MB)
               </span>
             </div>
@@ -279,7 +279,7 @@ export default function BrandingUpload({ companyId }: BrandingUploadProps) {
       <div className="space-y-2">
         <label className="text-sm font-medium">Template/Formato de Presupuesto</label>
         <div 
-          className="border-2 border-dashed border-gray-300 rounded-lg p-4 hover:border-gray-400 transition-colors cursor-pointer"
+          className="border-2 border-dashed border-input rounded-lg p-4 hover:border-gray-400 transition-colors cursor-pointer"
           onClick={() => templateInputRef.current?.click()}
         >
           <input
@@ -292,12 +292,12 @@ export default function BrandingUpload({ companyId }: BrandingUploadProps) {
           />
           
           <div className="flex flex-col items-center gap-2">
-            <FileText className="h-8 w-8 text-gray-400" />
+            <FileText className="h-8 w-8 text-muted-foreground/60" />
             <div className="text-center">
               <p className="text-sm font-medium text-gray-700">
                 {templateFile ? templateFile.name : 'Click para subir template'}
               </p>
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-muted-foreground">
                 PDF, PNG, JPG, JPEG, XLSX, XLS (máx. 10MB)
               </p>
             </div>
@@ -305,11 +305,11 @@ export default function BrandingUpload({ companyId }: BrandingUploadProps) {
         </div>
         
         {templateFile && (
-          <div className="flex items-center justify-between p-2 bg-gray-50 rounded">
+          <div className="flex items-center justify-between p-2 bg-secondary rounded">
             <div className="flex items-center gap-2">
               <FileText className="h-4 w-4" />
               <span className="text-sm">{templateFile.name}</span>
-              <span className="text-xs text-gray-500">
+              <span className="text-xs text-muted-foreground">
                 ({(templateFile.size / 1024 / 1024).toFixed(2)} MB)
               </span>
             </div>

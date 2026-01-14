@@ -99,7 +99,7 @@ export default function ProcessedFilesContent({
                 📁
               </div>
               <div>
-                <p className="text-sm text-gray-600">Total de Archivos</p>
+                <p className="text-sm text-muted-foreground">Total de Archivos</p>
                 <p className="text-lg font-semibold text-gray-900">{mockFiles.length}</p>
               </div>
             </div>
@@ -109,7 +109,7 @@ export default function ProcessedFilesContent({
                 ✅
               </div>
               <div>
-                <p className="text-sm text-gray-600">Procesados</p>
+                <p className="text-sm text-muted-foreground">Procesados</p>
                 <p className="text-lg font-semibold text-gray-900">
                   {mockFiles.filter(f => f.status === 'processed').length}
                 </p>
@@ -122,7 +122,7 @@ export default function ProcessedFilesContent({
                   <Calendar className="h-5 w-5 text-primary" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600">Fecha de Recepción</p>
+                  <p className="text-sm text-muted-foreground">Fecha de Recepción</p>
                   <p className="text-sm font-semibold text-gray-900">
                     {new Date(receivedAt).toLocaleDateString("es-ES")}
                   </p>
@@ -145,7 +145,7 @@ export default function ProcessedFilesContent({
             {mockFiles.map((file) => (
               <div 
                 key={file.id} 
-                className={`border border-gray-200 rounded-lg p-4 transition-colors ${
+                className={`border border rounded-lg p-4 transition-colors ${
                   isDisabled ? 'opacity-50' : 'hover:bg-gray-50'
                 }`}
               >
@@ -161,7 +161,7 @@ export default function ProcessedFilesContent({
                         </p>
                         {getStatusBadge(file.status)}
                       </div>
-                      <div className="flex items-center gap-4 text-xs text-gray-500">
+                      <div className="flex items-center gap-4 text-xs text-muted-foreground">
                         <span>{formatFileSize(file.size)}</span>
                         <div className="flex items-center gap-1">
                           <Clock className="h-3 w-3" />
@@ -202,19 +202,19 @@ export default function ProcessedFilesContent({
                   <div className="mt-3 pt-3 border-t border-gray-100">
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs">
                       <div>
-                        <span className="text-gray-500">Estado:</span>
+                        <span className="text-muted-foreground">Estado:</span>
                         <span className="ml-1 text-green-600 font-medium">Completado</span>
                       </div>
                       <div>
-                        <span className="text-gray-500">Tipo:</span>
+                        <span className="text-muted-foreground">Tipo:</span>
                         <span className="ml-1 text-gray-700">{file.type.split('/')[1]?.toUpperCase()}</span>
                       </div>
                       <div>
-                        <span className="text-gray-500">RFX ID:</span>
+                        <span className="text-muted-foreground">RFX ID:</span>
                         <span className="ml-1 text-gray-700">{rfxId || 'N/A'}</span>
                       </div>
                       <div>
-                        <span className="text-gray-500">Extracción:</span>
+                        <span className="text-muted-foreground">Extracción:</span>
                         <span className="ml-1 text-primary font-medium">IA + OCR</span>
                       </div>
                     </div>
@@ -226,9 +226,9 @@ export default function ProcessedFilesContent({
           
           {mockFiles.length === 0 && (
             <div className="text-center py-8">
-              <div className="text-gray-400 text-4xl mb-2">📁</div>
-              <p className="text-gray-500">No se encontraron archivos procesados</p>
-              <p className="text-sm text-gray-400 mt-1">
+              <div className="text-muted-foreground/60 text-4xl mb-2">📁</div>
+              <p className="text-muted-foreground">No se encontraron archivos procesados</p>
+              <p className="text-sm text-muted-foreground/60 mt-1">
                 Los archivos aparecerán aquí una vez que sean procesados
               </p>
             </div>

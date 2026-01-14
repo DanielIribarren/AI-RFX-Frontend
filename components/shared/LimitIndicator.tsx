@@ -21,7 +21,7 @@ export function LimitIndicator({ current, max, label, className }: LimitIndicato
   if (max === null) {
     return (
       <div className={cn('text-sm text-gray-600', className)}>
-        <span className="font-medium">{current}</span> {label} • <span className="text-gray-500">Unlimited</span>
+        <span className="font-medium">{current}</span> {label} • <span className="text-muted-foreground">Unlimited</span>
       </div>
     );
   }
@@ -41,7 +41,7 @@ export function LimitIndicator({ current, max, label, className }: LimitIndicato
         )}>
           {current} / {max} {label}
         </span>
-        <span className="text-gray-600">{percentage.toFixed(0)}%</span>
+        <span className="text-muted-foreground">{percentage.toFixed(0)}%</span>
       </div>
       
       {/* Progress Bar */}

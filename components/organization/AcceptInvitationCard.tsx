@@ -46,12 +46,12 @@ export function AcceptInvitationCard({ invitation, hasPersonalPlan }: Props) {
   
   if (isDeclined) {
     return (
-      <div className="max-w-md w-full bg-white border border-gray-200 rounded-lg p-8 text-center">
+      <div className="max-w-md w-full bg-background border border rounded-lg p-8 text-center">
         <div className="text-5xl mb-4">👋</div>
         <h2 className="text-xl font-bold text-gray-900 mb-2">
           Invitation Declined
         </h2>
-        <p className="text-gray-600 mb-6">
+        <p className="text-muted-foreground mb-6">
           You've declined the invitation to join {invitation.organization.name}
         </p>
         <Button 
@@ -71,26 +71,26 @@ export function AcceptInvitationCard({ invitation, hasPersonalPlan }: Props) {
     .toUpperCase();
   
   return (
-    <div className="max-w-md w-full bg-white border border-gray-200 rounded-lg p-8">
+    <div className="max-w-md w-full bg-background border border rounded-lg p-8">
       {/* Header Icon */}
       <div className="text-center mb-6">
-        <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-100 rounded-full mb-4">
+        <div className="inline-flex items-center justify-center w-16 h-16 bg-muted rounded-full mb-4">
           <PartyPopper className="w-8 h-8 text-gray-700" />
         </div>
         <h1 className="text-2xl font-bold text-gray-900 mb-2">
           You're Invited!
         </h1>
-        <p className="text-gray-600">
+        <p className="text-muted-foreground">
           {invitation.invited_by.name || invitation.invited_by.email} invited you to join their organization
         </p>
       </div>
       
       {/* Organization Info */}
-      <div className="border border-gray-200 rounded-lg p-4 mb-6">
+      <div className="border border rounded-lg p-4 mb-6">
         <div className="flex items-center gap-3 mb-4">
           <Avatar className="h-12 w-12">
             <AvatarImage src={invitation.organization.logo_url} />
-            <AvatarFallback className="bg-black text-white text-lg">
+            <AvatarFallback className="bg-foreground text-background text-lg">
               {orgInitials}
             </AvatarFallback>
           </Avatar>
@@ -104,8 +104,8 @@ export function AcceptInvitationCard({ invitation, hasPersonalPlan }: Props) {
           </div>
         </div>
         
-        <div className="pt-3 border-t border-gray-200">
-          <p className="text-sm text-gray-600 mb-2">
+        <div className="pt-3 border-t border">
+          <p className="text-sm text-muted-foreground mb-2">
             You'll join as:
           </p>
           <RoleBadge role={invitation.role} />
@@ -114,8 +114,8 @@ export function AcceptInvitationCard({ invitation, hasPersonalPlan }: Props) {
       
       {/* Warning about personal plan */}
       {hasPersonalPlan && (
-        <Alert className="mb-6 border-gray-300 bg-gray-50">
-          <AlertCircle className="h-4 w-4 text-gray-600" />
+        <Alert className="mb-6 border-input bg-secondary">
+          <AlertCircle className="h-4 w-4 text-muted-foreground" />
           <AlertDescription className="text-sm text-gray-700">
             <p className="font-medium">Your personal plan will be canceled</p>
             <p className="mt-1">
@@ -138,14 +138,14 @@ export function AcceptInvitationCard({ invitation, hasPersonalPlan }: Props) {
         <Button
           onClick={handleAccept}
           disabled={isAccepting || isProcessing}
-          className="flex-1 bg-black hover:bg-gray-800 text-white"
+          className="flex-1 bg-foreground hover:bg-gray-800 text-background"
         >
           {isAccepting ? 'Accepting...' : 'Accept Invitation'}
         </Button>
       </div>
       
       {/* Footer */}
-      <p className="text-xs text-gray-500 text-center mt-6">
+      <p className="text-xs text-muted-foreground text-center mt-6">
         This invitation will expire in{' '}
         {Math.ceil((new Date(invitation.expires_at).getTime() - Date.now()) / (1000 * 60 * 60 * 24))}{' '}
         days

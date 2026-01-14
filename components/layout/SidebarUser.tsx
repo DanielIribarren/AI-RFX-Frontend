@@ -51,12 +51,12 @@ export function SidebarUser() {
         <DropdownMenuTrigger asChild>
           <Button
             variant="ghost"
-            className="w-full justify-start h-auto py-2 px-2 hover:bg-gray-100 rounded-lg group"
+            className="w-full justify-start h-auto py-2 px-2 hover:bg-muted rounded-lg group"
           >
             <div className="flex items-center gap-3 w-full">
               <Avatar className="h-8 w-8 flex-shrink-0">
                 <AvatarImage src="" alt={user.full_name} />
-                <AvatarFallback className="bg-primary text-white text-xs font-medium">
+                <AvatarFallback className="bg-primary text-background text-xs font-medium">
                   {getInitials(user.full_name)}
                 </AvatarFallback>
               </Avatar>
@@ -64,11 +64,11 @@ export function SidebarUser() {
                 <p className="text-sm font-medium text-gray-900 truncate">
                   {user.full_name}
                 </p>
-                <p className="text-xs text-gray-500 truncate">
+                <p className="text-xs text-muted-foreground truncate">
                   {user.email}
                 </p>
               </div>
-              <ChevronUp className="h-4 w-4 text-gray-400 group-data-[collapsible=icon]:hidden" />
+              <ChevronUp className="h-4 w-4 text-muted-foreground/60 group-data-[collapsible=icon]:hidden" />
             </div>
           </Button>
         </DropdownMenuTrigger>
@@ -76,9 +76,9 @@ export function SidebarUser() {
           <DropdownMenuLabel>
             <div className="flex flex-col space-y-1">
               <p className="text-sm font-medium">{user.full_name}</p>
-              <p className="text-xs text-gray-500">{user.email}</p>
+              <p className="text-xs text-muted-foreground">{user.email}</p>
               {user.company_name && (
-                <p className="text-xs text-gray-500">{user.company_name}</p>
+                <p className="text-xs text-muted-foreground">{user.company_name}</p>
               )}
             </div>
           </DropdownMenuLabel>
@@ -96,7 +96,7 @@ export function SidebarUser() {
             <span>Budget Settings</span>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={handleLogout} className="text-red-600">
+          <DropdownMenuItem onClick={handleLogout} className="text-destructive">
             <LogOut className="mr-2 h-4 w-4" />
             <span>Log out</span>
           </DropdownMenuItem>

@@ -9,13 +9,13 @@ import { Check } from 'lucide-react';
 
 export function CreateOrganizationCTA() {
   return (
-    <div className="border border-gray-200 rounded-lg p-8 text-center space-y-6 bg-white">
+    <div className="border border rounded-lg p-8 text-center space-y-6 bg-background">
         {/* Header */}
         <div>
           <h2 className="text-2xl font-bold text-gray-900 mb-2">
             Create an Organization
           </h2>
-          <p className="text-gray-600 max-w-2xl mx-auto">
+          <p className="text-muted-foreground max-w-2xl mx-auto">
             Organizations allow you to collaborate with your team, 
             manage RFX together, and centralize billing.
           </p>
@@ -24,8 +24,8 @@ export function CreateOrganizationCTA() {
         {/* Benefits */}
         <div className="space-y-3 max-w-md mx-auto">
           <div className="flex items-center gap-3 text-left">
-            <div className="flex-shrink-0 w-5 h-5 rounded-full bg-black flex items-center justify-center">
-              <Check className="w-3 h-3 text-white" />
+            <div className="flex-shrink-0 w-5 h-5 rounded-full bg-foreground flex items-center justify-center">
+              <Check className="w-3 h-3 text-background" />
             </div>
             <span className="text-sm text-gray-700">
               Share RFX with team members
@@ -33,8 +33,8 @@ export function CreateOrganizationCTA() {
           </div>
           
           <div className="flex items-center gap-3 text-left">
-            <div className="flex-shrink-0 w-5 h-5 rounded-full bg-black flex items-center justify-center">
-              <Check className="w-3 h-3 text-white" />
+            <div className="flex-shrink-0 w-5 h-5 rounded-full bg-foreground flex items-center justify-center">
+              <Check className="w-3 h-3 text-background" />
             </div>
             <span className="text-sm text-gray-700">
               Centralized billing and management
@@ -42,8 +42,8 @@ export function CreateOrganizationCTA() {
           </div>
           
           <div className="flex items-center gap-3 text-left">
-            <div className="flex-shrink-0 w-5 h-5 rounded-full bg-black flex items-center justify-center">
-              <Check className="w-3 h-3 text-white" />
+            <div className="flex-shrink-0 w-5 h-5 rounded-full bg-foreground flex items-center justify-center">
+              <Check className="w-3 h-3 text-background" />
             </div>
             <span className="text-sm text-gray-700">
               Unified branding across all proposals
@@ -51,8 +51,8 @@ export function CreateOrganizationCTA() {
           </div>
           
           <div className="flex items-center gap-3 text-left">
-            <div className="flex-shrink-0 w-5 h-5 rounded-full bg-black flex items-center justify-center">
-              <Check className="w-3 h-3 text-white" />
+            <div className="flex-shrink-0 w-5 h-5 rounded-full bg-foreground flex items-center justify-center">
+              <Check className="w-3 h-3 text-background" />
             </div>
             <span className="text-sm text-gray-700">
               Analytics and reporting

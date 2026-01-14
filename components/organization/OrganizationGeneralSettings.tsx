@@ -57,7 +57,7 @@ export function OrganizationGeneralSettings({ organization, canEdit }: Props) {
   };
   
   return (
-    <div className="w-full border border-gray-200 rounded-lg p-6 bg-white">
+    <div className="w-full border border rounded-lg p-6 bg-background">
       <h2 className="text-lg font-semibold text-gray-900 mb-4">
         General Information
       </h2>
@@ -74,7 +74,7 @@ export function OrganizationGeneralSettings({ organization, canEdit }: Props) {
             className="mt-1 w-full"
           />
           {errors.name && (
-            <p className="text-sm text-red-600 mt-1">{errors.name.message}</p>
+            <p className="text-sm text-destructive mt-1">{errors.name.message}</p>
           )}
         </div>
         
@@ -88,11 +88,11 @@ export function OrganizationGeneralSettings({ organization, canEdit }: Props) {
             placeholder="acme-catering"
             className="mt-1 w-full"
           />
-          <p className="text-sm text-gray-500 mt-1">
+          <p className="text-sm text-muted-foreground mt-1">
             https://ai-rfx.com/org/{organization.slug}
           </p>
           {errors.slug && (
-            <p className="text-sm text-red-600 mt-1">{errors.slug.message}</p>
+            <p className="text-sm text-destructive mt-1">{errors.slug.message}</p>
           )}
         </div>
         
@@ -101,7 +101,7 @@ export function OrganizationGeneralSettings({ organization, canEdit }: Props) {
           <Button 
             type="submit" 
             disabled={!isDirty || isUpdating}
-            className="bg-black hover:bg-gray-800 text-white"
+            className="bg-foreground hover:bg-gray-800 text-background"
           >
             {isUpdating ? 'Saving...' : 'Save Changes'}
           </Button>

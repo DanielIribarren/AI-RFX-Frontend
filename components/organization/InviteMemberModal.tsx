@@ -104,7 +104,7 @@ export function InviteMemberModal({ organizationId, isOpen, onClose }: Props) {
               autoFocus
             />
             {errors.email && (
-              <p className="text-sm text-red-600 mt-1">{errors.email.message}</p>
+              <p className="text-sm text-destructive mt-1">{errors.email.message}</p>
             )}
           </div>
           
@@ -123,7 +123,7 @@ export function InviteMemberModal({ organizationId, isOpen, onClose }: Props) {
                 <SelectItem value="member">
                   <div className="flex flex-col items-start">
                     <span className="font-medium">{ROLE_LABELS.member}</span>
-                    <span className="text-xs text-gray-500">
+                    <span className="text-xs text-muted-foreground">
                       {ROLE_DESCRIPTIONS.member}
                     </span>
                   </div>
@@ -131,7 +131,7 @@ export function InviteMemberModal({ organizationId, isOpen, onClose }: Props) {
                 <SelectItem value="admin">
                   <div className="flex flex-col items-start">
                     <span className="font-medium">{ROLE_LABELS.admin}</span>
-                    <span className="text-xs text-gray-500">
+                    <span className="text-xs text-muted-foreground">
                       {ROLE_DESCRIPTIONS.admin}
                     </span>
                   </div>
@@ -139,12 +139,12 @@ export function InviteMemberModal({ organizationId, isOpen, onClose }: Props) {
               </SelectContent>
             </Select>
             {errors.role && (
-              <p className="text-sm text-red-600 mt-1">{errors.role.message}</p>
+              <p className="text-sm text-destructive mt-1">{errors.role.message}</p>
             )}
           </div>
           
           {/* Role Description */}
-          <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
+          <div className="bg-secondary border border rounded-lg p-3">
             <p className="text-sm text-gray-700">
               <span className="font-medium">{ROLE_LABELS[selectedRole as OrganizationRole]}:</span>{' '}
               {ROLE_DESCRIPTIONS[selectedRole as OrganizationRole]}
@@ -163,7 +163,7 @@ export function InviteMemberModal({ organizationId, isOpen, onClose }: Props) {
             <Button 
               type="submit" 
               disabled={isInviting}
-              className="bg-black hover:bg-gray-800 text-white"
+              className="bg-foreground hover:bg-gray-800 text-background"
             >
               {isInviting ? 'Sending...' : 'Send Invitation'}
             </Button>

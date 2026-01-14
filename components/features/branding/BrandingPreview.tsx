@@ -201,7 +201,7 @@ export default function BrandingPreview({ companyId }: BrandingPreviewProps) {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center p-8">
-        <div className="flex items-center gap-2 text-gray-600">
+        <div className="flex items-center gap-2 text-muted-foreground">
           <RefreshCw className="h-5 w-5 animate-spin" />
           <span>Cargando configuración...</span>
         </div>
@@ -225,14 +225,14 @@ export default function BrandingPreview({ companyId }: BrandingPreviewProps) {
 
   if (!config || !config.has_branding) {
     return (
-      <div className="text-center p-8 border-2 border-dashed border-gray-300 rounded-lg bg-gray-50">
+      <div className="text-center p-8 border-2 border-dashed border-input rounded-lg bg-secondary">
         <div className="space-y-3">
           <div className="mx-auto w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
             <Layout className="h-6 w-6 text-primary-light" />
           </div>
           <div>
             <h3 className="text-sm font-medium text-gray-900">No hay configuración de presupuesto</h3>
-            <p className="text-sm text-gray-500 mt-1">
+            <p className="text-sm text-muted-foreground mt-1">
               Suba un logo y template en la sección de la izquierda para personalizar sus presupuestos
             </p>
           </div>
@@ -256,7 +256,7 @@ export default function BrandingPreview({ companyId }: BrandingPreviewProps) {
             </Badge>
           </div>
           
-          <div className="border rounded-lg p-4 bg-white">
+          <div className="border rounded-lg p-4 bg-background">
             <img 
               src={config.logo_url} 
               alt="Logo de la empresa"
@@ -266,7 +266,7 @@ export default function BrandingPreview({ companyId }: BrandingPreviewProps) {
                 e.currentTarget.style.display = 'none'
                 const parent = e.currentTarget.parentElement
                 if (parent) {
-                  parent.innerHTML = '<div class="text-sm text-red-600 text-center">Error al cargar logo</div>'
+                  parent.innerHTML = '<div class="text-sm text-destructive text-center">Error al cargar logo</div>'
                 }
               }}
               onLoad={() => {
@@ -287,7 +287,7 @@ export default function BrandingPreview({ companyId }: BrandingPreviewProps) {
           
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
-              <span className="text-xs text-gray-600">Primario</span>
+              <span className="text-xs text-muted-foreground">Primario</span>
               <div className="flex items-center gap-2">
                 <div 
                   className="w-6 h-6 rounded border"
@@ -300,7 +300,7 @@ export default function BrandingPreview({ companyId }: BrandingPreviewProps) {
             </div>
             
             <div className="space-y-2">
-              <span className="text-xs text-gray-600">Secundario</span>
+              <span className="text-xs text-muted-foreground">Secundario</span>
               <div className="flex items-center gap-2">
                 <div 
                   className="w-6 h-6 rounded border"
@@ -315,7 +315,7 @@ export default function BrandingPreview({ companyId }: BrandingPreviewProps) {
 
           {config.logo_analysis.dominant_colors.length > 2 && (
             <div className="space-y-2">
-              <span className="text-xs text-gray-600">Paleta Completa</span>
+              <span className="text-xs text-muted-foreground">Paleta Completa</span>
               <div className="flex gap-1 flex-wrap">
                 {config.logo_analysis.dominant_colors.map((color, index) => (
                   <div 
@@ -347,21 +347,21 @@ export default function BrandingPreview({ companyId }: BrandingPreviewProps) {
           <div className="space-y-3 text-sm">
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <span className="text-xs text-gray-600 block">Estilo</span>
+                <span className="text-xs text-muted-foreground block">Estilo</span>
                 <span className="capitalize">{config.template_analysis.design_style}</span>
               </div>
               
               <div>
-                <span className="text-xs text-gray-600 block">Estructura</span>
+                <span className="text-xs text-muted-foreground block">Estructura</span>
                 <span className="capitalize">{config.template_analysis.layout_structure.replace(/-/g, ' ')}</span>
               </div>
             </div>
 
             {config.template_analysis.typography && (
               <div>
-                <span className="text-xs text-gray-600 block mb-1">Tipografía</span>
+                <span className="text-xs text-muted-foreground block mb-1">Tipografía</span>
                 <div className="flex items-center gap-2">
-                  <Type className="h-4 w-4 text-gray-400" />
+                  <Type className="h-4 w-4 text-muted-foreground/60" />
                   <span className="text-xs">{config.template_analysis.typography.font_family}</span>
                 </div>
               </div>
@@ -422,7 +422,7 @@ export default function BrandingPreview({ companyId }: BrandingPreviewProps) {
       </div>
 
       {/* Last Updated */}
-      <p className="text-xs text-gray-500 text-center">
+      <p className="text-xs text-muted-foreground text-center">
         Última actualización: {new Date(config.updated_at).toLocaleDateString('es-ES', {
           year: 'numeric',
           month: 'short',

@@ -167,12 +167,12 @@ export default function ProductFormDialog({
                   onChange={(e) => setFormData(prev => ({ ...prev, nombre: e.target.value }))}
                   placeholder="Ej: Tequeños de queso"
                   className={cn(
-                    "border-gray-200 bg-white focus:border-gray-400 focus:ring-gray-200",
+                    "border bg-background focus:border-gray-400 focus:ring-gray-200",
                     errors.nombre && "border-red-300 bg-red-50"
                   )}
                 />
                 {errors.nombre && (
-                  <p className="text-xs text-red-600">{errors.nombre}</p>
+                  <p className="text-xs text-destructive">{errors.nombre}</p>
                 )}
               </div>
               
@@ -183,7 +183,7 @@ export default function ProductFormDialog({
                   value={formData.categoria}
                   onValueChange={(value) => setFormData(prev => ({ ...prev, categoria: value }))}
                 >
-                  <SelectTrigger className="border-gray-200 bg-white focus:border-gray-400">
+                  <SelectTrigger className="border bg-background focus:border-gray-400">
                     <SelectValue placeholder="Seleccionar categoría" />
                   </SelectTrigger>
                   <SelectContent>
@@ -210,12 +210,12 @@ export default function ProductFormDialog({
                   value={formData.cantidad}
                   onChange={(e) => setFormData(prev => ({ ...prev, cantidad: parseInt(e.target.value) || 1 }))}
                   className={cn(
-                    "border-gray-200 bg-white focus:border-gray-400 focus:ring-gray-200",
+                    "border bg-background focus:border-gray-400 focus:ring-gray-200",
                     errors.cantidad && "border-red-300 bg-red-50"
                   )}
                 />
                 {errors.cantidad && (
-                  <p className="text-xs text-red-600">{errors.cantidad}</p>
+                  <p className="text-xs text-destructive">{errors.cantidad}</p>
                 )}
               </div>
               
@@ -227,7 +227,7 @@ export default function ProductFormDialog({
                   onValueChange={(value) => setFormData(prev => ({ ...prev, unidad: value }))}
                 >
                   <SelectTrigger className={cn(
-                    "border-gray-200 bg-white focus:border-gray-400",
+                    "border bg-background focus:border-gray-400",
                     errors.unidad && "border-red-300 bg-red-50"
                   )}>
                     <SelectValue />
@@ -241,7 +241,7 @@ export default function ProductFormDialog({
                   </SelectContent>
                 </Select>
                 {errors.unidad && (
-                  <p className="text-xs text-red-600">{errors.unidad}</p>
+                  <p className="text-xs text-destructive">{errors.unidad}</p>
                 )}
               </div>
               
@@ -249,7 +249,7 @@ export default function ProductFormDialog({
               <div className="space-y-2">
                 <Label htmlFor="precio">Precio Unitario ({currencySymbol})</Label>
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-gray-500 font-medium">
+                  <span className="text-sm text-muted-foreground font-medium">
                     {currencySymbol}
                   </span>
                   <Input
@@ -261,13 +261,13 @@ export default function ProductFormDialog({
                     onChange={(e) => setFormData(prev => ({ ...prev, precio: parseFloat(e.target.value) || 0 }))}
                     placeholder="0.00"
                     className={cn(
-                      "flex-1 border-gray-200 bg-white focus:border-gray-400 focus:ring-gray-200",
+                      "flex-1 border bg-background focus:border-gray-400 focus:ring-gray-200",
                       errors.precio && "border-red-300 bg-red-50"
                     )}
                   />
                 </div>
                 {errors.precio && (
-                  <p className="text-xs text-red-600">{errors.precio}</p>
+                  <p className="text-xs text-destructive">{errors.precio}</p>
                 )}
               </div>
             </div>
@@ -280,7 +280,7 @@ export default function ProductFormDialog({
                 value={formData.descripcion}
                 onChange={(e) => setFormData(prev => ({ ...prev, descripcion: e.target.value }))}
                 placeholder="Información adicional sobre el producto"
-                className="border-gray-200 bg-white focus:border-gray-400 focus:ring-gray-200"
+                className="border bg-background focus:border-gray-400 focus:ring-gray-200"
               />
             </div>
           </div>
@@ -299,7 +299,7 @@ export default function ProductFormDialog({
           </div>
 
           {errors.submit && (
-            <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg p-3">
+            <div className="text-sm text-destructive bg-red-50 border border-red-200 rounded-lg p-3">
               {errors.submit}
             </div>
           )}
@@ -310,7 +310,7 @@ export default function ProductFormDialog({
               variant="outline"
               onClick={handleClose}
               disabled={isSubmitting}
-              className="gap-2 bg-white hover:bg-gray-50 border-gray-200 text-gray-700 hover:text-gray-800"
+              className="gap-2 bg-background hover:bg-secondary border text-gray-700 hover:text-gray-800"
             >
               <X className="h-4 w-4" />
               Cancelar
@@ -318,7 +318,7 @@ export default function ProductFormDialog({
             <Button
               type="submit"
               disabled={isSubmitting}
-              className="gap-2 bg-gray-800 hover:bg-gray-900 text-white shadow-sm"
+              className="gap-2 bg-gray-800 hover:bg-gray-900 text-background shadow-sm"
             >
               <CheckCircle className="h-4 w-4" />
               {isSubmitting ? 'Guardando...' : (mode === 'create' ? 'Agregar Producto' : 'Actualizar Producto')}

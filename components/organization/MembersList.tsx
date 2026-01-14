@@ -29,8 +29,8 @@ export function MembersList({ members, organizationId, currentUserRole, canManag
   }
   
   return (
-    <div className="border border-gray-200 rounded-lg bg-white">
-      <div className="p-4 border-b border-gray-200">
+    <div className="border border rounded-lg bg-background">
+      <div className="p-4 border-b border">
         <h2 className="text-lg font-semibold text-gray-900">
           Members ({members.length})
         </h2>

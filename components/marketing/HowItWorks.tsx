@@ -1,5 +1,5 @@
 import { Upload, Sparkles, FileText, Download } from 'lucide-react'
-import { BrandCard } from '@/components/brand-card'
+import { Card, CardContent } from '@/components/ui/card'
 
 export function HowItWorks() {
   const steps = [
@@ -29,10 +29,10 @@ export function HowItWorks() {
     <section className="py-20">
       <div className="max-w-7xl mx-auto px-6">
         <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold text-black mb-4 tracking-tight">
+          <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4 tracking-tight">
             Cómo Funciona
           </h2>
-          <p className="text-lg text-gray-700 max-w-2xl mx-auto">
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
             De solicitud a propuesta profesional en 4 pasos simples
           </p>
         </div>
@@ -41,24 +41,27 @@ export function HowItWorks() {
           {steps.map((step, index) => {
             const Icon = step.icon
             return (
-              <BrandCard 
+              <Card 
                 key={index} 
-                className="p-6 hover:shadow-strong transition-all"
+                variant="elevated"
+                className="hover:shadow-lg transition-all"
               >
-                <div className="flex items-start gap-4">
-                  <div className="bg-indigo-600 p-3 rounded-xl flex-shrink-0 shadow-[0_0_20px_rgba(79,70,229,0.3)]">
-                    <Icon className="h-6 w-6 text-white" />
+                <CardContent className="p-6">
+                  <div className="flex items-start gap-4">
+                    <div className="bg-primary p-3 rounded-xl flex-shrink-0">
+                      <Icon className="h-6 w-6 text-primary-foreground" />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-bold text-foreground mb-2">
+                        {index + 1}. {step.title}
+                      </h3>
+                      <p className="text-muted-foreground">
+                        {step.description}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="text-xl font-bold text-black mb-2">
-                      {index + 1}. {step.title}
-                    </h3>
-                    <p className="text-gray-700">
-                      {step.description}
-                    </p>
-                  </div>
-                </div>
-              </BrandCard>
+                </CardContent>
+              </Card>
             )
           })}
         </div>

@@ -15,10 +15,10 @@ import { PLANS } from "@/constants/organization"
 // Componente de carga mientras se resuelve useSearchParams
 function LoadingFallback() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+    <div className="min-h-screen flex items-center justify-center bg-secondary">
       <div className="text-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-        <p className="text-gray-600">Cargando...</p>
+        <p className="text-muted-foreground">Cargando...</p>
       </div>
     </div>
   )
@@ -84,7 +84,7 @@ function SignupContent() {
 
   if (success) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+      <div className="min-h-screen flex items-center justify-center bg-secondary px-4">
         <Card className="w-full max-w-md">
           <CardContent className="pt-6">
             <div className="text-center space-y-4">
@@ -93,7 +93,7 @@ function SignupContent() {
               </div>
               <div>
                 <h3 className="text-lg font-semibold">¡Cuenta creada exitosamente!</h3>
-                <p className="text-sm text-gray-600 mt-2">
+                <p className="text-sm text-muted-foreground mt-2">
                   Redirigiendo al dashboard...
                 </p>
               </div>
@@ -105,7 +105,7 @@ function SignupContent() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 py-8">
+    <div className="min-h-screen flex items-center justify-center bg-secondary px-4 py-8">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
           {/* KISS: Botón volver */}
@@ -192,7 +192,7 @@ function SignupContent() {
                 required
                 disabled={loading}
               />
-              <p className="text-xs text-gray-500">Mínimo 6 caracteres</p>
+              <p className="text-xs text-muted-foreground">Mínimo 6 caracteres</p>
             </div>
             
             <div className="space-y-2">
@@ -225,7 +225,7 @@ function SignupContent() {
               )}
             </Button>
             
-            <div className="text-sm text-center text-gray-600">
+            <div className="text-sm text-center text-muted-foreground">
               ¿Ya tienes una cuenta?{" "}
               <Link href="/login" className="text-blue-600 hover:underline font-medium">
                 Inicia sesión aquí

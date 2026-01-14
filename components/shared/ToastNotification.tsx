@@ -36,7 +36,7 @@ export function ToastNotification({
 
   const icons = {
     success: <CheckCircle className="h-5 w-5 text-green-600" />,
-    error: <XCircle className="h-5 w-5 text-red-600" />,
+    error: <XCircle className="h-5 w-5 text-destructive" />,
     warning: <AlertCircle className="h-5 w-5 text-orange-600" />,
   }
 
@@ -80,7 +80,7 @@ export function ToastNotification({
           </div>
           <button
             onClick={onClose}
-            className="flex-shrink-0 text-gray-400 hover:text-gray-600 transition-colors"
+            className="flex-shrink-0 text-muted-foreground/60 hover:text-muted-foreground transition-colors"
           >
             <X className="h-4 w-4" />
           </button>

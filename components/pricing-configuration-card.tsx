@@ -453,9 +453,9 @@ export default function PricingConfigurationCard({
                     className="w-24"
                     disabled={isDisabled}
                   />
-                  <span className="text-sm text-gray-600">%</span>
+                  <span className="text-sm text-muted-foreground">%</span>
                 </div>
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-muted-foreground">
                   Se aplicará sobre el subtotal de productos
                 </p>
               </div>
@@ -530,7 +530,7 @@ export default function PricingConfigurationCard({
                     className="w-28"
                     disabled={isDisabled}
                   />
-                  <span className="text-sm text-gray-600">personas</span>
+                  <span className="text-sm text-muted-foreground">personas</span>
                 </div>
               </div>
 
@@ -570,7 +570,7 @@ export default function PricingConfigurationCard({
                     <SelectItem value="final_total">Total Final - Incluye todo</SelectItem>
                   </SelectContent>
                 </Select>
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-muted-foreground">
                   Base sobre la cual se calculará el costo por persona
                 </p>
               </div>
@@ -644,7 +644,7 @@ export default function PricingConfigurationCard({
                         className="w-24"
                         disabled={isDisabled}
                       />
-                      <span className="text-sm text-gray-600">%</span>
+                      <span className="text-sm text-muted-foreground">%</span>
                     </div>
                   </div>
                 </div>
@@ -660,7 +660,7 @@ export default function PricingConfigurationCard({
             size="sm"
             onClick={() => setShowAdvanced(!showAdvanced)}
             disabled={isDisabled}
-            className="text-gray-600 hover:text-gray-800"
+            className="text-muted-foreground hover:text-gray-800"
           >
             {showAdvanced ? (
               <>
@@ -677,12 +677,12 @@ export default function PricingConfigurationCard({
         </div>
 
         {/* Configuration Summary */}
-        <div className="bg-gray-50 rounded-lg p-4 space-y-2">
+        <div className="bg-secondary rounded-lg p-4 space-y-2">
           <h4 className="text-sm font-medium text-gray-800 flex items-center gap-2">
             <CheckCircle className="h-4 w-4 text-green-500" />
             Resumen de Configuración V2.2
           </h4>
-          <div className="text-sm text-gray-600 space-y-1">
+          <div className="text-sm text-muted-foreground space-y-1">
             <div className="flex justify-between">
               <span>Coordinación:</span>
               <span>
@@ -772,7 +772,7 @@ export default function PricingConfigurationCard({
                 <button
                   onClick={loadConfigFromBackend}
                   disabled={isLoadingFromBackend || isSavingToBackend}
-                  className="text-xs text-gray-500 hover:text-gray-700 underline hover:no-underline flex items-center gap-1"
+                  className="text-xs text-muted-foreground hover:text-gray-700 underline hover:no-underline flex items-center gap-1"
                 >
                   <RefreshCw className="h-3 w-3" />
                   Recargar desde Servidor

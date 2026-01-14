@@ -56,14 +56,14 @@ export default function PlansPage() {
                   <h3 className="text-2xl font-bold text-gray-900">
                     {currentPlanConfig?.name} Plan
                   </h3>
-                  <p className="text-lg text-gray-600">
+                  <p className="text-lg text-muted-foreground">
                     {currentPlanConfig?.priceLabel}
                     {currentPlanConfig?.price !== null && '/month'}
                   </p>
                 </div>
               </div>
               
-              <p className="text-sm text-gray-600 max-w-2xl">
+              <p className="text-sm text-muted-foreground max-w-2xl">
                 Full access to all features and priority support
               </p>
             </div>
@@ -120,7 +120,7 @@ export default function PlansPage() {
                   <span className="text-green-600 font-medium">Active</span>
                 </p>
                 {!isInOrganization && (
-                  <p className="text-xs text-gray-500 mt-2">
+                  <p className="text-xs text-muted-foreground mt-2">
                     Not part of an organization
                   </p>
                 )}
@@ -134,7 +134,7 @@ export default function PlansPage() {
       <div className="space-y-4">
         <div>
           <h3 className="text-xl font-bold text-gray-900">Available Plans</h3>
-          <p className="text-sm text-gray-600 mt-1">
+          <p className="text-sm text-muted-foreground mt-1">
             Compare plans and upgrade or downgrade your subscription
           </p>
         </div>
@@ -159,7 +159,7 @@ export default function PlansPage() {
                 <CardHeader>
                   {plan.popular && (
                     <div className="mb-2">
-                      <span className="bg-black text-white text-xs font-medium px-2 py-1 rounded">
+                      <span className="bg-foreground text-background text-xs font-medium px-2 py-1 rounded">
                         Most Popular
                       </span>
                     </div>
@@ -177,7 +177,7 @@ export default function PlansPage() {
                       {plan.priceLabel}
                     </span>
                     {plan.price !== null && (
-                      <span className="text-gray-600">/month</span>
+                      <span className="text-muted-foreground">/month</span>
                     )}
                   </div>
                 </CardHeader>
@@ -185,7 +185,7 @@ export default function PlansPage() {
                   <ul className="space-y-2">
                     {plan.features.map((feature, i) => (
                       <li key={i} className="flex items-start gap-2 text-sm text-gray-700">
-                        <Check className="h-4 w-4 text-black mt-0.5 flex-shrink-0" />
+                        <Check className="h-4 w-4 text-foreground mt-0.5 flex-shrink-0" />
                         <span>{feature}</span>
                       </li>
                     ))}
@@ -194,8 +194,8 @@ export default function PlansPage() {
                   <Button 
                     className={
                       isCurrent 
-                        ? 'w-full bg-gray-100 text-gray-900 hover:bg-gray-200' 
-                        : 'w-full bg-black hover:bg-gray-800 text-white'
+                        ? 'w-full bg-muted text-gray-900 hover:bg-gray-200' 
+                        : 'w-full bg-foreground hover:bg-gray-800 text-white'
                     }
                     disabled={isCurrent}
                     onClick={() => {
@@ -240,7 +240,7 @@ export default function PlansPage() {
             <p className="text-sm font-medium text-gray-900">
               Can I change my plan anytime?
             </p>
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-muted-foreground">
               Yes! You can upgrade or downgrade your plan at any time. 
               Changes take effect immediately, and we'll prorate your billing.
             </p>
@@ -252,7 +252,7 @@ export default function PlansPage() {
             <p className="text-sm font-medium text-gray-900">
               What happens when I upgrade?
             </p>
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-muted-foreground">
               You'll get immediate access to all new features. We'll charge you 
               the prorated difference for the remainder of your billing cycle.
             </p>
@@ -264,7 +264,7 @@ export default function PlansPage() {
             <p className="text-sm font-medium text-gray-900">
               Need an Enterprise plan?
             </p>
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-muted-foreground">
               Contact our sales team for custom pricing, dedicated support, 
               and advanced features tailored to your organization.
             </p>

@@ -231,11 +231,11 @@ export default function BudgetPreviewCard({
         </CardHeader>
         <CardContent>
           <div className="text-center py-8">
-            <div className="text-gray-400 text-4xl mb-2">
+            <div className="text-muted-foreground/60 text-4xl mb-2">
               <Calculator className="h-16 w-16 mx-auto" />
             </div>
-            <p className="text-gray-500">No hay productos configurados</p>
-            <p className="text-sm text-gray-400 mt-1">
+            <p className="text-muted-foreground">No hay productos configurados</p>
+            <p className="text-sm text-muted-foreground/60 mt-1">
               Agrega productos en la configuración de precios para ver la vista previa
             </p>
           </div>
@@ -305,7 +305,7 @@ export default function BudgetPreviewCard({
                       <Badge variant="secondary" className="ml-2 text-xs">Editado</Badge>
                     )}
                   </p>
-                  <p className="text-gray-500 text-xs">
+                  <p className="text-muted-foreground text-xs">
                     {cantidad} {producto.unidad} × {formatPrice(precio)}
                   </p>
                 </div>
@@ -335,7 +335,7 @@ export default function BudgetPreviewCard({
         {/* Coordination V2.2 */}
         {calculations.coordination_enabled && (
           <div className="flex justify-between items-center text-sm">
-            <span className="text-gray-600">
+            <span className="text-muted-foreground">
               {getCoordinationTypeDisplay(config.coordination_type)} 
               ({(calculations.coordination_rate * 100).toFixed(2)}%)
             </span>
@@ -348,7 +348,7 @@ export default function BudgetPreviewCard({
         {/* Tax Amount */}
         {calculations.taxes_enabled && calculations.tax_amount > 0 && (
           <div className="flex justify-between items-center text-sm">
-            <span className="text-gray-600">
+            <span className="text-muted-foreground">
               {config.tax_name} ({(calculations.tax_rate * 100).toFixed(2)}%)
             </span>
             <span className="text-gray-900">
@@ -394,7 +394,7 @@ export default function BudgetPreviewCard({
         )}
 
         {/* Advanced Summary V2.2 */}
-        <div className="bg-gray-50 rounded-lg p-3">
+        <div className="bg-secondary rounded-lg p-3">
           <h5 className="text-xs font-medium text-gray-700 mb-2 flex items-center gap-2">
             <BarChart3 className="h-3 w-3" />
             Resumen Avanzado V2.2
@@ -404,11 +404,11 @@ export default function BudgetPreviewCard({
           </h5>
           <div className="grid grid-cols-2 gap-4 text-xs">
             <div>
-              <span className="text-gray-500">Items:</span>
+              <span className="text-muted-foreground">Items:</span>
               <span className="ml-1 font-medium">{productos.length}</span>
             </div>
             <div>
-              <span className="text-gray-500">Coordinación:</span>
+              <span className="text-muted-foreground">Coordinación:</span>
               <span className="ml-1 font-medium">
                 {calculations.coordination_enabled 
                   ? getCoordinationTypeDisplay(config.coordination_type)
@@ -419,11 +419,11 @@ export default function BudgetPreviewCard({
             {calculations.cost_per_person_enabled && (
               <>
                 <div>
-                  <span className="text-gray-500">Personas:</span>
+                  <span className="text-muted-foreground">Personas:</span>
                   <span className="ml-1 font-medium">{calculations.headcount}</span>
                 </div>
                 <div>
-                  <span className="text-gray-500">Por persona:</span>
+                  <span className="text-muted-foreground">Por persona:</span>
                   <span className="ml-1 font-medium">{formatPrice(calculations.cost_per_person)}</span>
                 </div>
               </>
@@ -431,13 +431,13 @@ export default function BudgetPreviewCard({
             {calculations.taxes_enabled && (
               <>
                 <div>
-                  <span className="text-gray-500">Impuestos:</span>
+                  <span className="text-muted-foreground">Impuestos:</span>
                   <span className="ml-1 font-medium">
                     {config.tax_name} ({(calculations.tax_rate * 100).toFixed(1)}%)
                   </span>
                 </div>
                 <div>
-                  <span className="text-gray-500">Monto impuesto:</span>
+                  <span className="text-muted-foreground">Monto impuesto:</span>
                   <span className="ml-1 font-medium">{formatPrice(calculations.tax_amount)}</span>
                 </div>
               </>

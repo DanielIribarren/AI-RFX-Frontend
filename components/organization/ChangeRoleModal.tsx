@@ -72,7 +72,7 @@ export function ChangeRoleModal({ member, organizationId, isOpen, onClose }: Pro
         
         <div className="space-y-4">
           {/* Current Role */}
-          <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
+          <div className="bg-secondary border border rounded-lg p-3">
             <p className="text-sm text-gray-700">
               <span className="font-medium">Current role:</span>{' '}
               {ROLE_LABELS[member.role]}
@@ -94,7 +94,7 @@ export function ChangeRoleModal({ member, organizationId, isOpen, onClose }: Pro
                 <SelectItem value="member">
                   <div className="flex flex-col items-start">
                     <span className="font-medium">{ROLE_LABELS.member}</span>
-                    <span className="text-xs text-gray-500">
+                    <span className="text-xs text-muted-foreground">
                       {ROLE_DESCRIPTIONS.member}
                     </span>
                   </div>
@@ -102,7 +102,7 @@ export function ChangeRoleModal({ member, organizationId, isOpen, onClose }: Pro
                 <SelectItem value="admin">
                   <div className="flex flex-col items-start">
                     <span className="font-medium">{ROLE_LABELS.admin}</span>
-                    <span className="text-xs text-gray-500">
+                    <span className="text-xs text-muted-foreground">
                       {ROLE_DESCRIPTIONS.admin}
                     </span>
                   </div>
@@ -113,7 +113,7 @@ export function ChangeRoleModal({ member, organizationId, isOpen, onClose }: Pro
           
           {/* Role Description */}
           {selectedRole !== member.role && (
-            <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
+            <div className="bg-secondary border border rounded-lg p-3">
               <p className="text-sm text-gray-700">
                 <span className="font-medium">{ROLE_LABELS[selectedRole]}:</span>{' '}
                 {ROLE_DESCRIPTIONS[selectedRole]}
@@ -135,7 +135,7 @@ export function ChangeRoleModal({ member, organizationId, isOpen, onClose }: Pro
             type="button"
             onClick={handleSubmit}
             disabled={isChangingRole || selectedRole === member.role}
-            className="bg-black hover:bg-gray-800 text-white"
+            className="bg-foreground hover:bg-gray-800 text-background"
           >
             {isChangingRole ? 'Updating...' : 'Update Role'}
           </Button>

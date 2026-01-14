@@ -21,12 +21,12 @@ export function PendingInvitationsList({ invitations, canManage }: Props) {
   }
   
   return (
-    <div className="border border-gray-200 rounded-lg bg-white">
-      <div className="p-4 border-b border-gray-200">
+    <div className="border border rounded-lg bg-background">
+      <div className="p-4 border-b border">
         <h2 className="text-lg font-semibold text-gray-900">
           Pending Invitations ({invitations.length})
         </h2>
-        <p className="text-sm text-gray-600 mt-1">
+        <p className="text-sm text-muted-foreground mt-1">
           Invitations waiting to be accepted
         </p>
       </div>

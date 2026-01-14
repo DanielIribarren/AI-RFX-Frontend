@@ -130,7 +130,7 @@ export default function InlineEditableField({
               placeholder={placeholder}
               className={cn(
                 "flex-1 min-h-[80px] transition-colors duration-200",
-                error ? "border-red-300 bg-red-50" : saveStatus === "saved" ? "border-green-300 bg-green-50" : saveStatus === "saving" ? "border-amber-300 bg-amber-50" : "border-gray-300 bg-white focus:border-blue-400 focus:ring-blue-200"
+                error ? "border-red-300 bg-red-50" : saveStatus === "saved" ? "border-green-300 bg-green-50" : saveStatus === "saving" ? "border-amber-300 bg-amber-50" : "border-input bg-background focus:border-blue-400 focus:ring-blue-200"
               )}
               disabled={saveStatus === "saving"}
               autoFocus
@@ -144,7 +144,7 @@ export default function InlineEditableField({
               placeholder={placeholder}
               className={cn(
                 "flex-1 transition-colors duration-200",
-                error ? "border-red-300 bg-red-50" : saveStatus === "saved" ? "border-green-300 bg-green-50" : saveStatus === "saving" ? "border-amber-300 bg-amber-50" : "border-gray-300 bg-white focus:border-blue-400 focus:ring-blue-200"
+                error ? "border-red-300 bg-red-50" : saveStatus === "saved" ? "border-green-300 bg-green-50" : saveStatus === "saving" ? "border-amber-300 bg-amber-50" : "border-input bg-background focus:border-blue-400 focus:ring-blue-200"
               )}
               disabled={saveStatus === "saving"}
               autoFocus
@@ -157,7 +157,7 @@ export default function InlineEditableField({
             <Button
               onClick={handleSave}
               disabled={saveStatus === "saving"}
-              className="h-8 w-8 p-0 bg-emerald-600 hover:bg-emerald-700 text-white border-0 shadow-sm"
+              className="h-8 w-8 p-0 bg-emerald-600 hover:bg-emerald-700 text-background border-0 shadow-sm"
             >
               <CheckCircle className="h-3 w-3" />
             </Button>
@@ -166,7 +166,7 @@ export default function InlineEditableField({
             <Button
               onClick={handleCancel}
               disabled={saveStatus === "saving"}
-              className="h-8 w-8 p-0 border-gray-300 text-gray-600 hover:bg-gray-50 hover:border-gray-400 bg-white shadow-sm"
+              className="h-8 w-8 p-0 border-input text-muted-foreground hover:bg-secondary hover:border-gray-400 bg-background shadow-sm"
             >
               <X className="h-3 w-3" />
             </Button>
@@ -174,11 +174,11 @@ export default function InlineEditableField({
         </div>
         
         {error && (
-          <p className="text-xs text-red-600 mt-1">{error}</p>
+          <p className="text-xs text-destructive mt-1">{error}</p>
         )}
         
         {type === "textarea" && (
-          <p className="text-xs text-gray-500">
+          <p className="text-xs text-muted-foreground">
             Presiona Ctrl+Enter para guardar, Escape para cancelar
           </p>
         )}
@@ -202,7 +202,7 @@ export default function InlineEditableField({
             >
               <dd className={cn(
                 "text-sm font-medium",
-                isEmpty ? "text-gray-400" : "text-gray-900"
+                isEmpty ? "text-muted-foreground/60" : "text-gray-900"
               )}>
                 {displayValue}
               </dd>
@@ -222,7 +222,7 @@ export default function InlineEditableField({
       </div>
       
       {originalText && (
-        <div className="mt-1 text-xs text-gray-500 italic">
+        <div className="mt-1 text-xs text-muted-foreground italic">
           Texto original: "{originalText.slice(0, 100)}{originalText.length > 100 ? '...' : ''}"
         </div>
       )}

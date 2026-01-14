@@ -90,7 +90,7 @@ export function CurrencySelector({
                     <span>{currency.flag}</span>
                     <div className="flex flex-col">
                       <span className="font-medium">{currency.code}</span>
-                      <span className="text-xs text-gray-500">{currency.name}</span>
+                      <span className="text-xs text-muted-foreground">{currency.name}</span>
                     </div>
                     <span className="ml-auto font-medium">{currency.symbol}</span>
                   </div>

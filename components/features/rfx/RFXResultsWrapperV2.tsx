@@ -17,9 +17,9 @@ import type {
   PricingCalculationResult,
   LegacyPricingConfig
 } from "@/types/pricing-v2"
-import RFXDataView from "@/components/rfx-data-view"
-import BudgetGenerationView from "@/components/budget-generation-view"
-import { RFXUpdateChatPanel, type RFXChange } from "@/components/rfx-update-chat"
+import RFXDataView from "@/components/features/rfx/RFXDataView"
+import BudgetGenerationView from "@/components/budget/BudgetGenerationView"
+import { RFXUpdateChatPanel, type RFXChange } from "@/components/features/rfx/update-chat"
 
 interface ExtractedData {
   solicitante: string
@@ -1104,16 +1104,16 @@ export default function RfxResultsWrapperV2({
   if (!hasData) {
     return (
       <div className="container mx-auto px-4 py-6">
-        <div className="text-center py-12 bg-white rounded-lg border border-gray-200">
+        <div className="text-center py-12 bg-background rounded-lg border border">
           <h2 className="text-xl font-semibold text-gray-900 mb-2">
             Aún no se ha procesado ningún RFX
           </h2>
-          <p className="text-gray-500 mb-6">
+          <p className="text-muted-foreground mb-6">
             Carga un documento para ver los resultados del análisis aquí.
           </p>
           <button
             onClick={onNewRfx}
-            className="bg-primary hover:bg-primary-dark text-white px-6 py-2 rounded-lg font-medium"
+            className="bg-primary hover:bg-primary-dark text-background px-6 py-2 rounded-lg font-medium"
           >
             Procesar Nuevo RFX
           </button>

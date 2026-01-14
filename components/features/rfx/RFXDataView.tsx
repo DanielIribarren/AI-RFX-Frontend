@@ -4,8 +4,8 @@ import { Button } from "@/components/ui/button"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { CheckCircle, Briefcase, BarChart3, FileText, Archive, MessageSquare } from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import DataExtractionContent from "@/components/data-extraction-content"
-import ProcessedFilesContent from "@/components/processed-files-content"
+import DataExtractionContent from "@/components/features/products/DataExtractionContent"
+import ProcessedFilesContent from "@/components/features/rfx/ProcessedFilesContent"
 import { StatusBadge } from "@/components/ui/status-badge"
 import { EditableTitle } from "@/components/ui/editable-title"
 import { cn } from "@/lib/utils"
@@ -152,7 +152,7 @@ export default function RFXDataView({
               {isFinalized ? "RFX Finalizado" : rfxTitle}
             </h1>
           )}
-          <p className="text-lg text-gray-600 mt-1">
+          <p className="text-lg text-muted-foreground mt-1">
             {extractedData.solicitante} • {formatFechaCreacion(fechaCreacion)}
           </p>
         </div>
@@ -167,7 +167,7 @@ export default function RFXDataView({
           </Button>
           <Button
             onClick={onGenerateBudget}
-            className="gap-2 hover:text-black"
+            className="gap-2 hover:text-foreground"
           >
             <Briefcase className="h-4 w-4" />
             Generar Presupuesto

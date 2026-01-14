@@ -27,13 +27,13 @@ export function CreditsUsageCard({
   });
 
   return (
-    <Card className="w-full border-gray-200 shadow-sm">
+    <Card className="w-full border shadow-sm">
       <CardHeader className="pb-3 flex flex-row items-center justify-between space-y-0">
         <CardTitle className="text-base font-semibold text-gray-900 flex items-center gap-2">
           <Gem className="h-4 w-4" />
           Credits Usage
         </CardTitle>
-        <span className="text-xs font-medium px-2 py-1 bg-gray-100 rounded-full text-gray-600 uppercase tracking-wide">
+        <span className="text-xs font-medium px-2 py-1 bg-muted rounded-full text-muted-foreground uppercase tracking-wide">
           {planName} Plan
         </span>
       </CardHeader>
@@ -44,24 +44,24 @@ export function CreditsUsageCard({
             <span className="font-medium text-gray-900">
               {creditsRemaining} available
             </span>
-            <span className="text-gray-500">
+            <span className="text-muted-foreground">
               {creditsUsed} / {creditsTotal} used
             </span>
           </div>
           
           <Progress 
             value={percentageUsed} 
-            className="h-2 bg-gray-100" 
+            className="h-2 bg-muted" 
           />
         </div>
 
         <div className="flex items-center justify-between pt-2">
-          <p className="text-xs text-gray-500">
+          <p className="text-xs text-muted-foreground">
             Resets on {formattedDate}
           </p>
           
           <Link href="/pricing">
-            <Button variant="outline" size="sm" className="h-8 border-gray-300 hover:bg-gray-50 text-gray-900">
+            <Button variant="outline" size="sm" className="h-8 border-input hover:bg-secondary text-gray-900">
               Upgrade Plan
             </Button>
           </Link>

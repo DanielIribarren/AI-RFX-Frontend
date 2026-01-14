@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useImperativeHandle, forwardRef } from "react"
 import { Plus, MessageSquare, FileText, Clock, MoreHorizontal, ChevronLeft, CheckCircle, XCircle, AlertTriangle, Archive, Settings, Trash2 } from "lucide-react"
-import { ToastNotification, ToastType } from "./toast-notification"
 import {
   Sidebar,
   SidebarContent,
@@ -22,7 +21,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { useSidebar } from "@/components/ui/sidebar"
 import { api, APIError, RFXHistoryItem, useAPICall } from "@/lib/api"
 import { useCachedData } from "@/lib/use-cached-data"
-import { SidebarUser } from "@/components/sidebar-user"
+import { SidebarUser } from "@/components/layout/SidebarUser"
 
 interface RfxItem {
   id: string
@@ -78,7 +77,7 @@ const mapBackendStatusToDisplay = (backendStatus: string): "Draft" | "In progres
 const getStatusIcon = (status: string) => {
   switch (status) {
     case 'Draft':
-      return <FileText className="h-3 w-3 text-gray-500 flex-shrink-0 mt-0.5 group-data-[collapsible=icon]:hidden" />;
+      return <FileText className="h-3 w-3 text-muted-foreground flex-shrink-0 mt-0.5 group-data-[collapsible=icon]:hidden" />;
     case 'In progress':
       return <Clock className="h-3 w-3 text-primary-light flex-shrink-0 mt-0.5 group-data-[collapsible=icon]:hidden" />;
     case 'Completed':
@@ -88,7 +87,7 @@ const getStatusIcon = (status: string) => {
     case 'Expired':
       return <AlertTriangle className="h-3 w-3 text-orange-500 flex-shrink-0 mt-0.5 group-data-[collapsible=icon]:hidden" />;
     default:
-      return <Clock className="h-3 w-3 text-gray-500 flex-shrink-0 mt-0.5 group-data-[collapsible=icon]:hidden" />;
+      return <Clock className="h-3 w-3 text-muted-foreground flex-shrink-0 mt-0.5 group-data-[collapsible=icon]:hidden" />;
   }
 }
 
@@ -116,18 +115,20 @@ const AppSidebar = forwardRef<AppSidebarRef, AppSidebarProps>(
     const { toggleSidebar } = useSidebar()
     const { handleAPIError } = useAPICall()
     
-    // Toast notification state
-    const [toast, setToast] = useState<{
-      isOpen: boolean
-      type: ToastType
+    // Estado de feedback inline (sin toasts)
+    const [feedback, setFeedback] = useState<{
+      type: "success" | "error"
       title: string
       message?: string
-    }>({
-      isOpen: false,
-      type: "success",
-      title: "",
-      message: "",
-    })
+    } | null>(null)
+    
+    // Auto-clear feedback después de 4 segundos
+    useEffect(() => {
+      if (feedback) {
+        const timer = setTimeout(() => setFeedback(null), 4000)
+        return () => clearTimeout(timer)
+      }
+    }, [feedback])
     
     // ✅ Hook de cache: carga del cache primero, luego API si es necesario
     const { data: recentRfx, isLoading, refresh } = useCachedData(
@@ -195,9 +196,8 @@ const AppSidebar = forwardRef<AppSidebarRef, AppSidebarProps>(
         // Refresh sidebar to remove deleted RFX
         await refresh()
         
-        // Show success toast
-        setToast({
-          isOpen: true,
+        // Show success feedback inline
+        setFeedback({
           type: "success",
           title: "RFX eliminado",
           message: `"${rfxTitle}" ha sido eliminado exitosamente`,
@@ -224,9 +224,8 @@ const AppSidebar = forwardRef<AppSidebarRef, AppSidebarProps>(
           }
         }
         
-        // Show error toast
-        setToast({
-          isOpen: true,
+        // Show error feedback inline
+        setFeedback({
           type: "error",
           title: errorTitle,
           message: errorMessage,
@@ -239,12 +238,12 @@ const AppSidebar = forwardRef<AppSidebarRef, AppSidebarProps>(
     }
 
   return (
-    <Sidebar collapsible="icon" className="border-r border-gray-200/60 bg-white">
+    <Sidebar collapsible="icon" className="border-r border-gray-200/60 bg-background">
       <SidebarHeader className="border-b border-gray-200/60 px-3 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="bg-brand-gradient p-1.5 rounded-lg shadow-sm">
-              <FileText className="h-4 w-4 text-white" />
+              <FileText className="h-4 w-4 text-background" />
             </div>
             <span className="font-bold text-gray-900 group-data-[collapsible=icon]:hidden">Budy AI</span>
           </div>
@@ -252,7 +251,7 @@ const AppSidebar = forwardRef<AppSidebarRef, AppSidebarProps>(
             variant="ghost"
             size="sm"
             onClick={toggleSidebar}
-            className="h-6 w-6 p-0 text-gray-500 hover:text-gray-700 group-data-[collapsible=icon]:hidden"
+            className="h-6 w-6 p-0 text-muted-foreground hover:text-gray-700 group-data-[collapsible=icon]:hidden"
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
@@ -267,7 +266,7 @@ const AppSidebar = forwardRef<AppSidebarRef, AppSidebarProps>(
               <SidebarMenuItem>
                 <SidebarMenuButton
                   onClick={onNewRfx}
-                  className="w-full bg-brand-gradient text-white font-semibold h-10 rounded-xl shadow-md hover:shadow-lg hover:scale-[1.02] transition-all duration-200 ease-out border-0"
+                  className="w-full bg-brand-gradient text-background font-semibold h-10 rounded-xl shadow-md hover:shadow-lg hover:scale-[1.02] transition-all duration-200 ease-out border-0"
                 >
                   <Plus className="h-4 w-4" />
                   <span>New RFX</span>
@@ -308,14 +307,42 @@ const AppSidebar = forwardRef<AppSidebarRef, AppSidebarProps>(
         {/* Recent RFX */}
         <SidebarGroup>
           <SidebarGroupLabel className="text-xs font-semibold text-gray-900 mb-3 px-0 uppercase tracking-wider">Recents</SidebarGroupLabel>
+          
+          {/* Feedback inline banner */}
+          {feedback && (
+            <div
+              role="status"
+              aria-live="polite"
+              className={`group-data-[collapsible=icon]:hidden mb-3 rounded-lg p-3 text-sm border ${
+                feedback.type === "success"
+                  ? "bg-green-50 text-green-800 border-green-200"
+                  : "bg-red-50 text-red-800 border-red-200"
+              }`}
+            >
+              <div className="flex items-start gap-2">
+                {feedback.type === "success" ? (
+                  <CheckCircle className="h-4 w-4 flex-shrink-0 mt-0.5" />
+                ) : (
+                  <XCircle className="h-4 w-4 flex-shrink-0 mt-0.5" />
+                )}
+                <div className="flex-1 min-w-0">
+                  <div className="font-medium">{feedback.title}</div>
+                  {feedback.message && (
+                    <div className="text-xs mt-1 opacity-80">{feedback.message}</div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+          
           <SidebarGroupContent>
             {isLoading ? (
               <div className="px-2 py-4 text-center group-data-[collapsible=icon]:hidden">
-                <div className="text-xs text-gray-400">Loading...</div>
+                <div className="text-xs text-muted-foreground/60">Loading...</div>
               </div>
             ) : !recentRfx || recentRfx.length === 0 ? (
               <div className="px-2 py-4 text-center group-data-[collapsible=icon]:hidden">
-                <div className="text-xs text-gray-400">No recent RFX</div>
+                <div className="text-xs text-muted-foreground/60">No recent RFX</div>
               </div>
             ) : (
               <SidebarMenu>
@@ -330,7 +357,7 @@ const AppSidebar = forwardRef<AppSidebarRef, AppSidebarProps>(
                           <div className="text-sm text-gray-900 truncate group-data-[collapsible=icon]:hidden">
                             {truncateText(rfx.title)}
                           </div>
-                          <div className="text-xs text-gray-500 mt-0.5 group-data-[collapsible=icon]:hidden">
+                          <div className="text-xs text-muted-foreground mt-0.5 group-data-[collapsible=icon]:hidden">
                             {rfx.client} • {rfx.date}
                           </div>
                         </div>
@@ -340,7 +367,7 @@ const AppSidebar = forwardRef<AppSidebarRef, AppSidebarProps>(
                     <SidebarMenuAction className="group-data-[collapsible=icon]:hidden opacity-0 group-hover:opacity-100 transition-opacity">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <div className="h-6 w-6 p-0 text-gray-400 hover:text-gray-600 cursor-pointer flex items-center justify-center rounded-sm hover:bg-gray-100">
+                          <div className="h-6 w-6 p-0 text-muted-foreground/60 hover:text-muted-foreground cursor-pointer flex items-center justify-center rounded-sm hover:bg-muted">
                             <MoreHorizontal className="h-3 w-3" />
                           </div>
                         </DropdownMenuTrigger>
@@ -358,7 +385,7 @@ const AppSidebar = forwardRef<AppSidebarRef, AppSidebarProps>(
                           </DropdownMenuItem>
                           <DropdownMenuItem 
                             onClick={() => handleRfxAction("delete", rfx.id, rfx.title)} 
-                            className="text-red-600 focus:text-red-600 focus:bg-red-50"
+                            className="text-destructive focus:text-destructive focus:bg-red-50"
                           >
                             <Trash2 className="h-4 w-4 mr-2" />
                             Delete
@@ -379,15 +406,6 @@ const AppSidebar = forwardRef<AppSidebarRef, AppSidebarProps>(
       </SidebarFooter>
 
       <SidebarRail />
-
-      {/* Toast Notification */}
-      <ToastNotification
-        isOpen={toast.isOpen}
-        onClose={() => setToast(prev => ({ ...prev, isOpen: false }))}
-        type={toast.type}
-        title={toast.title}
-        message={toast.message}
-      />
     </Sidebar>
   )
 })
@@ -395,3 +413,4 @@ const AppSidebar = forwardRef<AppSidebarRef, AppSidebarProps>(
 AppSidebar.displayName = "AppSidebar"
 
 export default AppSidebar
+

@@ -50,8 +50,8 @@ export default function ProfilePage() {
     return (
       <div className="flex flex-1 items-center justify-center p-6">
         <div className="flex flex-col items-center gap-2">
-          <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
-          <p className="text-sm text-gray-600">Loading profile...</p>
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground/60" />
+          <p className="text-sm text-muted-foreground">Loading profile...</p>
         </div>
       </div>
     )
@@ -138,13 +138,13 @@ export default function ProfilePage() {
           <CardContent className="flex flex-col items-center space-y-4">
             <Avatar className="h-32 w-32">
               <AvatarImage src="" alt={user.full_name} />
-              <AvatarFallback className="bg-primary text-white text-3xl font-medium">
+              <AvatarFallback className="bg-primary text-background text-3xl font-medium">
                 {getInitials(user.full_name)}
               </AvatarFallback>
             </Avatar>
             <div className="text-center">
               <h3 className="text-lg font-semibold">{user.full_name}</h3>
-              <p className="text-sm text-gray-500">{user.email}</p>
+              <p className="text-sm text-muted-foreground">{user.email}</p>
             </div>
             <Badge
               variant={user.status === "active" ? "default" : "secondary"}
@@ -218,7 +218,7 @@ export default function ProfilePage() {
               {/* Full Name */}
               <div className="space-y-2">
                 <Label htmlFor="full_name" className="flex items-center gap-2">
-                  <User className="h-4 w-4 text-gray-500" />
+                  <User className="h-4 w-4 text-muted-foreground" />
                   Full Name
                 </Label>
                 {isEditing ? (
@@ -237,7 +237,7 @@ export default function ProfilePage() {
               {/* Email (Read-only) */}
               <div className="space-y-2">
                 <Label className="flex items-center gap-2">
-                  <Mail className="h-4 w-4 text-gray-500" />
+                  <Mail className="h-4 w-4 text-muted-foreground" />
                   Email
                 </Label>
                 <div className="flex items-center gap-2 pl-6">
@@ -254,7 +254,7 @@ export default function ProfilePage() {
               {/* Company Name */}
               <div className="space-y-2">
                 <Label htmlFor="company_name" className="flex items-center gap-2">
-                  <Building2 className="h-4 w-4 text-gray-500" />
+                  <Building2 className="h-4 w-4 text-muted-foreground" />
                   Company Name
                 </Label>
                 {isEditing ? (
@@ -275,7 +275,7 @@ export default function ProfilePage() {
               {/* Phone */}
               <div className="space-y-2">
                 <Label htmlFor="phone" className="flex items-center gap-2">
-                  <Phone className="h-4 w-4 text-gray-500" />
+                  <Phone className="h-4 w-4 text-muted-foreground" />
                   Phone
                 </Label>
                 {isEditing ? (
@@ -302,8 +302,8 @@ export default function ProfilePage() {
               <div className="grid gap-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Calendar className="h-4 w-4 text-gray-500" />
-                    <span className="text-sm text-gray-600">Member since</span>
+                    <Calendar className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm text-muted-foreground">Member since</span>
                   </div>
                   <span className="text-sm font-medium text-gray-900">
                     {formatDate(user.created_at)}
@@ -311,8 +311,8 @@ export default function ProfilePage() {
                 </div>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Calendar className="h-4 w-4 text-gray-500" />
-                    <span className="text-sm text-gray-600">Last login</span>
+                    <Calendar className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm text-muted-foreground">Last login</span>
                   </div>
                   <span className="text-sm font-medium text-gray-900">
                     {formatDate(user.last_login_at)}

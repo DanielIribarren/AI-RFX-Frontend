@@ -2,8 +2,8 @@
 
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { PublicHeader } from '@/components/public-header'
-import { HowItWorks } from '@/components/how-it-works'
+import { PublicHeader } from '@/components/layout/PublicHeader'
+import { HowItWorks } from '@/components/marketing/HowItWorks'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { ArrowRight, Zap, Target, FileText } from 'lucide-react'

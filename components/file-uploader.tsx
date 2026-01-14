@@ -240,8 +240,8 @@ export default function FileUploader({ onFileProcessed, onRFXProcessed, isLoadin
             <div className="flex items-center justify-center gap-2 text-xs">
               {serviceStatus === 'checking' && (
                 <>
-                  <div className="animate-spin h-3 w-3 border border-gray-300 border-t-blue-600 rounded-full"></div>
-                  <span className="text-gray-500">Verificando servicio RFX...</span>
+                  <div className="animate-spin h-3 w-3 border border-input border-t-blue-600 rounded-full"></div>
+                  <span className="text-muted-foreground">Verificando servicio RFX...</span>
                 </>
               )}
               {serviceStatus === 'online' && (
@@ -253,7 +253,7 @@ export default function FileUploader({ onFileProcessed, onRFXProcessed, isLoadin
               {serviceStatus === 'offline' && (
                 <>
                   <WifiOff className="h-3 w-3 text-red-500" />
-                  <span className="text-red-600">Servicio RFX no disponible</span>
+                  <span className="text-destructive">Servicio RFX no disponible</span>
                 </>
               )}
             </div>
@@ -263,7 +263,7 @@ export default function FileUploader({ onFileProcessed, onRFXProcessed, isLoadin
             <FileText className="h-8 w-8 text-primary" />
           </div>
           <h2 className="text-xl font-semibold">📄 Procesador RFX con IA</h2>
-          <p className="text-sm text-gray-500 text-center max-w-md">
+          <p className="text-sm text-muted-foreground text-center max-w-md">
             {allowTextOnly 
               ? "Ingrese el contenido del RFX o suba documentos (PDF, DOCX, TXT) para procesarlos automáticamente con inteligencia artificial."
               : "Sube un documento RFx (PDF, DOCX o TXT) para procesarlo automáticamente con inteligencia artificial."} 
@@ -281,7 +281,7 @@ export default function FileUploader({ onFileProcessed, onRFXProcessed, isLoadin
                 disabled={isUploading}
               />
               {textContent.length > 0 && (
-                <div className="text-xs text-gray-500 mt-1">
+                <div className="text-xs text-muted-foreground mt-1">
                   {textContent.length} caracteres
                 </div>
               )}
@@ -309,7 +309,7 @@ export default function FileUploader({ onFileProcessed, onRFXProcessed, isLoadin
                     <div className="flex items-center gap-2">
                       <FileText className="h-4 w-4" />
                       <span className="text-sm">{f.name}</span>
-                      <span className="text-xs text-gray-500">({sizeMB} MB)</span>
+                      <span className="text-xs text-muted-foreground">({sizeMB} MB)</span>
                     </div>
                     <button
                       type="button"
@@ -320,7 +320,7 @@ export default function FileUploader({ onFileProcessed, onRFXProcessed, isLoadin
                         setIsFileSelected(nextLen > 0)
                         setFileName(nextLen === 1 ? selectedFiles[0]?.name ?? "" : (nextLen > 1 ? `${nextLen} archivos seleccionados` : ""))
                       }}
-                      className="inline-flex items-center rounded-md border px-2 py-1 text-xs hover:bg-gray-50"
+                      className="inline-flex items-center rounded-md border px-2 py-1 text-xs hover:bg-secondary"
                       aria-label={`Eliminar ${f.name}`}
                     >
                       <X className="h-4 w-4" />
@@ -363,7 +363,7 @@ export default function FileUploader({ onFileProcessed, onRFXProcessed, isLoadin
                 <span>{uploadProgress.toFixed(0)}%</span>
               </div>
               <Progress value={uploadProgress} className="w-full" />
-              <p className="text-xs text-center text-gray-500">Extrayendo datos con IA...</p>
+              <p className="text-xs text-center text-muted-foreground">Extrayendo datos con IA...</p>
             </div>
           ) : fileName && (isLoading || isUploading) ? (
             <div className="w-full space-y-4">
@@ -391,7 +391,7 @@ export default function FileUploader({ onFileProcessed, onRFXProcessed, isLoadin
               <div className="flex justify-center gap-2">
                 <Button 
                   onClick={handleProcessFile} 
-                  className="bg-black hover:bg-black-700 text-white"
+                  className="bg-foreground hover:bg-black-700 text-background"
                   disabled={serviceStatus === 'offline'}
                 >
                   Procesar RFX con IA
@@ -432,7 +432,7 @@ export default function FileUploader({ onFileProcessed, onRFXProcessed, isLoadin
                 {allowTextOnly ? "Seleccionar archivos (opcional)" : "Seleccionar archivos"}
               </Button>
               {allowTextOnly && (
-                <p className="text-xs text-gray-500 text-center">
+                <p className="text-xs text-muted-foreground text-center">
                   También puede ingresar texto directamente arriba
                 </p>
               )}
