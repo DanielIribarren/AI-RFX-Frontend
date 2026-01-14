@@ -312,6 +312,11 @@ const RfxHistory = forwardRef<RfxHistoryRef, RfxHistoryProps>(
         await api.deleteRFX(rfxToDelete.id)
         console.log(`✅ RFX deleted successfully`)
         
+        // Invalidar cache del sidebar para que se actualice
+        const SIDEBAR_CACHE_KEY = 'sidebar-recent-rfx'
+        localStorage.removeItem(SIDEBAR_CACHE_KEY)
+        console.log('🔄 Sidebar cache invalidated')
+        
         // Remove from local state immediately
         setHistoryItems(prev => prev.filter(item => item.id !== rfxToDelete.id))
         

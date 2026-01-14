@@ -156,6 +156,11 @@ export default function FileUploader({ onFileProcessed, onRFXProcessed, isLoadin
 
       // Check if the response was successful
       if (response.status === "success") {
+        // Invalidar cache del sidebar para mostrar el nuevo RFX
+        const SIDEBAR_CACHE_KEY = 'sidebar-recent-rfx'
+        localStorage.removeItem(SIDEBAR_CACHE_KEY)
+        console.log('🔄 Sidebar cache invalidated - new RFX will appear')
+        
         // Call the parent component callbacks
         onRFXProcessed(response)
         onFileProcessed(hasText && !hasFiles ? 

@@ -3,6 +3,7 @@ import { Inter } from "next/font/google"
 import { cn } from "@/lib/utils"
 import { ThemeProvider } from "@/components/theme-provider"
 import { AuthProvider } from "@/contexts/AuthContext"
+import { Toaster } from "@/components/ui/sonner"
 import Script from 'next/script'
 import { GA_TRACKING_ID } from '@/lib/gtag'
 
@@ -40,6 +41,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <AuthProvider>
             {children}
           </AuthProvider>
+          <Toaster />
         </ThemeProvider>
       </body>
     </html>

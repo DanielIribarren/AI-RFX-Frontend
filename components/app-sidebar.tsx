@@ -187,6 +187,11 @@ const AppSidebar = forwardRef<AppSidebarRef, AppSidebarProps>(
         await api.deleteRFX(rfxId)
         console.log(`✅ RFX deleted successfully`)
         
+        // Invalidar cache antes de refrescar para forzar llamada al API
+        const SIDEBAR_CACHE_KEY = 'sidebar-recent-rfx'
+        localStorage.removeItem(SIDEBAR_CACHE_KEY)
+        console.log('🔄 Cache invalidated, forcing fresh data')
+        
         // Refresh sidebar to remove deleted RFX
         await refresh()
         

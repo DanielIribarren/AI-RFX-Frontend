@@ -722,6 +722,11 @@ export default function RfxResultsWrapperV2({
       const response = await api.generateProposal(proposalRequest)
 
       if (response.proposal) {
+        // Invalidar cache del sidebar (la propuesta actualiza el estado del RFX)
+        const SIDEBAR_CACHE_KEY = 'sidebar-recent-rfx'
+        localStorage.removeItem(SIDEBAR_CACHE_KEY)
+        console.log('🔄 Sidebar cache invalidated - proposal generated')
+        
         // Actualizar con TODOS los datos reales del backend GenerateProposalService
         setPropuesta(response.proposal.content_markdown || response.proposal.content_html)
 

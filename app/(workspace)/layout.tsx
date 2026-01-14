@@ -10,6 +10,7 @@ import Breadcrumbs from "@/components/navigation/Breadcrumbs";
 import { RFXCurrencyProvider } from "@/contexts/RFXCurrencyContext";
 import { CreditsProvider } from "@/contexts/CreditsContext";
 import { useAuth } from "@/contexts/AuthContext";
+import { LoadingSpinner } from "@/components/common";
 
 interface WorkspaceLayoutProps {
   children: ReactNode;
@@ -22,11 +23,8 @@ export default function WorkspaceLayout({ children }: WorkspaceLayoutProps) {
   // Show loading state while auth is being checked
   if (loading) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading...</p>
-        </div>
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <LoadingSpinner text="Loading..." fullScreen />
       </div>
     );
   }
@@ -37,11 +35,8 @@ export default function WorkspaceLayout({ children }: WorkspaceLayoutProps) {
     console.log('⚠️ WorkspaceLayout: No user found, redirecting to login')
     router.push('/login')
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-gray-600">Redirecting to login...</p>
-        </div>
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <LoadingSpinner text="Redirecting to login..." fullScreen />
       </div>
     );
   }
@@ -57,10 +52,10 @@ export default function WorkspaceLayout({ children }: WorkspaceLayoutProps) {
             onSelectRfx={(id) => router.push(`/rfx-result-wrapper-v2/data/${id}`)}
             currentView={undefined} // Will be removed after full migration
           />
-          <SidebarInset className="bg-white">
-            <header className="flex h-14 shrink-0 items-center gap-2 border-b border-gray-200/60 px-4 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
-              <SidebarTrigger className="-ml-1 text-gray-500 hover:text-gray-700" />
-              <Separator orientation="vertical" className="mr-2 h-4 bg-gray-300" />
+          <SidebarInset className="bg-background">
+            <header className="flex h-14 shrink-0 items-center gap-2 border-b px-4 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+              <SidebarTrigger className="-ml-1" />
+              <Separator orientation="vertical" className="mr-2 h-4" />
               <Breadcrumbs />
               
               {/* AI Model Selector in Header */}
@@ -68,7 +63,7 @@ export default function WorkspaceLayout({ children }: WorkspaceLayoutProps) {
                 <AiModelSelector selectedModel="chatgpt-4o" onModelChange={(model) => console.log("Model changed:", model)} />
               </div>
             </header>
-            <div className="flex flex-1 flex-col bg-white">{children}</div>
+            <div className="flex flex-1 flex-col bg-background">{children}</div>
           </SidebarInset>
         </CreditsProvider>
       </RFXCurrencyProvider>
