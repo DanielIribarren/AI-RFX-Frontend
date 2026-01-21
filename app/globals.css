@@ -644,19 +644,17 @@ body {
   }
   
   /* Glass-morphism card for landing */
-  .landing-card-glass {
-    background: rgba(255, 255, 255, 0.70);
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(2, 6, 23, 0.10);
-    box-shadow: 0 12px 40px rgba(15, 23, 42, 0.08);
+  .landing-cta-card {
+    @apply bg-white/70 backdrop-blur-md border-2 border-[#4F46E5]/20 rounded-2xl p-16 shadow-xl;
+    box-shadow: 0 18px 60px rgba(15, 23, 42, 0.12);
     transition: all 0.3s ease;
   }
-  
-  .landing-card-glass:hover {
-    box-shadow: 0 18px 60px rgba(15, 23, 42, 0.12);
+
+  .landing-cta-card:hover {
     transform: translateY(-2px);
+    box-shadow: 0 24px 80px rgba(15, 23, 42, 0.15);
   }
-  
+
   /* Badge with indigo glow */
   .landing-badge-indigo {
     display: inline-flex;
@@ -697,5 +695,144 @@ body {
   
   .landing-cta-card:hover {
     transform: translateY(-2px);
+  }
+
+  /* ========== FLOW CARDS - Por dentro del agente ========== */
+  .flow-card {
+    border-radius: 24px;
+    border: 1px solid rgba(11, 11, 15, 0.10);
+    background: rgba(255, 255, 255, 0.80);
+    backdrop-filter: blur(16px);
+    padding: 40px;
+    box-shadow: 0 12px 40px rgba(15, 23, 42, 0.08);
+    transition: all 0.3s ease;
+  }
+
+  .flow-card:hover {
+    box-shadow: 0 18px 60px rgba(15, 23, 42, 0.12);
+    transform: translateY(-2px);
+  }
+
+  .flow-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 32px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid rgba(11, 11, 15, 0.10);
+  }
+
+  .flow-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 56px;
+    height: 56px;
+    background: linear-gradient(135deg, #4F46E5 0%, #6366F1 100%);
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba(79, 70, 229, 0.25);
+  }
+
+  .flow-step {
+    position: relative;
+    padding-left: 48px;
+    margin-bottom: 20px;
+  }
+
+  .flow-step::before {
+    content: '';
+    position: absolute;
+    left: 15px;
+    top: 32px;
+    bottom: -20px;
+    width: 2px;
+    background: linear-gradient(180deg, #4F46E5 0%, rgba(79, 70, 229, 0.2) 100%);
+  }
+
+  .flow-step:last-child::before {
+    display: none;
+  }
+
+  .flow-step-bullet {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 32px;
+    height: 32px;
+    background: rgba(79, 70, 229, 0.10);
+    border: 2px solid #4F46E5;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .flow-step-bullet-inner {
+    width: 10px;
+    height: 10px;
+    background: #4F46E5;
+    border-radius: 50%;
+  }
+
+  .flow-step-content {
+    padding: 12px 20px;
+    background: rgba(255, 255, 255, 0.60);
+    border: 1px solid rgba(11, 11, 15, 0.08);
+    border-radius: 12px;
+    transition: all 0.3s ease;
+  }
+
+  .flow-step-content:hover {
+    background: rgba(255, 255, 255, 0.90);
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+  }
+
+  .flow-step-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #4F46E5;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 4px;
+  }
+
+  .flow-step-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #0B0B0F;
+    margin-bottom: 4px;
+  }
+
+  .flow-step-desc {
+    font-size: 14px;
+    color: #475569;
+    line-height: 1.5;
+  }
+
+  /* Status badges */
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    margin-top: 8px;
+  }
+
+  .status-processing {
+    background: rgba(79, 70, 229, 0.10);
+    color: #4F46E5;
+  }
+
+  .status-success {
+    background: rgba(22, 163, 74, 0.10);
+    color: #16A34A;
+  }
+
+  .status-validating {
+    background: rgba(245, 158, 11, 0.10);
+    color: #F59E0B;
   }
 }
