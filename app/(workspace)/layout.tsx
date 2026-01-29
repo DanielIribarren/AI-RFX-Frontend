@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode } from "react";
+import { ReactNode, useEffect } from "react";
 import AppSidebar from "@/components/layout/AppSidebar";
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
@@ -20,6 +20,14 @@ export default function WorkspaceLayout({ children }: WorkspaceLayoutProps) {
   const router = useRouter();
   const { user, loading } = useAuth();
 
+  // ✅ Redirect to login in useEffect to avoid "setState in render" error
+  useEffect(() => {
+    if (!loading && !user) {
+      console.log('⚠️ WorkspaceLayout: No user found, redirecting to login')
+      router.push('/login')
+    }
+  }, [loading, user, router])
+
   // Show loading state while auth is being checked
   if (loading) {
     return (
@@ -29,11 +37,8 @@ export default function WorkspaceLayout({ children }: WorkspaceLayoutProps) {
     );
   }
 
-  // If not loading but no user, redirect to login
-  // The middleware should handle this, but this is a safety check
+  // If not loading but no user, show loading while redirecting
   if (!user) {
-    console.log('⚠️ WorkspaceLayout: No user found, redirecting to login')
-    router.push('/login')
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <LoadingSpinner text="Redirecting to login..." fullScreen />

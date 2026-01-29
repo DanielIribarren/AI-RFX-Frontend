@@ -106,35 +106,46 @@ export default function BrandingPreview({ companyId }: BrandingPreviewProps) {
         result
       })
 
-      if (result.status === 'success') {
-        if (result.has_branding) {
-          // Transformar URLs del backend a URLs del API de Next.js
-          const transformedConfig = {
-            ...result,
-            logo_url: transformFileUrl(result.logo_url, 'logo'),
-            template_url: transformFileUrl(result.template_url, 'template')
-          }
-          
-          console.log('[BrandingPreview] Config loaded:', {
-            original_logo_url: result.logo_url,
-            transformed_logo_url: transformedConfig.logo_url,
-            original_template_url: result.template_url,
-            transformed_template_url: transformedConfig.template_url,
-            has_logo_analysis: !!result.logo_analysis,
-            has_template_analysis: !!result.template_analysis
-          })
-          setConfig(transformedConfig)
-        } else {
-          console.log('[BrandingPreview] No branding configured (has_branding: false)')
-          setConfig(null)
+      // Verificar si hay configuración basándose en la presencia de logo o template
+      const hasBranding = !!(result.logo_url || result.template_url)
+      
+      console.log('[BrandingPreview] Checking branding:', {
+        hasBranding,
+        has_logo: !!result.logo_url,
+        has_template: !!result.template_url,
+        result_status: result.status
+      })
+      
+      if (hasBranding) {
+        // Transformar URLs del backend a URLs del API de Next.js
+        const transformedConfig = {
+          ...result,
+          company_id: companyId,
+          has_branding: true, // Agregar el campo manualmente
+          logo_url: transformFileUrl(result.logo_url, 'logo'),
+          template_url: transformFileUrl(result.template_url, 'template')
         }
+        
+        console.log('[BrandingPreview] Setting config:', {
+          original_logo_url: result.logo_url,
+          transformed_logo_url: transformedConfig.logo_url,
+          original_template_url: result.template_url,
+          transformed_template_url: transformedConfig.template_url,
+          has_logo_analysis: !!result.logo_analysis,
+          has_template_analysis: !!result.template_analysis,
+          has_branding: transformedConfig.has_branding
+        })
+        
+        setConfig(transformedConfig)
+        console.log('[BrandingPreview] Config state updated')
       } else if (result.status === 'not_found') {
         // Backend devuelve explícitamente que no hay configuración
         console.log('[BrandingPreview] No branding configured (not_found)')
         setConfig(null)
       } else {
         // Otros estados son errores reales
-        throw new Error(result.message || 'Error al cargar configuración')
+        console.log('[BrandingPreview] No branding found, setting config to null')
+        setConfig(null)
       }
     } catch (error) {
       console.error('[BrandingPreview] Error loading branding config:', error)
@@ -223,7 +234,15 @@ export default function BrandingPreview({ companyId }: BrandingPreviewProps) {
     )
   }
 
+  // Log para debugging
+  console.log('[BrandingPreview] Render check:', {
+    hasConfig: !!config,
+    hasBranding: config?.has_branding,
+    configKeys: config ? Object.keys(config) : []
+  })
+
   if (!config || !config.has_branding) {
+    console.log('[BrandingPreview] Showing empty state')
     return (
       <div className="text-center p-8 border-2 border-dashed border-input rounded-lg bg-secondary">
         <div className="space-y-3">
@@ -240,6 +259,8 @@ export default function BrandingPreview({ companyId }: BrandingPreviewProps) {
       </div>
     )
   }
+
+  console.log('[BrandingPreview] Rendering branding config')
 
   return (
     <div className="space-y-6">

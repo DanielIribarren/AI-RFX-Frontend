@@ -48,6 +48,20 @@ export default function RfxDataPage() {
 
   const currencyInfo = getCurrencyInfo();
 
+  // ⚡ Calculate profit metrics locally (instant feedback)
+  // Formula: Margen Bruto = ((Precio - Costo) / Precio) * 100
+  const calculateProfitMetrics = (precio: number, costo: number, cantidad: number) => {
+    const ganancia_unitaria = precio - costo;
+    const margen_ganancia = precio > 0 ? (ganancia_unitaria / precio) * 100 : 0;
+    const total_profit = ganancia_unitaria * cantidad;
+    
+    return {
+      ganancia_unitaria,
+      margen_ganancia,
+      total_profit
+    };
+  };
+
   // Extract individual products from backend data
   const extractIndividualProducts = (data: any): ProductoIndividual[] => {
     if (!data) return [];
@@ -95,19 +109,41 @@ export default function RfxDataPage() {
 
   // Handle product price change
   const handleProductPriceChange = async (productId: string, newPrice: number) => {
+    console.log(`💰 [PRICE CHANGE] Product: ${productId}, New Price: ${newPrice}`);
+    
     try {
+      // ⚡ Actualización instantánea con cálculo local de métricas
       setProductosIndividuales(prev =>
-        prev.map(product =>
-          product.id === productId
-            ? { ...product, precio: newPrice }
-            : product
-        )
+        prev.map(product => {
+          if (product.id === productId) {
+            const metrics = calculateProfitMetrics(
+              newPrice,
+              product.costo_unitario || 0,
+              product.cantidadEditada
+            );
+            console.log(`✅ [INSTANT CALCULATION] ${product.nombre}:`, {
+              precio_nuevo: newPrice,
+              costo: product.costo_unitario || 0,
+              cantidad: product.cantidadEditada,
+              ganancia_unitaria: metrics.ganancia_unitaria,
+              margen_ganancia: metrics.margen_ganancia.toFixed(2) + '%',
+              total_profit: metrics.total_profit
+            });
+            return { 
+              ...product, 
+              precio: newPrice,
+              ...metrics // ganancia_unitaria, margen_ganancia, total_profit
+            };
+          }
+          return product;
+        })
       );
 
+      // Guardar en backend para persistencia
       if (backendData?.data?.id) {
-        console.log(`🔄 Saving product price: ${productId} = ${newPrice}`);
+        console.log(`🔄 Saving product price to backend: ${productId} = ${newPrice}`);
         await api.updateProductField(backendData.data.id, productId, "precio_unitario", newPrice);
-        console.log(`✅ Product price saved to backend: ${productId}`);
+        console.log(`✅ Product price saved to backend successfully`);
       }
     } catch (error) {
       console.error(`❌ Error saving product price:`, error);
@@ -178,28 +214,56 @@ export default function RfxDataPage() {
 
   // Handle product cost change
   const handleProductCostChange = async (productId: string, newCost: number) => {
+    console.log(`💵 [COST CHANGE] Product: ${productId}, New Cost: ${newCost}`);
+    
     // Guardar el valor anterior para revertir en caso de error
     let previousCost = 0;
+    let previousMetrics = {};
 
     try {
+      // ⚡ Actualización instantánea con cálculo local de métricas
       setProductosIndividuales(prev => {
         const product = prev.find(p => p.id === productId);
         if (product) {
           previousCost = product.costo_unitario || 0;
+          previousMetrics = {
+            ganancia_unitaria: product.ganancia_unitaria,
+            margen_ganancia: product.margen_ganancia,
+            total_profit: product.total_profit
+          };
         }
-        return prev.map(product =>
-          product.id === productId
-            ? { ...product, costo_unitario: newCost }
-            : product
-        );
+        return prev.map(product => {
+          if (product.id === productId) {
+            const metrics = calculateProfitMetrics(
+              product.precio,
+              newCost,
+              product.cantidadEditada
+            );
+            console.log(`✅ [INSTANT CALCULATION] ${product.nombre}:`, {
+              precio: product.precio,
+              costo_nuevo: newCost,
+              cantidad: product.cantidadEditada,
+              ganancia_unitaria: metrics.ganancia_unitaria,
+              margen_ganancia: metrics.margen_ganancia.toFixed(2) + '%',
+              total_profit: metrics.total_profit
+            });
+            return { 
+              ...product, 
+              costo_unitario: newCost,
+              ...metrics // ganancia_unitaria, margen_ganancia, total_profit
+            };
+          }
+          return product;
+        });
       });
 
+      // Guardar en backend para persistencia
       if (backendData?.data?.id) {
-        console.log(`🔄 Saving product cost: ${productId} = ${newCost} (was: ${previousCost})`);
+        console.log(`🔄 Saving product cost to backend: ${productId} = ${newCost} (was: ${previousCost})`);
         const result = await api.updateProductField(backendData.data.id, productId, "unit_cost", newCost);
-        console.log(`✅ Product cost saved to backend:`, result);
+        console.log(`✅ Product cost saved to backend successfully`);
 
-        // Refresh data to get updated profit calculations
+        // Refresh data to get updated profit calculations from backend (confirmación)
         await refreshRFXData();
       }
     } catch (error) {
@@ -208,7 +272,7 @@ export default function RfxDataPage() {
       setProductosIndividuales(prev =>
         prev.map(product =>
           product.id === productId
-            ? { ...product, costo_unitario: previousCost }
+            ? { ...product, costo_unitario: previousCost, ...previousMetrics }
             : product
         )
       );
@@ -277,24 +341,42 @@ export default function RfxDataPage() {
 
   // Handle quantity change
   const handleQuantityChange = async (productId: string, newQuantity: number) => {
+    console.log(`🔢 [QUANTITY CHANGE] Product: ${productId}, New Quantity: ${newQuantity}`);
+    
     try {
+      // ⚡ Actualización instantánea con recálculo de total_profit
       setProductosIndividuales(prev => 
         prev.map(product => {
           if (product.id === productId) {
+            const metrics = calculateProfitMetrics(
+              product.precio,
+              product.costo_unitario || 0,
+              newQuantity
+            );
+            console.log(`✅ [INSTANT CALCULATION] ${product.nombre}:`, {
+              precio: product.precio,
+              costo: product.costo_unitario || 0,
+              cantidad_nueva: newQuantity,
+              ganancia_unitaria: metrics.ganancia_unitaria,
+              margen_ganancia: metrics.margen_ganancia.toFixed(2) + '%',
+              total_profit: metrics.total_profit
+            });
             return { 
               ...product, 
               cantidadEditada: newQuantity,
-              isQuantityModified: newQuantity !== product.cantidadOriginal
+              isQuantityModified: newQuantity !== product.cantidadOriginal,
+              ...metrics // Recalcular total_profit con nueva cantidad
             };
           }
           return product;
         })
       );
 
+      // Guardar en backend para persistencia
       if (backendData?.data?.id) {
-        console.log(`🔄 Saving product quantity: ${productId} = ${newQuantity}`);
+        console.log(`🔄 Saving product quantity to backend: ${productId} = ${newQuantity}`);
         await api.updateProductField(backendData.data.id, productId, "cantidad", newQuantity);
-        console.log(`✅ Product quantity saved to backend: ${productId}`);
+        console.log(`✅ Product quantity saved to backend successfully`);
       }
     } catch (error) {
       console.error(`❌ Error saving product quantity:`, error);

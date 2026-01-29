@@ -23,6 +23,16 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const loadUser = async () => {
     console.log('🔄 AuthContext: Loading user...')
     
+    // Check if we have a token first
+    const hasToken = typeof window !== 'undefined' && localStorage.getItem('access_token')
+    
+    if (!hasToken) {
+      console.log('❌ AuthContext: No access token found, skipping user load')
+      setUser(null)
+      setLoading(false)
+      return
+    }
+    
     // First, try to refresh token if needed
     const tokenRefreshed = await authService.refreshTokenIfNeeded()
     console.log('🔄 AuthContext: Token refresh result:', tokenRefreshed)
@@ -35,9 +45,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setUser(currentUser)
       } catch (error) {
         console.error('❌ AuthContext: Failed to load user:', error)
-        // Don't logout immediately - the token might still be valid
-        // The interceptor will handle token refresh if needed
-        // Only clear user state, but keep tokens for retry
+        // Clear everything if we can't fetch user data
+        console.log('🧹 AuthContext: Clearing tokens due to fetch failure')
+        authService.clearTokens()
+        if (typeof window !== 'undefined') {
+          document.cookie = 'access_token=; path=/; max-age=0'
+          document.cookie = 'refresh_token=; path=/; max-age=0'
+        }
         setUser(null)
       }
     } else {

@@ -42,6 +42,23 @@ export default function RfxBudgetPage() {
   // RFX Currency context
   const rfxCurrency = useRFXCurrency();
   
+  // ⚡ Calculate profit metrics locally (instant feedback)
+  // Formula: Margen Bruto = ((Precio - Costo) / Precio) * 100
+  const calculateProfitMetrics = (precio: number, costo: number, cantidad: number) => {
+    const ganancia_unitaria = precio - costo;
+    const margen_ganancia = precio > 0 ? (ganancia_unitaria / precio) * 100 : 0;
+    const total_profit = ganancia_unitaria * cantidad;
+    
+    return {
+      ganancia_unitaria,
+      margen_ganancia,
+      total_profit
+    };
+  };
+
+  // State for products with local calculations
+  const [productosConGanancias, setProductosConGanancias] = useState<any[]>([]);
+
   // Pricing configuration states
   const [pricingConfigV2, setPricingConfigV2] = useState<PricingConfigFormData>(() => {
     return {
@@ -434,6 +451,112 @@ export default function RfxBudgetPage() {
     }
   };
 
+  // Handle product price change with instant calculation
+  const handleProductPriceChange = async (productId: string, newPrice: number) => {
+    console.log(`💰 Changing price for product ${productId}: ${newPrice}`);
+    
+    // ⚡ Actualización instantánea con cálculo local de métricas
+    setProductosConGanancias(prev =>
+      prev.map(product => {
+        if (product.id === productId) {
+          const metrics = calculateProfitMetrics(
+            newPrice,
+            product.costo_unitario || 0,
+            product.cantidadEditada
+          );
+          console.log(`✅ Calculated metrics for ${product.nombre}:`, metrics);
+          return { 
+            ...product, 
+            precio: newPrice,
+            ...metrics
+          };
+        }
+        return product;
+      })
+    );
+
+    // Guardar en backend para persistencia
+    if (id) {
+      try {
+        await api.updateProductField(id, productId, "precio_unitario", newPrice);
+        console.log(`✅ Price saved to backend: ${productId} = ${newPrice}`);
+      } catch (error) {
+        console.error(`❌ Error saving price:`, error);
+      }
+    }
+  };
+
+  // Handle product cost change with instant calculation
+  const handleProductCostChange = async (productId: string, newCost: number) => {
+    console.log(`💵 Changing cost for product ${productId}: ${newCost}`);
+    
+    // ⚡ Actualización instantánea con cálculo local de métricas
+    setProductosConGanancias(prev =>
+      prev.map(product => {
+        if (product.id === productId) {
+          const metrics = calculateProfitMetrics(
+            product.precio,
+            newCost,
+            product.cantidadEditada
+          );
+          console.log(`✅ Calculated metrics for ${product.nombre}:`, metrics);
+          return { 
+            ...product, 
+            costo_unitario: newCost,
+            ...metrics
+          };
+        }
+        return product;
+      })
+    );
+
+    // Guardar en backend para persistencia
+    if (id) {
+      try {
+        await api.updateProductField(id, productId, "unit_cost", newCost);
+        console.log(`✅ Cost saved to backend: ${productId} = ${newCost}`);
+      } catch (error) {
+        console.error(`❌ Error saving cost:`, error);
+      }
+    }
+  };
+
+  // Handle quantity change with instant calculation
+  const handleQuantityChange = async (productId: string, newQuantity: number) => {
+    console.log(`🔢 Changing quantity for product ${productId}: ${newQuantity}`);
+    
+    // ⚡ Actualización instantánea con recálculo de total_profit
+    setProductosConGanancias(prev =>
+      prev.map(product => {
+        if (product.id === productId) {
+          const metrics = calculateProfitMetrics(
+            product.precio,
+            product.costo_unitario || 0,
+            newQuantity
+          );
+          console.log(`✅ Calculated metrics for ${product.nombre}:`, metrics);
+          return { 
+            ...product, 
+            cantidadEditada: newQuantity,
+            isQuantityModified: newQuantity !== product.cantidadOriginal,
+            ...metrics
+          };
+        }
+        return product;
+      })
+    );
+
+    // Guardar en backend para persistencia
+    if (id) {
+      try {
+        await api.updateProductField(id, productId, "cantidad", newQuantity);
+        console.log(`✅ Quantity saved to backend: ${productId} = ${newQuantity}`);
+      } catch (error) {
+        console.error(`❌ Error saving quantity:`, error);
+      }
+    }
+  };
+
   // Extract products for budget calculations - GET FRESH DATA FROM API
   const extractIndividualProducts = (data: any) => {
     if (!data) return [];
@@ -455,7 +578,11 @@ export default function RfxBudgetPage() {
       const productUnit = product.unit || product.unidad || product.measurement_unit || 'unidades';
       const productPrice = parseFloat(String(product.precio_unitario || product.estimated_unit_price || product.unit_price || product.price || 0)) || 0;
       
-
+      // Extraer campos de ganancias del backend
+      const costoUnitario = parseFloat(String(product.unit_cost || product.costo_unitario || 0)) || 0;
+      const gananciaUnitaria = parseFloat(String(product.unit_profit || product.ganancia_unitaria || 0)) || 0;
+      const margenGanancia = parseFloat(String(product.unit_margin || product.margen_ganancia || 0)) || 0;
+      const totalProfit = parseFloat(String(product.total_profit || 0)) || 0;
       
       return {
         id: product.id || `product-${index}`,
@@ -465,7 +592,12 @@ export default function RfxBudgetPage() {
         cantidadEditada: originalQuantity,
         unidad: productUnit,
         precio: productPrice,
-        isQuantityModified: false
+        isQuantityModified: false,
+        // Campos de ganancias
+        costo_unitario: costoUnitario,
+        ganancia_unitaria: gananciaUnitaria,
+        margen_ganancia: margenGanancia,
+        total_profit: totalProfit
       };
     });
   };
@@ -537,15 +669,20 @@ export default function RfxBudgetPage() {
     };
   }, [id]);
 
-  // Debug: Log productos to verify data structure (second useEffect)
+  // Initialize productosConGanancias when productosIndividuales changes
   useEffect(() => {
     if (productosIndividuales.length > 0) {
       console.log("🔍 DEBUG - Productos en vista de presupuesto:", productosIndividuales);
       console.log("📊 DEBUG - Pricing config:", pricingConfigV2);
+      
+      // Initialize local state with backend data
+      setProductosConGanancias(productosIndividuales);
+      console.log("✅ Productos con ganancias inicializados:", productosIndividuales.length);
     } else {
       console.log("⚠️ DEBUG - No hay productos en vista de presupuesto");
+      setProductosConGanancias([]);
     }
-  }, [productosIndividuales, pricingConfigV2]);
+  }, [productosIndividuales.length]); // Only re-run when length changes to avoid infinite loops
 
   if (isLoading) {
     return (
@@ -666,7 +803,7 @@ export default function RfxBudgetPage() {
       <div className="flex-1 overflow-auto w-full">
         <BudgetGenerationView
           extractedData={extractedData}
-          productosIndividuales={productosIndividuales}
+          productosIndividuales={productosConGanancias.length > 0 ? productosConGanancias : productosIndividuales}
           propuesta={propuesta}
           costoTotal={backendData.data?.actual_cost || backendData.data?.estimated_budget || null}
           rfxId={id}
@@ -678,8 +815,9 @@ export default function RfxBudgetPage() {
           onFinalize={handleFinalize}
           onAddProduct={async () => {}}
           onDeleteProduct={() => {}}
-          onQuantityChange={async () => {}}
-          onPriceChange={async () => {}}
+          onQuantityChange={handleQuantityChange}
+          onPriceChange={handleProductPriceChange}
+          onCostChange={handleProductCostChange}
           onUnitChange={async () => {}}
           onSaveProductCosts={async () => {}}
           isRegenerating={isRegenerating}
