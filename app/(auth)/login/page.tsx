@@ -17,7 +17,7 @@ function LoadingFallback() {
     <div className="min-h-screen flex items-center justify-center bg-secondary">
       <div className="text-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-        <p className="text-muted-foreground">Cargando...</p>
+        <p className="text-muted-foreground">Loading...</p>
       </div>
     </div>
   )
@@ -73,11 +73,11 @@ function LoginContent() {
             className="w-fit mb-2"
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Volver
+            Back
           </Button>
-          <CardTitle className="text-2xl font-bold text-center">Iniciar Sesión</CardTitle>
+          <CardTitle className="text-2xl font-bold text-center">Sign In</CardTitle>
           <CardDescription className="text-center">
-            Ingresa tus credenciales para acceder a tu cuenta
+            Enter your credentials to access your account
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>
@@ -104,12 +104,12 @@ function LoginContent() {
             
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <Label htmlFor="password">Contraseña</Label>
+                <Label htmlFor="password">Password</Label>
                 <Link 
                   href="/forgot-password" 
                   className="text-sm text-blue-600 hover:underline"
                 >
-                  ¿Olvidaste tu contraseña?
+                  Forgot your password?
                 </Link>
               </div>
               <Input
@@ -133,17 +133,17 @@ function LoginContent() {
               {loading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Iniciando sesión...
+                  Signing in...
                 </>
               ) : (
-                "Iniciar Sesión"
+                "Sign In"
               )}
             </Button>
             
             <div className="text-sm text-center text-muted-foreground">
-              ¿No tienes una cuenta?{" "}
+              Don't have an account?{" "}
               <Link href="/signup" className="text-blue-600 hover:underline font-medium">
-                Regístrate aquí
+                Sign up here
               </Link>
             </div>
           </CardFooter>

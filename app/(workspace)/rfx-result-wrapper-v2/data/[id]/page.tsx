@@ -1,12 +1,14 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { api } from "@/lib/api";
 import type { RFXResponse } from "@/lib/api";
 import RFXDataView from "@/components/features/rfx/RFXDataView";
 import { useRFXCurrency } from "@/contexts/RFXCurrencyContext";
 import RFXUpdateChatPanel from "@/components/features/rfx/update-chat/RFXUpdateChatPanel";
+import type { PricingConfigFormData } from "@/types/pricing-v2";
+import { getFrontendPricingConfig, updateFrontendPricingConfigOptimized } from "@/lib/api-pricing-backend-real";
 
 interface ProductoIndividual {
   id: string;
@@ -38,6 +40,27 @@ export default function RfxDataPage() {
   // Chat panel state
   const [isChatOpen, setIsChatOpen] = useState(false);
 
+  // Pricing configuration state
+  const [pricingConfigV2, setPricingConfigV2] = useState<PricingConfigFormData>({
+    coordination_enabled: false,
+    coordination_type: 'standard',
+    coordination_rate: 0.18,
+    coordination_description: 'Coordinación y logística',
+    coordination_apply_to_subtotal: true,
+    cost_per_person_enabled: false,
+    headcount: 120,
+    headcount_source: 'manual',
+    calculation_base: 'final_total',
+    display_in_proposal: true,
+    cost_per_person_description: 'Cálculo de costo individual',
+    taxes_enabled: false,
+    tax_name: 'IVA',
+    tax_rate: 0.16,
+    tax_apply_to_subtotal: false,
+    tax_apply_to_coordination: true
+  });
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+
   // RFX Currency context
   const rfxCurrency = useRFXCurrency();
   const { 
@@ -47,6 +70,63 @@ export default function RfxDataPage() {
   } = rfxCurrency;
 
   const currencyInfo = getCurrencyInfo();
+
+  // Load pricing configuration
+  useEffect(() => {
+    const loadPricingConfig = async () => {
+      if (!id) return;
+      
+      try {
+        const config = await getFrontendPricingConfig(id);
+        if (config) {
+          setPricingConfigV2(prev => ({
+            ...prev,
+            ...config
+          }));
+        }
+      } catch (error) {
+        console.error('Error loading pricing config:', error);
+      }
+    };
+
+    loadPricingConfig();
+  }, [id]);
+
+  // Auto-save pricing config with debounce
+  const autoSavePricingConfig = useCallback(async (partialConfig: Partial<PricingConfigFormData>) => {
+    if (!id) return;
+
+    setSaveStatus('saving');
+    
+    try {
+      await updateFrontendPricingConfigOptimized(id, partialConfig);
+      setSaveStatus('saved');
+      
+      setTimeout(() => {
+        setSaveStatus('idle');
+      }, 2000);
+    } catch (error) {
+      console.error('Error saving pricing config:', error);
+      setSaveStatus('error');
+      
+      setTimeout(() => {
+        setSaveStatus('idle');
+      }, 3000);
+    }
+  }, [id]);
+
+  // Handlers de coordinación
+  const handleCoordinationToggle = async (enabled: boolean) => {
+    console.log('🔄 Coordination toggle (data view):', enabled);
+    setPricingConfigV2(prev => ({ ...prev, coordination_enabled: enabled }));
+    await autoSavePricingConfig({ coordination_enabled: enabled });
+  };
+
+  const handleCoordinationRateChange = async (rate: number) => {
+    console.log('🔄 Coordination rate change (data view):', rate);
+    setPricingConfigV2(prev => ({ ...prev, coordination_rate: rate }));
+    await autoSavePricingConfig({ coordination_rate: rate });
+  };
 
   // ⚡ Calculate profit metrics locally (instant feedback)
   // Formula: Margen Bruto = ((Precio - Costo) / Precio) * 100
@@ -704,13 +784,13 @@ export default function RfxDataPage() {
               onClick={() => window.location.reload()}
               className="bg-destructive hover:bg-red-700 text-background px-6 py-2 rounded-lg font-medium"
             >
-              Reintentar
+              Retry
             </button>
             <button 
               onClick={() => router.push("/dashboard")}
               className="bg-gray-600 hover:bg-gray-700 text-background px-6 py-2 rounded-lg font-medium"
             >
-              Volver al Dashboard
+              Back to Dashboard
             </button>
           </div>
         </div>
@@ -772,6 +852,11 @@ export default function RfxDataPage() {
           defaultCurrency={(backendData.data as any)?.currency || selectedCurrency}
           // @ts-ignore pass currency change handler
           onCurrencyChange={handleCurrencyChange}
+          // @ts-ignore Coordination props
+          coordinationEnabled={pricingConfigV2.coordination_enabled}
+          coordinationRate={pricingConfigV2.coordination_rate}
+          onCoordinationToggle={handleCoordinationToggle}
+          onCoordinationRateChange={handleCoordinationRateChange}
         />
       </div>
 

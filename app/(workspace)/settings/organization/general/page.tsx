@@ -8,22 +8,21 @@ export const dynamic = 'force-dynamic';
 
 import { redirect } from 'next/navigation';
 import { OrganizationGeneralSettings } from '@/components/organization/OrganizationGeneralSettings';
-import { CreditsUsageCard } from '@/components/credits/CreditsUsageCard';
 import { DangerZone } from '@/components/organization/DangerZone';
 import { MembersList } from '@/components/organization/MembersList';
 import { PendingInvitationsList } from '@/components/organization/PendingInvitationsList';
 import { InviteMemberButton } from '@/components/organization/InviteMemberButton';
 import { LimitIndicator } from '@/components/shared/LimitIndicator';
 import { getCurrentOrganization, getOrganizationMembers } from '@/lib/api-organizations';
-import { getCreditsInfo } from '@/lib/api-credits';
+import { OrganizationGeneralClient } from './OrganizationGeneralClient';
 
 async function getOrganizationData() {
   try {
-    // Fetch real data from API
-    const [organization, apiMembers, creditsInfo] = await Promise.all([
+    // ✅ Fetch organization and members from server (no JWT needed - uses cookies)
+    // ❌ Credits info moved to client-side (requires JWT from localStorage)
+    const [organization, apiMembers] = await Promise.all([
       getCurrentOrganization(),
       getOrganizationMembers(),
-      getCreditsInfo(),
     ]);
 
     // Find current user's membership (assuming first owner/admin is current user)
@@ -53,8 +52,8 @@ async function getOrganizationData() {
         billing_email: '', // TODO: Add to API if needed
         max_users: organization.plan.max_users,
         max_rfx_per_month: organization.plan.max_rfx_per_month,
-        credits_total: creditsInfo.credits_total,
-        credits_used: creditsInfo.credits_used,
+        credits_total: 0, // Will be loaded client-side
+        credits_used: 0, // Will be loaded client-side
         created_at: organization.created_at,
         updated_at: organization.created_at, // Using created_at as fallback
         owner_id: currentUserMembership?.id || '',
@@ -74,7 +73,6 @@ async function getOrganizationData() {
       members,
       pendingInvitations: [], // TODO: Add pending invitations API endpoint
       currentMemberCount: members.length,
-      creditsInfo,
     };
   } catch (error) {
     console.error('Error fetching organization data:', error);
@@ -89,7 +87,7 @@ async function getOrganizationData() {
 }
 
 export default async function OrganizationGeneralPage() {
-  const { organization, membership, members, pendingInvitations, currentMemberCount, creditsInfo } = await getOrganizationData();
+  const { organization, membership, members, pendingInvitations, currentMemberCount } = await getOrganizationData();
   
   const isOwner = membership.role === 'owner';
   const canEdit = isOwner;
@@ -114,15 +112,11 @@ export default async function OrganizationGeneralPage() {
         />
       </div>
       
-      {/* Credits Usage */}
-      <div className="w-full">
-        <CreditsUsageCard 
-          creditsTotal={creditsInfo.credits_total}
-          creditsUsed={creditsInfo.credits_used}
-          resetDate={creditsInfo.reset_date}
-          planName={creditsInfo.plan_tier}
-        />
-      </div>
+      {/* Credits Usage - Client-side component with JWT */}
+      <OrganizationGeneralClient 
+        organizationId={organization.id}
+        planTier={organization.plan_tier}
+      />
 
       {/* Team Members Section */}
       <div className="w-full space-y-6">

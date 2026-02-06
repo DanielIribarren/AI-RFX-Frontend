@@ -313,8 +313,8 @@ const RfxHistory = forwardRef<RfxHistoryRef, RfxHistoryProps>(
         
         // Show success toast
         showSuccessToast({
-          title: "RFX eliminado",
-          message: `"${rfxToDelete.title}" ha sido eliminado exitosamente`,
+          title: "RFX deleted",
+          message: `"${rfxToDelete.title}" has been deleted successfully`,
         })
       } catch (error) {
         console.error(`❌ Error deleting RFX:`, error)
@@ -323,21 +323,21 @@ const RfxHistory = forwardRef<RfxHistoryRef, RfxHistoryProps>(
         setDeleteDialogOpen(false)
         
         // Determine error type and show appropriate message
-        let errorTitle = "Error al eliminar"
-        let errorMessage = "No se pudo eliminar el RFX"
+        let errorTitle = "Delete error"
+        let errorMessage = "Could not delete RFX"
         
         if (error instanceof APIError) {
           if (error.status === 403) {
-            errorTitle = "Acceso denegado"
-            errorMessage = "No tienes permiso para eliminar este RFX. Solo el creador puede eliminarlo."
+            errorTitle = "Access denied"
+            errorMessage = "You don't have permission to delete this RFX. Only the creator can delete it."
           } else if (error.status === 404) {
-            errorTitle = "RFX no encontrado"
-            errorMessage = "El RFX que intentas eliminar ya no existe."
+            errorTitle = "RFX not found"
+            errorMessage = "The RFX you're trying to delete no longer exists."
           } else if (error.status === 401) {
-            errorTitle = "Sesión expirada"
-            errorMessage = "Tu sesión ha expirado. Por favor, inicia sesión nuevamente."
+            errorTitle = "Session expired"
+            errorMessage = "Your session has expired. Please sign in again."
           } else {
-            errorMessage = error.message || "Ocurrió un error al eliminar el RFX"
+            errorMessage = error.message || "An error occurred while deleting the RFX"
           }
         }
         
@@ -549,7 +549,7 @@ const RfxHistory = forwardRef<RfxHistoryRef, RfxHistoryProps>(
                             </Avatar>
                             <User className="h-3 w-3" />
                           </div>
-                          <span>Procesado por {rfx.processed_by.name || 'Usuario Desconocido'}</span>
+                          <span>Processed by {rfx.processed_by.name || 'Unknown User'}</span>
                           {rfx.processed_by.username && (
                             <span className="text-muted-foreground">(@{rfx.processed_by.username})</span>
                           )}
@@ -591,11 +591,11 @@ const RfxHistory = forwardRef<RfxHistoryRef, RfxHistoryProps>(
           >
             {isLoadingMore ? (
               <>
-                <RefreshCw className="h-4 w-4 animate-spin" /> Cargando más RFX...
+                <RefreshCw className="h-4 w-4 animate-spin" /> Loading more RFX...
               </>
             ) : (
               <>
-                <RefreshCw className="h-4 w-4" /> Cargar más RFX
+                <RefreshCw className="h-4 w-4" /> Load More RFX
               </>
             )}
           </Button>

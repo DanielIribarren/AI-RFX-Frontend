@@ -425,7 +425,7 @@ export default function RfxBudgetPage() {
       console.log("✅ RFX finalizado exitosamente en backend");
       
       // ✅ Mostrar confirmación y redirigir
-      alert("✅ Análisis finalizado exitosamente. El RFX ha sido guardado en tu historial.");
+      alert("✅ Analysis completed successfully. The RFX has been saved to your history.");
       
       // Redirigir al dashboard después de 1 segundo
       setTimeout(() => {
@@ -713,13 +713,13 @@ export default function RfxBudgetPage() {
               onClick={() => window.location.reload()}
               className="bg-destructive hover:bg-red-700 text-background px-6 py-2 rounded-lg font-medium"
             >
-              Reintentar
+              Retry
             </button>
             <button 
               onClick={() => router.push(`/rfx-result-wrapper-v2/data/${id}`)}
               className="bg-gray-600 hover:bg-gray-700 text-background px-6 py-2 rounded-lg font-medium"
             >
-              Volver a Datos
+              Back to Data
             </button>
           </div>
         </div>
@@ -732,16 +732,16 @@ export default function RfxBudgetPage() {
       <div className="container mx-auto px-4 py-6">
         <div className="text-center py-12 bg-background rounded-lg border border">
           <h2 className="text-xl font-semibold text-gray-900 mb-2">
-            No se encontraron datos del presupuesto
+            Budget data not found
           </h2>
           <p className="text-muted-foreground mb-6">
-            No se pudieron cargar los datos del RFX especificado.
+            Could not load data for the specified RFX.
           </p>
           <button 
             onClick={() => router.push("/dashboard")}
             className="bg-primary hover:bg-primary-dark text-background px-6 py-2 rounded-lg font-medium"
           >
-            Volver al Dashboard
+            Back to Dashboard
           </button>
         </div>
       </div>

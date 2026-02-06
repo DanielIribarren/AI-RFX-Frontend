@@ -65,6 +65,11 @@ interface DataExtractionContentProps {
   defaultCurrency?: string
   // Currency change handler to persist changes
   onCurrencyChange?: (currency: string) => void
+  // Coordination and logistics props
+  coordinationEnabled?: boolean
+  coordinationRate?: number
+  onCoordinationToggle?: (enabled: boolean) => void
+  onCoordinationRateChange?: (rate: number) => void
 }
 
 export default function DataExtractionContent({
@@ -84,7 +89,12 @@ export default function DataExtractionContent({
   isSavingCosts = false,
   costsSaved = false,
   defaultCurrency,
-  onCurrencyChange
+  onCurrencyChange,
+  // Coordination and logistics props
+  coordinationEnabled,
+  coordinationRate,
+  onCoordinationToggle,
+  onCoordinationRateChange
 }: DataExtractionContentProps) {
 
   // State for product form dialog
@@ -291,8 +301,8 @@ export default function DataExtractionContent({
               <InlineEditableField 
                 value={extractedData.requirements} 
                 onSave={(value) => onFieldSave("requirements", value)}
-                label="Instrucciones Específicas del Cliente" 
-                placeholder="Ej: Personal con más de 5 años de experiencia, sin frutos secos por alergias..."
+                label="Client Specific Instructions" 
+                placeholder="e.g., Staff with more than 5 years of experience, no nuts due to allergies..."
                 type="textarea"
                 disabled={isDisabled}
               />
@@ -300,8 +310,8 @@ export default function DataExtractionContent({
               <InlineEditableField 
                 value=""
                 onSave={(value) => onFieldSave("requirements", value)}
-                label="Instrucciones Específicas del Cliente"
-                placeholder="Haz clic para agregar requirements..."
+                label="Client Specific Instructions"
+                placeholder="Click to add requirements..."
                 type="textarea"
                 disabled={isDisabled}
               />
@@ -372,6 +382,11 @@ export default function DataExtractionContent({
               // Optional: price review tracking from RFX context
               isProductPriceUnreviewed={isProductPriceUnreviewed}
               markProductPriceAsReviewed={markProductPriceAsReviewed}
+              // Coordination and logistics
+              coordinationEnabled={coordinationEnabled}
+              coordinationRate={coordinationRate}
+              onCoordinationToggle={onCoordinationToggle}
+              onCoordinationRateChange={onCoordinationRateChange}
             />
             
             {/* Save costs button */}

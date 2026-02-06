@@ -52,7 +52,7 @@ export default function DashboardPage() {
           </div>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
             Procesa documentos RFX con <span className="text-brand-gradient font-semibold">inteligencia artificial</span>. 
-            Escribe instrucciones específicas o adjunta archivos para comenzar.
+            Write specific instructions or attach files to get started.
           </p>
         </div>
 

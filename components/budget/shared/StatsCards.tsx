@@ -20,7 +20,7 @@ export function StatsCards({ subtotal, coordination, total, currencySymbol = "‚Ç
           <div className="flex items-center justify-between">
             <div className="space-y-1">
               <p className="text-sm font-medium text-primary">
-                Subtotal Productos
+                Product Subtotal
               </p>
               <p className="text-2xl font-bold text-blue-900">
                 {formatPrice(subtotal)}
@@ -36,7 +36,7 @@ export function StatsCards({ subtotal, coordination, total, currencySymbol = "‚Ç
           <div className="flex items-center justify-between">
             <div className="space-y-1">
               <p className="text-sm font-medium text-primary">
-                Coordinaci√≥n
+                Coordination
               </p>
               <p className="text-2xl font-bold text-purple-900">
                 {formatPrice(coordination)}
@@ -52,7 +52,7 @@ export function StatsCards({ subtotal, coordination, total, currencySymbol = "‚Ç
           <div className="flex items-center justify-between">
             <div className="space-y-1">
               <p className="text-sm font-medium text-green-600">
-                Total Final
+                Final Total
               </p>
               <p className="text-2xl font-bold text-green-900">
                 {formatPrice(total)}

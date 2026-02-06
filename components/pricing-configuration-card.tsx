@@ -456,20 +456,20 @@ export default function PricingConfigurationCard({
                   <span className="text-sm text-muted-foreground">%</span>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Se aplicará sobre el subtotal de productos
+                  Will be applied to product subtotal
                 </p>
               </div>
 
               {/* Coordination Description */}
               <div className="space-y-2">
                 <Label htmlFor="coordination-desc" className="text-sm font-medium">
-                  Descripción de Coordinación
+                  Coordination Description
                 </Label>
                 <Input
                   id="coordination-desc"
                   value={localConfig.coordination_description}
                   onChange={(e) => handleCoordinationDescriptionChange(e.target.value)}
-                  placeholder="Ej: Coordinación y logística del evento"
+                  placeholder="e.g., Event coordination and logistics"
                   disabled={isDisabled}
                 />
               </div>
@@ -477,7 +477,7 @@ export default function PricingConfigurationCard({
               {/* Advanced Options */}
               {showAdvanced && (
                 <div className="space-y-3 p-3 bg-primary/5 rounded-lg">
-                  <h5 className="text-sm font-medium text-blue-800">Opciones Avanzadas</h5>
+                  <h5 className="text-sm font-medium text-blue-800">Advanced Options</h5>
                   
                   <div className="flex items-center space-x-2">
                     <Switch
@@ -536,48 +536,48 @@ export default function PricingConfigurationCard({
 
               {/* Headcount Source */}
               <div className="space-y-2">
-                <Label className="text-sm font-medium">Fuente del Headcount</Label>
+                <Label className="text-sm font-medium">Headcount Source</Label>
                 <Select 
                   value={localConfig.headcount_source} 
                   onValueChange={handleHeadcountSourceChange}
                   disabled={isDisabled}
                 >
                   <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Seleccionar fuente" />
+                    <SelectValue placeholder="Select source" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="manual">Manual - Ingresado manualmente</SelectItem>
-                    <SelectItem value="extracted">Extraído - Detectado por IA</SelectItem>
-                    <SelectItem value="estimated">Estimado - Calculado automáticamente</SelectItem>
+                    <SelectItem value="manual">Manual - Entered manually</SelectItem>
+                    <SelectItem value="extracted">Extracted - Detected by AI</SelectItem>
+                    <SelectItem value="estimated">Estimated - Calculated automatically</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               {/* Calculation Base */}
               <div className="space-y-2">
-                <Label className="text-sm font-medium">Base de Cálculo</Label>
+                <Label className="text-sm font-medium">Calculation Base</Label>
                 <Select 
                   value={localConfig.calculation_base} 
                   onValueChange={handleCalculationBaseChange}
                   disabled={isDisabled}
                 >
                   <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Seleccionar base" />
+                    <SelectValue placeholder="Select base" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="subtotal">Subtotal - Solo productos</SelectItem>
-                    <SelectItem value="subtotal_with_coordination">Subtotal + Coordinación</SelectItem>
-                    <SelectItem value="final_total">Total Final - Incluye todo</SelectItem>
+                    <SelectItem value="subtotal">Subtotal - Products only</SelectItem>
+                    <SelectItem value="subtotal_with_coordination">Subtotal + Coordination</SelectItem>
+                    <SelectItem value="final_total">Final Total - Includes everything</SelectItem>
                   </SelectContent>
                 </Select>
                 <p className="text-xs text-muted-foreground">
-                  Base sobre la cual se calculará el costo por persona
+                  Base on which the cost per person will be calculated
                 </p>
               </div>
 
               {/* Display Options */}
               <div className="space-y-3 p-3 bg-green-50 rounded-lg">
-                <h5 className="text-sm font-medium text-green-800">Opciones de Visualización</h5>
+                <h5 className="text-sm font-medium text-green-800">Display Options</h5>
                 
                 <div className="flex items-center space-x-2">
                   <Switch
@@ -585,7 +585,7 @@ export default function PricingConfigurationCard({
                     onCheckedChange={(checked) => handleConfigUpdate({ display_in_proposal: checked })}
                     disabled={isDisabled}
                   />
-                  <Label className="text-sm">Mostrar en propuesta</Label>
+                  <Label className="text-sm">Show in proposal</Label>
                 </div>
               </div>
             </div>

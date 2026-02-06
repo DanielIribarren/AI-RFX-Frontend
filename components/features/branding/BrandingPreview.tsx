@@ -183,7 +183,7 @@ export default function BrandingPreview({ companyId }: BrandingPreviewProps) {
   }
 
   const handleDelete = async () => {
-    if (!confirm('¿Está seguro de que desea eliminar la configuración de branding?')) {
+    if (!confirm('Are you sure you want to delete the branding configuration?')) {
       return
     }
 
@@ -250,9 +250,9 @@ export default function BrandingPreview({ companyId }: BrandingPreviewProps) {
             <Layout className="h-6 w-6 text-primary-light" />
           </div>
           <div>
-            <h3 className="text-sm font-medium text-gray-900">No hay configuración de presupuesto</h3>
+            <h3 className="text-sm font-medium text-gray-900">No budget configuration</h3>
             <p className="text-sm text-muted-foreground mt-1">
-              Suba un logo y template en la sección de la izquierda para personalizar sus presupuestos
+              Upload a logo and template in the left section to customize your budgets
             </p>
           </div>
         </div>

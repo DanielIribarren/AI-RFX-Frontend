@@ -27,30 +27,30 @@ export default function Breadcrumbs() {
     let label = segment;
     switch (segment) {
       case "dashboard":
-        label = "Principal";
+        label = "Dashboard";
         break;
       case "history":
-        label = "Historial";
+        label = "History";
         break;
       case "budget-settings":
-        label = "Configuración de Presupuesto";
+        label = "Budget Settings";
         break;
       case "profile":
-        label = "Perfil";
+        label = "Profile";
         break;
       case "rfx-result-wrapper-v2":
         label = "RFX";
         break;
       case "data":
-        label = "Datos";
+        label = "Data";
         break;
       case "budget":
-        label = "Presupuesto";
+        label = "Budget";
         break;
       default:
         // For UUIDs or other IDs, show generic label
         if (segment.match(/^[0-9a-f-]{20,}$/i)) {
-          label = "Detalle";
+          label = "Detail";
         } else {
           label = segment.charAt(0).toUpperCase() + segment.slice(1);
         }

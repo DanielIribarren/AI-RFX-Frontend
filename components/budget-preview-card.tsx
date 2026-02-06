@@ -223,10 +223,10 @@ export default function BudgetPreviewCard({
         <CardHeader>
           <CardTitle className="text-lg font-semibold text-gray-800 flex items-center gap-2">
             <BarChart3 className="h-5 w-5" />
-            Vista Previa del Presupuesto V2.2
+            Budget Preview V2.2
           </CardTitle>
           <CardDescription>
-            Configura productos y precios para ver la vista previa avanzada
+            Configure products and prices to see the advanced preview
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -234,9 +234,9 @@ export default function BudgetPreviewCard({
             <div className="text-muted-foreground/60 text-4xl mb-2">
               <Calculator className="h-16 w-16 mx-auto" />
             </div>
-            <p className="text-muted-foreground">No hay productos configurados</p>
+            <p className="text-muted-foreground">No products configured</p>
             <p className="text-sm text-muted-foreground/60 mt-1">
-              Agrega productos en la configuración de precios para ver la vista previa
+              Add products in the pricing configuration to see the preview
             </p>
           </div>
         </CardContent>
@@ -263,10 +263,10 @@ export default function BudgetPreviewCard({
         <CardDescription>
           {useApiCalculations 
             ? (useRealBackend 
-                ? "Cálculos precisos usando Backend Real V2.2 con SQL"
-                : "Cálculos usando API Legacy"
+                ? "Precise calculations using Real Backend V2.2 with SQL"
+                : "Calculations using Legacy API"
               )
-            : "Vista previa con cálculos locales instantáneos"
+            : "Preview with instant local calculations"
           }
         </CardDescription>
       </CardHeader>

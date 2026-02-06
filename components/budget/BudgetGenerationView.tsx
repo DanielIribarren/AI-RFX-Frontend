@@ -96,8 +96,17 @@ export default function BudgetGenerationView({
   onGenerateProposal,
   onDownloadPDF,
   onFinalize,
+  onAddProduct,
+  onDeleteProduct,
+  onQuantityChange,
+  onPriceChange,
+  onCostChange,
+  onUnitChange,
+  onSaveProductCosts,
   isRegenerating = false,
   isFinalized = false,
+  isSavingCosts = false,
+  costsSaved = false,
   pricingConfigV2,
   onPricingConfigChange,
   onSavePricingConfig,
@@ -151,6 +160,39 @@ export default function BudgetGenerationView({
 
   // Removed validation: Users can generate proposals without pre-saved prices
 
+  // Handlers de coordinación para la tabla de productos
+  const handleCoordinationToggle = async (enabled: boolean) => {
+    console.log('🔄 Coordination toggle:', enabled, {
+      hasConfigChange: !!onPricingConfigChange,
+      hasAutoSave: !!onAutoSave
+    })
+    
+    if (onPricingConfigChange) {
+      const newConfig = { ...currentPricingConfig, coordination_enabled: enabled }
+      onPricingConfigChange(newConfig)
+      
+      if (onAutoSave) {
+        await onAutoSave({ coordination_enabled: enabled })
+      }
+    }
+  }
+
+  const handleCoordinationRateChange = async (rate: number) => {
+    console.log('🔄 Coordination rate change:', rate, {
+      hasConfigChange: !!onPricingConfigChange,
+      hasAutoSave: !!onAutoSave
+    })
+    
+    if (onPricingConfigChange) {
+      const newConfig = { ...currentPricingConfig, coordination_rate: rate }
+      onPricingConfigChange(newConfig)
+      
+      if (onAutoSave) {
+        await onAutoSave({ coordination_rate: rate })
+      }
+    }
+  }
+
   return (
     <div className="w-full min-h-screen bg-background">
       {/* Header Sticky */}
@@ -166,14 +208,14 @@ export default function BudgetGenerationView({
                 disabled={isRegenerating || isFinalized}
               >
                 <ArrowLeft className="h-4 w-4" />
-                Volver
+                Back
               </Button>
               <div>
                 <h1 className="text-xl font-bold">
-                  Configuración de Presupuesto
+                  Budget Configuration
                 </h1>
                 <p className="text-sm text-muted-foreground">
-                  Personaliza y genera tu propuesta comercial
+                  Customize and generate your commercial proposal
                 </p>
               </div>
             </div>
@@ -230,6 +272,15 @@ export default function BudgetGenerationView({
               config={currentPricingConfig}
               formatPrice={(amount: number) => formatPrice(amount, selectedCurrency)}
               currencySymbol={getCurrencyInfo()?.symbol || "€"}
+              selectedCurrency={selectedCurrency}
+              onQuantityChange={onQuantityChange}
+              onPriceChange={onPriceChange}
+              onCostChange={onCostChange}
+              onUnitChange={onUnitChange}
+              onDeleteProduct={onDeleteProduct}
+              onCoordinationToggle={handleCoordinationToggle}
+              onCoordinationRateChange={handleCoordinationRateChange}
+              isEditable={!isFinalized}
             />
           </TabsContent>
 

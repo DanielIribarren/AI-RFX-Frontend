@@ -93,7 +93,7 @@ export default function FileUploader({ onFileProcessed, onRFXProcessed, isLoadin
     const hasText = allowTextOnly && textContent.trim().length > 0
     
     if (!hasFiles && !hasText) {
-      setFileError(allowTextOnly ? "Ingrese texto o seleccione archivos" : "No hay archivo seleccionado")
+      setFileError(allowTextOnly ? "Enter text or select files" : "No file selected")
       return
     }
 
@@ -265,9 +265,9 @@ export default function FileUploader({ onFileProcessed, onRFXProcessed, isLoadin
           <h2 className="text-xl font-semibold">📄 Procesador RFX con IA</h2>
           <p className="text-sm text-muted-foreground text-center max-w-md">
             {allowTextOnly 
-              ? "Ingrese el contenido del RFX o suba documentos (PDF, DOCX, TXT) para procesarlos automáticamente con inteligencia artificial."
-              : "Sube un documento RFx (PDF, DOCX o TXT) para procesarlo automáticamente con inteligencia artificial."} 
-            El sistema extraerá productos, fechas, información del solicitante y empresa, y generará una propuesta comercial personalizada.
+              ? "Enter the RFX content or upload documents (PDF, DOCX, TXT) to process them automatically with artificial intelligence."
+              : "Upload an RFx document (PDF, DOCX or TXT) to process it automatically with artificial intelligence."} 
+            The system will extract products, dates, requester and company information, and generate a personalized commercial proposal.
           </p>
 
           {/* 🆕 Text input area (when allowTextOnly is enabled) */}
@@ -276,13 +276,13 @@ export default function FileUploader({ onFileProcessed, onRFXProcessed, isLoadin
               <Textarea
                 value={textContent}
                 onChange={(e) => setTextContent(e.target.value)}
-                placeholder="Ingrese el contenido del RFX aquí (información del solicitante, productos, fechas, etc.)"
+                placeholder="Enter the RFX content here (requester information, products, dates, etc.)"
                 className="min-h-[120px] resize-none"
                 disabled={isUploading}
               />
               {textContent.length > 0 && (
                 <div className="text-xs text-muted-foreground mt-1">
-                  {textContent.length} caracteres
+                  {textContent.length} characters
                 </div>
               )}
             </div>

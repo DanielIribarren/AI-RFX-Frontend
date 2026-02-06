@@ -54,10 +54,10 @@ export function ProposalTab({
                 <RefreshCw className="h-16 w-16 text-primary mx-auto animate-spin relative z-10" />
               </div>
               <h3 className="text-lg font-semibold mb-2">
-                Generando tu propuesta comercial
+                Generating your commercial proposal
               </h3>
               <p className="text-sm text-muted-foreground mb-4">
-                La IA está creando una propuesta personalizada basada en los datos del RFX...
+                AI is creating a personalized proposal based on RFX data...
               </p>
               <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
                 <div className="flex gap-1">
@@ -65,7 +65,7 @@ export function ProposalTab({
                   <div className="h-2 w-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: '150ms' }} />
                   <div className="h-2 w-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: '300ms' }} />
                 </div>
-                <span>Esto puede tomar unos segundos</span>
+                <span>This may take a few seconds</span>
               </div>
             </>
           ) : (
@@ -73,10 +73,10 @@ export function ProposalTab({
               {/* Estado Inicial */}
               <FileText className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
               <h3 className="text-lg font-semibold mb-2">
-                No hay propuesta generada
+                No proposal generated
               </h3>
               <p className="text-sm text-muted-foreground mb-4">
-                Haz clic en 'Generar con IA' para crear la propuesta comercial
+                Click 'Generate with AI' to create the commercial proposal
               </p>
               <Button 
                 onClick={onRegenerate} 
@@ -85,7 +85,7 @@ export function ProposalTab({
                 disabled={!hasEnoughCredits}
               >
                 <RefreshCw className="h-4 w-4" />
-                Generar con IA
+                Generate with AI
               </Button>
               {!hasEnoughCredits && (
                 <div className="mt-4">

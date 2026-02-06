@@ -209,6 +209,11 @@ export default function RFXDataView({
             defaultCurrency={additionalProps?.defaultCurrency || (validationMetadata as any)?.currency}
             // @ts-ignore pass currency change handler from parent
             onCurrencyChange={additionalProps?.onCurrencyChange}
+            // @ts-ignore Coordination props
+            coordinationEnabled={additionalProps?.coordinationEnabled}
+            coordinationRate={additionalProps?.coordinationRate}
+            onCoordinationToggle={additionalProps?.onCoordinationToggle}
+            onCoordinationRateChange={additionalProps?.onCoordinationRateChange}
           />
         </TabsContent>
 
@@ -226,8 +231,8 @@ export default function RFXDataView({
         <Alert className="border-green-200 bg-green-50">
           <CheckCircle className="h-4 w-4 text-green-600" />
           <AlertDescription className="text-green-800">
-            <StatusBadge variant="success">RFX finalizado</StatusBadge>
-            <span className="ml-2">Este RFX ha sido finalizado exitosamente y guardado en tu historial.</span>
+            <StatusBadge variant="success">RFX finalized</StatusBadge>
+            <span className="ml-2">This RFX has been successfully finalized and saved to your history.</span>
           </AlertDescription>
         </Alert>
       )}

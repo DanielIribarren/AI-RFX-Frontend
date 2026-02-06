@@ -41,19 +41,11 @@ export function CreditsProvider({ children }: { children: React.ReactNode }) {
       setIsLoading(true);
       setError(null);
 
-      // Get token from localStorage
-      const token = localStorage.getItem('access_token');
-      if (!token) {
-        setError('No authentication token found');
-        setIsLoading(false);
-        return;
-      }
-
-      // Fetch credits info
-      const creditsData = await getCreditsInfo(token);
+      // Fetch credits info (getCreditsInfo handles token internally)
+      const creditsData = await getCreditsInfo();
       setCredits(creditsData);
     } catch (err) {
-      console.error('Error fetching credits:', err);
+      console.error('❌ CreditsContext: Error fetching credits:', err);
       setError(err instanceof Error ? err.message : 'Failed to fetch credits');
     } finally {
       setIsLoading(false);
@@ -69,10 +61,19 @@ export function CreditsProvider({ children }: { children: React.ReactNode }) {
   }, [credits]);
 
   /**
-   * Initial load
+   * Initial load - Only fetch if user is authenticated
    */
   useEffect(() => {
-    refreshCredits();
+    // ✅ CORS FIX: Only fetch credits if token exists
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('access_token');
+      if (token) {
+        refreshCredits();
+      } else {
+        console.log('⏭️ CreditsContext: Skipping initial fetch (no token)');
+        setIsLoading(false);
+      }
+    }
   }, [refreshCredits]);
 
   const value: CreditsContextType = {

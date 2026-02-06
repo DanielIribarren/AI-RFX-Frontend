@@ -165,7 +165,7 @@ export default function ProductFormDialog({
                   id="nombre"
                   value={formData.nombre}
                   onChange={(e) => setFormData(prev => ({ ...prev, nombre: e.target.value }))}
-                  placeholder="Ej: Tequeños de queso"
+                  placeholder="e.g., Cheese tequeños"
                   className={cn(
                     "border bg-background focus:border-gray-400 focus:ring-gray-200",
                     errors.nombre && "border-red-300 bg-red-50"
@@ -274,12 +274,12 @@ export default function ProductFormDialog({
 
             {/* Descripción opcional */}
             <div className="space-y-2">
-              <Label htmlFor="descripcion">Descripción (opcional)</Label>
+              <Label htmlFor="descripcion">Description (optional)</Label>
               <Input
                 id="descripcion"
                 value={formData.descripcion}
                 onChange={(e) => setFormData(prev => ({ ...prev, descripcion: e.target.value }))}
-                placeholder="Información adicional sobre el producto"
+                placeholder="Additional information about the product"
                 className="border bg-background focus:border-gray-400 focus:ring-gray-200"
               />
             </div>
@@ -313,7 +313,7 @@ export default function ProductFormDialog({
               className="gap-2 bg-background hover:bg-secondary border text-gray-700 hover:text-gray-800"
             >
               <X className="h-4 w-4" />
-              Cancelar
+              Cancel
             </Button>
             <Button
               type="submit"
@@ -321,7 +321,7 @@ export default function ProductFormDialog({
               className="gap-2 bg-gray-800 hover:bg-gray-900 text-background shadow-sm"
             >
               <CheckCircle className="h-4 w-4" />
-              {isSubmitting ? 'Guardando...' : (mode === 'create' ? 'Agregar Producto' : 'Actualizar Producto')}
+              {isSubmitting ? 'Saving...' : (mode === 'create' ? 'Add Product' : 'Update Product')}
             </Button>
           </DialogFooter>
         </form>

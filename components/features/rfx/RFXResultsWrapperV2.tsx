@@ -404,7 +404,7 @@ export default function RfxResultsWrapperV2({
         // Convert form data to API format
         const configData = {
           rfx_id: rfxId,
-          configuration_name: 'Configuración Principal',
+          configuration_name: 'Main Configuration',
           coordination: {
             is_enabled: pricingConfigV2.coordination_enabled,
             coordination_type: pricingConfigV2.coordination_type,
@@ -671,7 +671,7 @@ export default function RfxResultsWrapperV2({
 
     // Validar créditos suficientes
     if (credits && !checkCredits(requiredCredits)) {
-      alert(`Créditos insuficientes. Necesitas ${requiredCredits} créditos para ${isFirstGeneration ? 'generar' : 'regenerar'} la propuesta. Tienes ${credits.credits_available} disponibles.`)
+      alert(`Créditos insuficientes. Necesitas ${requiredCredits} créditos para ${isFirstGeneration ? 'generar' : 'regenerar'} la propuesta. Tienes ${credits.available_credits} disponibles.`)
       return
     }
 

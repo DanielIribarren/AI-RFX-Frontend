@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useImperativeHandle, forwardRef } from "react"
-import { Plus, MessageSquare, FileText, Clock, MoreHorizontal, ChevronLeft, CheckCircle, XCircle, AlertTriangle, Archive, Settings, Trash2 } from "lucide-react"
+import { Plus, MessageSquare, FileText, Clock, MoreHorizontal, ChevronLeft, CheckCircle, XCircle, AlertTriangle, Archive, Settings, Trash2, Package } from "lucide-react"
 import {
   Sidebar,
   SidebarContent,
@@ -43,9 +43,10 @@ interface RfxItem {
 interface AppSidebarProps {
   onNewRfx: () => void
   onNavigateToHistory: () => void
+  onNavigateToProductInventory?: () => void
   onNavigateToBudgetSettings?: () => void
   onSelectRfx?: (rfxId: string) => void
-  currentView?: "main" | "results" | "history" | "budget-settings" | undefined
+  currentView?: "main" | "results" | "history" | "product-inventory" | "budget-settings" | undefined
 }
 
 export interface AppSidebarRef {
@@ -111,7 +112,7 @@ const formatRelativeDate = (dateString: string) => {
 }
 
 const AppSidebar = forwardRef<AppSidebarRef, AppSidebarProps>(
-  ({ onNewRfx, onNavigateToHistory, onNavigateToBudgetSettings, onSelectRfx, currentView }, ref) => {
+  ({ onNewRfx, onNavigateToHistory, onNavigateToProductInventory, onNavigateToBudgetSettings, onSelectRfx, currentView }, ref) => {
     const { toggleSidebar } = useSidebar()
     const { handleAPIError } = useAPICall()
     
@@ -180,7 +181,9 @@ const AppSidebar = forwardRef<AppSidebarRef, AppSidebarProps>(
     const handleDeleteRFX = async (rfxId: string, rfxTitle: string) => {
       // Note: Sidebar uses dropdown menu, so we can't use a dialog easily
       // We'll use window.confirm here but with toast for feedback
-      const confirmed = window.confirm(`¿Estás seguro de que deseas eliminar "${rfxTitle}"?\n\nEsta acción no se puede deshacer.`)
+      const confirmed = window.confirm(`Are you sure you want to delete "${rfxTitle}"?
+
+This action cannot be undone.`)
       if (!confirmed) return
       
       try {
@@ -199,28 +202,28 @@ const AppSidebar = forwardRef<AppSidebarRef, AppSidebarProps>(
         // Show success feedback inline
         setFeedback({
           type: "success",
-          title: "RFX eliminado",
-          message: `"${rfxTitle}" ha sido eliminado exitosamente`,
+          title: "RFX deleted",
+          message: `"${rfxTitle}" has been deleted successfully`,
         })
       } catch (error) {
         console.error(`❌ Error deleting RFX:`, error)
         
         // Determine error type and show appropriate message
-        let errorTitle = "Error al eliminar"
-        let errorMessage = "No se pudo eliminar el RFX"
+        let errorTitle = "Delete error"
+        let errorMessage = "Could not delete RFX"
         
         if (error instanceof APIError) {
           if (error.status === 403) {
-            errorTitle = "Acceso denegado"
-            errorMessage = "No tienes permiso para eliminar este RFX. Solo el creador puede eliminarlo."
+            errorTitle = "Access denied"
+            errorMessage = "You don't have permission to delete this RFX. Only the creator can delete it."
           } else if (error.status === 404) {
-            errorTitle = "RFX no encontrado"
-            errorMessage = "El RFX que intentas eliminar ya no existe."
+            errorTitle = "RFX not found"
+            errorMessage = "The RFX you're trying to delete no longer exists."
           } else if (error.status === 401) {
-            errorTitle = "Sesión expirada"
-            errorMessage = "Tu sesión ha expirado. Por favor, inicia sesión nuevamente."
+            errorTitle = "Session expired"
+            errorMessage = "Your session has expired. Please sign in again."
           } else {
-            errorMessage = error.message || "Ocurrió un error al eliminar el RFX"
+            errorMessage = error.message || "An error occurred while deleting the RFX"
           }
         }
         
@@ -288,6 +291,16 @@ const AppSidebar = forwardRef<AppSidebarRef, AppSidebarProps>(
                 >
                   <MessageSquare className="h-4 w-4" />
                   <span>RFX History</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  onClick={onNavigateToProductInventory}
+                  isActive={currentView === "product-inventory"}
+                  className="w-full justify-start text-gray-700 hover:bg-primary/5 hover:text-primary h-9 rounded-lg transition-all duration-200 data-[active=true]:bg-primary/10 data-[active=true]:text-primary data-[active=true]:font-semibold"
+                >
+                  <Package className="h-4 w-4" />
+                  <span>Product Inventory</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>

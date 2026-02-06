@@ -441,10 +441,10 @@ export default function RfxChatInput({ onFileProcessed, onRFXProcessed, isLoadin
       {/* Helper Text */}
       <div className="text-center">
         <p className="text-xs text-muted-foreground">
-          Puedes escribir instrucciones específicas y adjuntar documentos RFX (PDF, DOCX, TXT, imágenes, Excel)
+          You can write specific instructions and attach RFX documents (PDF, DOCX, TXT, images, Excel)
         </p>
         <p className="text-xs text-muted-foreground/60 mt-1">
-          Presiona <kbd className="px-1 py-0.5 bg-muted rounded text-xs">Enter</kbd> para enviar,
+          Press <kbd className="px-1 py-0.5 bg-muted rounded text-xs">Enter</kbd> to send,
           <kbd className="px-1 py-0.5 bg-muted rounded text-xs ml-1">Shift + Enter</kbd> para nueva línea
         </p>
       </div>

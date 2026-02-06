@@ -162,7 +162,7 @@ export default function InlineEditableField({
               <CheckCircle className="h-3 w-3" />
             </Button>
             
-            {/* Cancelar */}
+            {/* Cancel */}
             <Button
               onClick={handleCancel}
               disabled={saveStatus === "saving"}
@@ -179,7 +179,7 @@ export default function InlineEditableField({
         
         {type === "textarea" && (
           <p className="text-xs text-muted-foreground">
-            Presiona Ctrl+Enter para guardar, Escape para cancelar
+            Press Ctrl+Enter to save, Escape to cancel
           </p>
         )}
       </div>

@@ -365,10 +365,10 @@ export default function BrandingUpload({ companyId }: BrandingUploadProps) {
       {uploadState === 'completed' && (
         <Alert className="border-green-200 bg-green-50">
           <CheckCircle className="h-4 w-4 text-green-600" />
-          <AlertTitle className="text-green-800">¡Análisis Completado!</AlertTitle>
+          <AlertTitle className="text-green-800">Analysis Completed!</AlertTitle>
           <AlertDescription className="text-green-700">
-            Sus archivos han sido subidos y analizados exitosamente. 
-            Los colores y estilos se aplicarán automáticamente a sus presupuestos.
+            Your files have been uploaded and analyzed successfully. 
+            Colors and styles will be automatically applied to your budgets.
           </AlertDescription>
         </Alert>
       )}

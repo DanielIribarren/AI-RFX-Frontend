@@ -27,13 +27,13 @@ export default function BudgetSettingsPage() {
     <div className="flex flex-1 flex-col space-y-6 p-6">
       {/* Page Header */}
       <div className="space-y-0.5">
-        <h2 className="text-2xl font-bold tracking-tight">Configuración de Presupuesto</h2>
+        <h2 className="text-2xl font-bold tracking-tight">Budget Settings</h2>
         <p className="text-muted-foreground">
-          Configure el branding y formato de sus propuestas comerciales para generar presupuestos personalizados.
+          Configure the branding and format of your commercial proposals to generate personalized budgets.
         </p>
         {user.company_name && (
           <p className="text-sm text-muted-foreground mt-1">
-            Empresa: <span className="font-medium">{user.company_name}</span>
+            Company: <span className="font-medium">{user.company_name}</span>
           </p>
         )}
       </div>
@@ -85,10 +85,10 @@ export default function BudgetSettingsPage() {
           <div className="flex items-start gap-3">
             <AlertCircle className="h-5 w-5 text-primary mt-0.5" />
             <div className="space-y-1">
-              <h4 className="font-semibold text-blue-900">¿Cómo funciona?</h4>
+              <h4 className="font-semibold text-blue-900">How does it work?</h4>
               <p className="text-sm text-blue-800">
-                Una vez que suba su logo y template, nuestro sistema de IA analizará los colores, tipografías y estilos 
-                para generar propuestas comerciales que coincidan perfectamente con la identidad visual de su empresa.
+                Once you upload your logo and template, our AI system will analyze the colors, fonts, and styles 
+                to generate commercial proposals that perfectly match your company's visual identity.
               </p>
             </div>
           </div>

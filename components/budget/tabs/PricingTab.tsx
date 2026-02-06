@@ -40,19 +40,19 @@ export function PricingTab({ config, onConfigChange, onSave, isDisabled, isLoadi
           {saveStatus === 'saving' && (
             <>
               <div className="h-2 w-2 rounded-full bg-primary-light animate-pulse" />
-              <span className="text-muted-foreground">Guardando...</span>
+              <span className="text-muted-foreground">Saving...</span>
             </>
           )}
           {saveStatus === 'saved' && (
             <>
               <div className="h-2 w-2 rounded-full bg-green-500" />
-              <span className="text-green-600">Guardado</span>
+              <span className="text-green-600">Saved</span>
             </>
           )}
           {saveStatus === 'error' && (
             <>
               <div className="h-2 w-2 rounded-full bg-red-500" />
-              <span className="text-destructive">Error al guardar</span>
+              <span className="text-destructive">Error saving</span>
             </>
           )}
         </div>
@@ -64,7 +64,7 @@ export function PricingTab({ config, onConfigChange, onSave, isDisabled, isLoadi
           <div className="flex items-center justify-between gap-4">
             <div className="space-y-1 flex-1">
               <CardTitle className="flex items-center gap-3">
-                Coordinación y Logística
+                Coordination and Logistics
                 <Badge 
                   variant="secondary"
                   className={config.coordination_enabled 
@@ -72,11 +72,11 @@ export function PricingTab({ config, onConfigChange, onSave, isDisabled, isLoadi
                     : "bg-muted text-muted-foreground border-input"
                   }
                 >
-                  {config.coordination_enabled ? "Activo" : "Inactivo"}
+                  {config.coordination_enabled ? "Active" : "Inactive"}
                 </Badge>
               </CardTitle>
               <CardDescription>
-                Agregar costos de coordinación al presupuesto
+                Add coordination costs to budget
               </CardDescription>
             </div>
             <Switch
@@ -94,7 +94,7 @@ export function PricingTab({ config, onConfigChange, onSave, isDisabled, isLoadi
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="coord-type">Tipo de Coordinación</Label>
+              <Label htmlFor="coord-type">Coordination Type</Label>
               <select
                 id="coord-type"
                 value={config.coordination_type}
@@ -105,14 +105,14 @@ export function PricingTab({ config, onConfigChange, onSave, isDisabled, isLoadi
                 disabled={isDisabled || !config.coordination_enabled}
                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
               >
-                <option value="standard">Estándar</option>
+                <option value="standard">Standard</option>
                 <option value="premium">Premium</option>
-                <option value="custom">Personalizado</option>
+                <option value="custom">Custom</option>
               </select>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="coord-rate">Porcentaje (%)</Label>
+              <Label htmlFor="coord-rate">Percentage (%)</Label>
               <Input
                 id="coord-rate"
                 type="number"
@@ -132,7 +132,7 @@ export function PricingTab({ config, onConfigChange, onSave, isDisabled, isLoadi
           <Separator />
 
           <div className="space-y-2">
-            <Label htmlFor="coord-desc">Descripción</Label>
+            <Label htmlFor="coord-desc">Description</Label>
             <Input
               id="coord-desc"
               type="text"
@@ -142,7 +142,7 @@ export function PricingTab({ config, onConfigChange, onSave, isDisabled, isLoadi
                 coordination_description: e.target.value 
               })}
               disabled={isDisabled || !config.coordination_enabled}
-              placeholder="Ej: Coordinación y logística"
+              placeholder="e.g., Coordination and logistics"
             />
           </div>
 
@@ -156,7 +156,7 @@ export function PricingTab({ config, onConfigChange, onSave, isDisabled, isLoadi
               disabled={isDisabled || !config.coordination_enabled}
             />
             <Label htmlFor="apply-subtotal" className="text-sm cursor-pointer">
-              Aplicar sobre el subtotal de productos
+              Apply to product subtotal
             </Label>
           </div>
         </CardContent>
@@ -168,7 +168,7 @@ export function PricingTab({ config, onConfigChange, onSave, isDisabled, isLoadi
           <div className="flex items-center justify-between gap-4">
             <div className="space-y-1 flex-1">
               <CardTitle className="flex items-center gap-3">
-                Costo por Persona
+                Cost Per Person
                 <Badge 
                   variant="secondary"
                   className={config.cost_per_person_enabled 
@@ -176,11 +176,11 @@ export function PricingTab({ config, onConfigChange, onSave, isDisabled, isLoadi
                     : "bg-muted text-muted-foreground border-input"
                   }
                 >
-                  {config.cost_per_person_enabled ? "Activo" : "Inactivo"}
+                  {config.cost_per_person_enabled ? "Active" : "Inactive"}
                 </Badge>
               </CardTitle>
               <CardDescription>
-                Calcular y mostrar costo individual
+                Calculate and display individual cost
               </CardDescription>
             </div>
             <Switch
@@ -198,7 +198,7 @@ export function PricingTab({ config, onConfigChange, onSave, isDisabled, isLoadi
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="headcount">Número de Personas</Label>
+              <Label htmlFor="headcount">Number of People</Label>
               <Input
                 id="headcount"
                 type="number"
@@ -213,7 +213,7 @@ export function PricingTab({ config, onConfigChange, onSave, isDisabled, isLoadi
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="headcount-source">Fuente del Dato</Label>
+              <Label htmlFor="headcount-source">Data Source</Label>
               <select
                 id="headcount-source"
                 value={config.headcount_source}
@@ -225,7 +225,7 @@ export function PricingTab({ config, onConfigChange, onSave, isDisabled, isLoadi
                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <option value="manual">Manual</option>
-                <option value="extracted">Extraído del RFX</option>
+                <option value="extracted">Extracted from RFX</option>
               </select>
             </div>
           </div>
@@ -238,7 +238,7 @@ export function PricingTab({ config, onConfigChange, onSave, isDisabled, isLoadi
           <div className="flex items-center justify-between gap-4">
             <div className="space-y-1 flex-1">
               <CardTitle className="flex items-center gap-3">
-                Impuestos
+                Taxes
                 <Badge 
                   variant="secondary"
                   className={config.taxes_enabled 
@@ -246,11 +246,11 @@ export function PricingTab({ config, onConfigChange, onSave, isDisabled, isLoadi
                     : "bg-muted text-muted-foreground border-input"
                   }
                 >
-                  {config.taxes_enabled ? "Activo" : "Inactivo"}
+                  {config.taxes_enabled ? "Active" : "Inactive"}
                 </Badge>
               </CardTitle>
               <CardDescription>
-                Configurar impuestos aplicables
+                Configure applicable taxes
               </CardDescription>
             </div>
             <Switch
@@ -268,7 +268,7 @@ export function PricingTab({ config, onConfigChange, onSave, isDisabled, isLoadi
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="tax-name">Nombre del Impuesto</Label>
+              <Label htmlFor="tax-name">Tax Name</Label>
               <Input
                 id="tax-name"
                 type="text"
@@ -278,12 +278,12 @@ export function PricingTab({ config, onConfigChange, onSave, isDisabled, isLoadi
                   tax_name: e.target.value 
                 })}
                 disabled={isDisabled || !config.taxes_enabled}
-                placeholder="Ej: IVA"
+                placeholder="e.g., VAT"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="tax-rate">Tasa (%)</Label>
+              <Label htmlFor="tax-rate">Rate (%)</Label>
               <Input
                 id="tax-rate"
                 type="number"

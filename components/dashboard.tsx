@@ -277,12 +277,12 @@ export default function Dashboard() {
           <BreadcrumbList>
             <BreadcrumbItem>
               <BreadcrumbLink onClick={handleNavigateToMain} className="cursor-pointer">
-                Principal
+                Dashboard
               </BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
-              <BreadcrumbPage>Análisis RFX</BreadcrumbPage>
+              <BreadcrumbPage>RFX Analysis</BreadcrumbPage>
             </BreadcrumbItem>
           </BreadcrumbList>
         )
@@ -291,12 +291,12 @@ export default function Dashboard() {
           <BreadcrumbList>
             <BreadcrumbItem>
               <BreadcrumbLink onClick={handleNavigateToMain} className="cursor-pointer">
-                Principal
+                Dashboard
               </BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
-              <BreadcrumbPage>Historial</BreadcrumbPage>
+              <BreadcrumbPage>History</BreadcrumbPage>
             </BreadcrumbItem>
           </BreadcrumbList>
         )
@@ -349,8 +349,8 @@ export default function Dashboard() {
                   <h1 className="text-4xl font-bold text-gray-900">RFX Analyzer</h1>
                 </div>
                 <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-                  Procesa documentos RFX con inteligencia artificial. Escribe instrucciones específicas o adjunta
-                  archivos para comenzar.
+                  Process RFX documents with artificial intelligence. Write specific instructions or attach
+                  files to get started.
                 </p>
               </div>
 

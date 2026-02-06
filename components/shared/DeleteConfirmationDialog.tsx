@@ -40,14 +40,14 @@ export function DeleteConfirmationDialog({
             <AlertDialogTitle className="text-xl">{title}</AlertDialogTitle>
           </div>
           <AlertDialogDescription className="text-base pt-2">
-            ¿Estás seguro de que deseas eliminar <span className="font-semibold text-gray-900">"{itemName}"</span>?
+            Are you sure you want to delete <span className="font-semibold text-gray-900">"{itemName}"</span>?
             <br />
             <br />
-            <span className="text-destructive font-medium">Esta acción no se puede deshacer.</span>
+            <span className="text-destructive font-medium">This action cannot be undone.</span>
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={isDeleting}>Cancelar</AlertDialogCancel>
+          <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
           <AlertDialogAction
             onClick={(e) => {
               e.preventDefault()
@@ -56,7 +56,7 @@ export function DeleteConfirmationDialog({
             disabled={isDeleting}
             className="bg-destructive hover:bg-red-700 focus:ring-red-600"
           >
-            {isDeleting ? "Eliminando..." : "Eliminar"}
+            {isDeleting ? "Deleting..." : "Delete"}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

@@ -109,7 +109,26 @@ export async function getCreditsInfo(): Promise<CreditsInfo> {
   }
 
   const data = await response.json();
-  return data.data;
+  
+  // Backend response format:
+  // {
+  //   "status": "success",
+  //   "credits_total": 1500,
+  //   "credits_used": 247,
+  //   "credits_available": 1253,
+  //   "credits_percentage": 83.53,
+  //   "reset_date": "2026-01-09T14:41:36.009411+00:00",
+  //   "plan_tier": "pro",
+  //   "plan_type": "organizational"
+  // }
+  return {
+    credits_total: data.credits_total,
+    credits_used: data.credits_used,
+    credits_available: data.credits_available,
+    credits_percentage: data.credits_percentage,
+    reset_date: data.reset_date,
+    plan_tier: data.plan_tier
+  };
 }
 
 /**

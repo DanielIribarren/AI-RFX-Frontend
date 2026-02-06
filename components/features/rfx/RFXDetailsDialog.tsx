@@ -376,7 +376,7 @@ const RFXDetailsDialog = ({ rfxId, isOpen, onClose, rfxData, onViewFullAnalysis 
           <div className="flex items-center justify-center py-8">
             <div className="text-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
-              <p className="text-muted-foreground mt-2">Cargando detalles del RFX...</p>
+              <p className="text-muted-foreground mt-2">Loading RFX details...</p>
             </div>
           </div>
         ) : error ? (

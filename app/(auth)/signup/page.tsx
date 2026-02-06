@@ -18,7 +18,7 @@ function LoadingFallback() {
     <div className="min-h-screen flex items-center justify-center bg-secondary">
       <div className="text-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-        <p className="text-muted-foreground">Cargando...</p>
+        <p className="text-muted-foreground">Loading...</p>
       </div>
     </div>
   )
@@ -50,12 +50,12 @@ function SignupContent() {
     
     // Validaciones
     if (password !== confirmPassword) {
-      setError("Las contraseñas no coinciden")
+      setError("Passwords do not match")
       return
     }
     
     if (password.length < 6) {
-      setError("La contraseña debe tener al menos 6 caracteres")
+      setError("Password must be at least 6 characters")
       return
     }
 
@@ -76,7 +76,7 @@ function SignupContent() {
         }
       }, 2000)
     } catch (err: any) {
-      setError(err.message || "Error al crear la cuenta. Por favor intenta nuevamente.")
+      setError(err.message || "Error creating account. Please try again.")
     } finally {
       setLoading(false)
     }
@@ -92,9 +92,9 @@ function SignupContent() {
                 <CheckCircle className="h-6 w-6 text-green-600" />
               </div>
               <div>
-                <h3 className="text-lg font-semibold">¡Cuenta creada exitosamente!</h3>
+                <h3 className="text-lg font-semibold">Account created successfully!</h3>
                 <p className="text-sm text-muted-foreground mt-2">
-                  Redirigiendo al dashboard...
+                  Redirecting to dashboard...
                 </p>
               </div>
             </div>
@@ -116,11 +116,11 @@ function SignupContent() {
             className="w-fit mb-2"
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Volver
+            Back
           </Button>
-          <CardTitle className="text-2xl font-bold text-center">Crear Cuenta</CardTitle>
+          <CardTitle className="text-2xl font-bold text-center">Create Account</CardTitle>
           <CardDescription className="text-center">
-            Completa el formulario para registrarte
+            Complete the form to sign up
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>
@@ -144,11 +144,11 @@ function SignupContent() {
             )}
             
             <div className="space-y-2">
-              <Label htmlFor="fullName">Nombre Completo *</Label>
+              <Label htmlFor="fullName">Full Name *</Label>
               <Input
                 id="fullName"
                 type="text"
-                placeholder="Juan Pérez"
+                placeholder="John Doe"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 required
@@ -170,11 +170,11 @@ function SignupContent() {
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="companyName">Nombre de Empresa (Opcional)</Label>
+              <Label htmlFor="companyName">Company Name (Optional)</Label>
               <Input
                 id="companyName"
                 type="text"
-                placeholder="Mi Empresa S.A."
+                placeholder="My Company Inc."
                 value={companyName}
                 onChange={(e) => setCompanyName(e.target.value)}
                 disabled={loading}
@@ -182,7 +182,7 @@ function SignupContent() {
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="password">Contraseña *</Label>
+              <Label htmlFor="password">Password *</Label>
               <Input
                 id="password"
                 type="password"
@@ -192,11 +192,11 @@ function SignupContent() {
                 required
                 disabled={loading}
               />
-              <p className="text-xs text-muted-foreground">Mínimo 6 caracteres</p>
+              <p className="text-xs text-muted-foreground">Minimum 6 characters</p>
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirmar Contraseña *</Label>
+              <Label htmlFor="confirmPassword">Confirm Password *</Label>
               <Input
                 id="confirmPassword"
                 type="password"
@@ -218,17 +218,17 @@ function SignupContent() {
               {loading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Creando cuenta...
+                  Creating account...
                 </>
               ) : (
-                "Crear Cuenta"
+                "Create Account"
               )}
             </Button>
             
             <div className="text-sm text-center text-muted-foreground">
-              ¿Ya tienes una cuenta?{" "}
+              Already have an account?{" "}
               <Link href="/login" className="text-blue-600 hover:underline font-medium">
-                Inicia sesión aquí
+                Sign in here
               </Link>
             </div>
           </CardFooter>

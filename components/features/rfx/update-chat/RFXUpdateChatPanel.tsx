@@ -95,16 +95,16 @@ export default function RFXUpdateChatPanel({
         setMessages([{
           id: "welcome",
           role: "assistant",
-          content: `¡Hola! Soy tu asistente de actualización de RFX.
+          content: `Hello! I'm your RFX update assistant.
 
-Puedo ayudarte a:
-• Agregar productos nuevos
-• Modificar cantidades o precios
-• Cambiar fecha, lugar o cliente
-• Eliminar productos
-• Procesar archivos con cambios
+I can help you:
+• Add new products
+• Modify quantities or prices
+• Change date, location or client
+• Delete products
+• Process files with changes
 
-Escribe tu solicitud abajo ↓`,
+Write your request below ↓`,
           timestamp: new Date().toISOString(),
           metadata: { type: "welcome" }
         }])
@@ -151,7 +151,7 @@ Escribe tu solicitud abajo ↓`,
       setMessages([{
         id: "welcome",
         role: "assistant",
-        content: "¡Hola! ¿En qué puedo ayudarte con este RFX?",
+        content: "Hello! How can I help you with this RFX?",
         timestamp: new Date().toISOString()
       }])
     } finally {
