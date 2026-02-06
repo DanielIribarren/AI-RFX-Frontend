@@ -20,8 +20,15 @@ export function OrganizationGeneralClient({
 }: OrganizationGeneralClientProps) {
   const { credits, isLoading, error } = useCredits();
 
-  // Debug logging
-  console.log('🔍 OrganizationGeneralClient:', { credits, isLoading, error });
+  // ✅ Debug logging detallado
+  console.log('🔍 OrganizationGeneralClient - Props:', { organizationId, planTier });
+  console.log('🔍 OrganizationGeneralClient - Credits State:', { 
+    credits, 
+    isLoading, 
+    error,
+    hasCredits: !!credits,
+    creditsKeys: credits ? Object.keys(credits) : []
+  });
 
   if (isLoading) {
     return (

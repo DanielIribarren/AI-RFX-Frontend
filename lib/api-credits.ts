@@ -108,19 +108,28 @@ export async function getCreditsInfo(): Promise<CreditsInfo> {
     throw new Error(`Failed to fetch credits info: ${response.statusText}`);
   }
 
-  const data = await response.json();
+  const response_data = await response.json();
   
-  // Backend response format:
+  // ✅ Backend response format (REAL):
   // {
   //   "status": "success",
-  //   "credits_total": 1500,
-  //   "credits_used": 247,
-  //   "credits_available": 1253,
-  //   "credits_percentage": 83.53,
-  //   "reset_date": "2026-01-09T14:41:36.009411+00:00",
-  //   "plan_tier": "pro",
-  //   "plan_type": "organizational"
+  //   "data": {                    ← Nivel extra
+  //     "status": "success",
+  //     "credits_total": 1500,
+  //     "credits_used": 247,
+  //     "credits_available": 1253,
+  //     "credits_percentage": 83.53,
+  //     "reset_date": "2026-01-09T14:41:36.009411+00:00",
+  //     "plan_tier": "pro",
+  //     "plan_type": "organizational"
+  //   }
   // }
+  
+  // ✅ CORRECCIÓN: Acceder a data.data
+  const data = response_data.data || response_data;
+  
+  console.log('📊 Credits API Response:', { response_data, data });
+  
   return {
     credits_total: data.credits_total,
     credits_used: data.credits_used,

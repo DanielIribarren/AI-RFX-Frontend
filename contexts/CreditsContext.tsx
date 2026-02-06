@@ -37,18 +37,43 @@ export function CreditsProvider({ children }: { children: React.ReactNode }) {
    * Fetch credits from API
    */
   const refreshCredits = useCallback(async () => {
+    console.log('🔄 CreditsContext: Starting refreshCredits...');
+    
     try {
       setIsLoading(true);
       setError(null);
 
+      // ✅ Verificar token antes de hacer la llamada
+      const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
+      console.log('🔑 CreditsContext: Token exists?', !!token);
+
       // Fetch credits info (getCreditsInfo handles token internally)
+      console.log('📡 CreditsContext: Calling getCreditsInfo()...');
       const creditsData = await getCreditsInfo();
+      
+      console.log('✅ CreditsContext: Credits fetched successfully:', {
+        creditsData,
+        keys: Object.keys(creditsData),
+        values: {
+          total: creditsData.credits_total,
+          used: creditsData.credits_used,
+          available: creditsData.credits_available,
+          percentage: creditsData.credits_percentage,
+          plan: creditsData.plan_tier
+        }
+      });
+      
       setCredits(creditsData);
     } catch (err) {
       console.error('❌ CreditsContext: Error fetching credits:', err);
+      console.error('❌ CreditsContext: Error details:', {
+        message: err instanceof Error ? err.message : 'Unknown error',
+        stack: err instanceof Error ? err.stack : undefined
+      });
       setError(err instanceof Error ? err.message : 'Failed to fetch credits');
     } finally {
       setIsLoading(false);
+      console.log('🏁 CreditsContext: refreshCredits completed');
     }
   }, []);
 
