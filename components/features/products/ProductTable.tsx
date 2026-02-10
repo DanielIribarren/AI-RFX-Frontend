@@ -587,11 +587,32 @@ export default function ProductTable({
                   </div>
                 </div>
                 <div className="text-center">
-                  <div className="text-xs text-muted-foreground">Average Margin</div>
+                  <div className="text-xs text-muted-foreground">
+                    {coordinationEnabled ? "Total Margin (with Coordination)" : "Average Margin"}
+                  </div>
                   <div className="text-lg font-bold text-primary">
-                    {productos.length > 0 
-                      ? (productos.reduce((sum, p) => sum + (p.margen_ganancia || 0), 0) / productos.length).toFixed(1)
-                      : "0.0"}%
+                    {(() => {
+                      if (coordinationEnabled && totalFinal > 0) {
+                        // Calcular ganancia total de productos
+                        const totalProfitProductos = productos.reduce((sum, p) => {
+                          const totalProfit = (p as any).total_profit || 
+                            ((p.ganancia_unitaria || 0) * (p.cantidadEditada ?? p.cantidadOriginal ?? p.cantidad ?? 1));
+                          return sum + totalProfit;
+                        }, 0);
+                        
+                        // Ganancia total = ganancia productos + coordinación
+                        const totalProfitConCoordinacion = totalProfitProductos + coordinacionMonto;
+                        
+                        // Margen total = (ganancia total / total presupuesto) * 100
+                        const margenTotal = (totalProfitConCoordinacion / totalFinal) * 100;
+                        return margenTotal.toFixed(1);
+                      } else {
+                        // Sin coordinación, mostrar margen promedio de productos
+                        return productos.length > 0 
+                          ? (productos.reduce((sum, p) => sum + (p.margen_ganancia || 0), 0) / productos.length).toFixed(1)
+                          : "0.0";
+                      }
+                    })()}%
                   </div>
                 </div>
                 <div className="text-center">
