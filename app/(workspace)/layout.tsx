@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation";
 import Breadcrumbs from "@/components/layout/navigation/Breadcrumbs";
 import { RFXCurrencyProvider } from "@/contexts/RFXCurrencyContext";
 import { CreditsProvider } from "@/contexts/CreditsContext";
+import { OrganizationProvider } from "@/contexts/OrganizationContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { LoadingSpinner } from "@/components/common";
 
@@ -50,27 +51,29 @@ export default function WorkspaceLayout({ children }: WorkspaceLayoutProps) {
     <SidebarProvider>
       <RFXCurrencyProvider>
         <CreditsProvider>
-          <AppSidebar
-            onNewRfx={() => router.push("/dashboard")}
-            onNavigateToHistory={() => router.push("/history")}
-            onNavigateToProductInventory={() => router.push("/product-inventory")}
-            onNavigateToBudgetSettings={() => router.push("/budget-settings")}
-            onSelectRfx={(id) => router.push(`/rfx-result-wrapper-v2/data/${id}`)}
-            currentView={undefined} // Will be removed after full migration
-          />
-          <SidebarInset className="bg-background">
-            <header className="flex h-14 shrink-0 items-center gap-2 border-b px-4 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-              <SidebarTrigger className="-ml-1" />
-              <Separator orientation="vertical" className="mr-2 h-4" />
-              <Breadcrumbs />
-              
-              {/* AI Model Selector in Header */}
-              <div className="ml-auto">
-                <AiModelSelector selectedModel="chatgpt-4o" onModelChange={(model) => console.log("Model changed:", model)} />
-              </div>
-            </header>
-            <div className="flex flex-1 flex-col bg-background">{children}</div>
-          </SidebarInset>
+          <OrganizationProvider>
+            <AppSidebar
+              onNewRfx={() => router.push("/dashboard")}
+              onNavigateToHistory={() => router.push("/history")}
+              onNavigateToProductInventory={() => router.push("/product-inventory")}
+              onNavigateToBudgetSettings={() => router.push("/budget-settings")}
+              onSelectRfx={(id) => router.push(`/rfx-result-wrapper-v2/data/${id}`)}
+              currentView={undefined} // Will be removed after full migration
+            />
+            <SidebarInset className="bg-background">
+              <header className="flex h-14 shrink-0 items-center gap-2 border-b px-4 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+                <SidebarTrigger className="-ml-1" />
+                <Separator orientation="vertical" className="mr-2 h-4" />
+                <Breadcrumbs />
+                
+                {/* AI Model Selector in Header */}
+                <div className="ml-auto">
+                  <AiModelSelector selectedModel="chatgpt-4o" onModelChange={(model) => console.log("Model changed:", model)} />
+                </div>
+              </header>
+              <div className="flex flex-1 flex-col bg-background">{children}</div>
+            </SidebarInset>
+          </OrganizationProvider>
         </CreditsProvider>
       </RFXCurrencyProvider>
     </SidebarProvider>

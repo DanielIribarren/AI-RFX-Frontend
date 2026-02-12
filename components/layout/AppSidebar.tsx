@@ -21,6 +21,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { useSidebar } from "@/components/ui/sidebar"
 import { api, APIError, RFXHistoryItem, useAPICall } from "@/lib/api"
 import { useCachedData } from "@/lib/use-cached-data"
+import { CreditsBadge } from '@/components/credits/CreditsBadge'
 import { SidebarUser } from "@/components/layout/SidebarUser"
 
 interface RfxItem {
@@ -278,6 +279,11 @@ This action cannot be undone.`)
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+
+        {/* Credits Badge */}
+        <div className="mb-4 px-2 group-data-[collapsible=icon]:hidden">
+          <CreditsBadge />
+        </div>
 
         {/* Navigation Menu */}
         <SidebarGroup className="mb-6">

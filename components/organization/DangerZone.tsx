@@ -43,7 +43,7 @@ export function DangerZone({ organizationId }: Props) {
                 <Button
                   variant="destructive"
                   onClick={() => setIsDeleteModalOpen(true)}
-                  className="bg-destructive hover:bg-red-700 text-background"
+                  className="bg-destructive hover:bg-destructive/90 text-destructive-foreground"
                 >
                   Delete Organization
                 </Button>

@@ -1,6 +1,6 @@
 /**
  * PlanBadge Component
- * Displays organization plan tier with black & white styling
+ * Displays organization plan tier with brand styling
  */
 
 import { Badge } from '@/components/ui/badge';

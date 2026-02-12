@@ -10,7 +10,7 @@ export const BrandBadge = forwardRef<HTMLSpanElement, BrandBadgeProps>(
     const baseStyles = "inline-flex items-center px-3 py-1 rounded-full text-xs font-medium"
     
     const variants = {
-      indigo: "bg-primary text-background",
+      indigo: "bg-primary text-primary-foreground",
       success: "bg-brand-success/10 text-brand-success border border-brand-success/20",
       warning: "bg-brand-warning/10 text-brand-warning border border-brand-warning/20",
       error: "bg-brand-error/10 text-brand-error border border-brand-error/20",

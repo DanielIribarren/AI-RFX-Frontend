@@ -8,11 +8,10 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
+import { createOrganization as createOrgAPI, updateOrganization as updateOrgAPI, type CreateOrganizationResult } from '@/lib/api-organizations';
 import type { 
   CreateOrganizationInput, 
   UpdateOrganizationInput,
-  Organization,
-  CreateOrganizationResponse 
 } from '@/types/organization';
 
 export function useOrganization() {
@@ -26,29 +25,26 @@ export function useOrganization() {
    */
   const createOrganization = async (
     data: CreateOrganizationInput
-  ): Promise<CreateOrganizationResponse> => {
+  ): Promise<CreateOrganizationResult> => {
     setIsCreating(true);
     
     try {
-      const response = await fetch('/api/organizations', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
-        },
-        body: JSON.stringify(data),
+      const result = await createOrgAPI({
+        name: data.name,
+        slug: data.slug,
+        plan_tier: data.plan_tier,
+        billing_email: data.billing_email,
       });
       
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Failed to create organization');
+      if (result.stripe_checkout_url) {
+        toast.success('Organization created!', { description: 'Redirecting to payment...' });
+      } else if (result.plan_request) {
+        toast.success('Organization created!', { 
+          description: `Your ${result.plan_request.requested_tier} plan request is pending approval.` 
+        });
+      } else {
+        toast.success('Organization created!', { description: 'Your organization is ready.' });
       }
-      
-      const result: CreateOrganizationResponse = await response.json();
-      
-      toast.success('Organization created successfully!', {
-        description: 'Redirecting to payment...',
-      });
       
       return result;
     } catch (error) {
@@ -73,8 +69,6 @@ export function useOrganization() {
     setIsUpdating(true);
     
     try {
-      // Use new PATCH endpoint from api-organizations
-      const { updateOrganization: updateOrgAPI } = await import('@/lib/api-organizations');
       await updateOrgAPI(data);
       
       toast.success('Organization updated successfully!');

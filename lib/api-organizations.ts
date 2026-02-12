@@ -3,6 +3,8 @@
  * Handles all organization-related API calls
  */
 
+import type { UpgradeInfo } from '@/types/organization';
+
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001';
 
 // Helper function to get auth headers with JWT token
@@ -85,30 +87,44 @@ export interface OrganizationMember {
   created_at: string;
 }
 
-export interface UpgradeInfo {
-  current_plan: {
-    tier: string;
-    name: string;
-    max_users: number;
-    max_rfx_per_month: number;
-    credits_per_month: number;
-    price_monthly_usd: number;
-  };
-  upgrade_available: boolean;
-  next_plan: {
-    tier: string;
-    name: string;
-    max_users: number;
-    max_rfx_per_month: number;
-    credits_per_month: number;
-    price_monthly_usd: number;
-  } | null;
-  benefits: string[];
-}
-
 // ============================================================================
 // API FUNCTIONS
 // ============================================================================
+
+/**
+ * Create a new organization
+ * POST /api/organization/create
+ */
+export interface CreateOrganizationResult {
+  organization: Organization;
+  stripe_checkout_url: string | null;
+  plan_request: {
+    id: string;
+    requested_tier: string;
+    status: 'pending' | 'approved' | 'rejected';
+  } | null;
+}
+
+export async function createOrganization(data: {
+  name: string;
+  slug: string;
+  plan_tier: string;
+  billing_email: string;
+}): Promise<CreateOrganizationResult> {
+  const response = await fetch(`${API_BASE_URL}/api/organization/create`, {
+    method: 'POST',
+    headers: await getAuthHeaders(),
+    body: JSON.stringify(data),
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ message: response.statusText }));
+    throw new Error(error.message || `Failed to create organization: ${response.statusText}`);
+  }
+
+  const result = await response.json();
+  return result.data;
+}
 
 /**
  * Get current user's organization

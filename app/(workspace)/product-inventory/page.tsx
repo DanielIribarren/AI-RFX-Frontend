@@ -23,6 +23,7 @@ import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Progress } from "@/components/ui/progress"
 import { DeleteConfirmationDialog } from "@/components/shared/DeleteConfirmationDialog"
+import { ProductFormDialog } from "@/components/shared/ProductFormDialog"
 import { catalogAPI, CatalogProduct, CatalogStats, ImportResult, CatalogAPIError } from "@/lib/api-catalog"
 
 // ============================================
@@ -90,6 +91,11 @@ export default function ProductInventoryPage() {
   })
   const [clearCatalogDialog, setClearCatalogDialog] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
+  
+  // Product form dialog (add/edit)
+  const [productFormOpen, setProductFormOpen] = useState(false)
+  const [editingProduct, setEditingProduct] = useState<CatalogProduct | null>(null)
+  const [isSavingProduct, setIsSavingProduct] = useState(false)
   
   // Refs
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -256,6 +262,47 @@ export default function ProductInventoryPage() {
       }
     } finally {
       setIsDeleting(false)
+    }
+  }
+
+  const openAddProduct = () => {
+    setEditingProduct(null)
+    setProductFormOpen(true)
+  }
+
+  const openEditProduct = (product: CatalogProduct) => {
+    setEditingProduct(product)
+    setProductFormOpen(true)
+  }
+
+  const handleProductFormSubmit = async (data: {
+    product_name: string
+    product_code?: string
+    unit_cost?: number
+    unit_price?: number
+    unit?: string
+  }) => {
+    setIsSavingProduct(true)
+    try {
+      if (editingProduct) {
+        await catalogAPI.updateProduct(editingProduct.id, data)
+        showToast("success", "Product updated", `"${data.product_name}" has been updated`)
+      } else {
+        await catalogAPI.addProduct(data)
+        showToast("success", "Product added", `"${data.product_name}" has been added to the catalog`)
+      }
+      setProductFormOpen(false)
+      await loadProducts()
+      await loadStats()
+    } catch (error) {
+      console.error("Product form error:", error)
+      if (error instanceof CatalogAPIError) {
+        showToast("error", "Error", error.message)
+      } else {
+        showToast("error", "Error", editingProduct ? "Could not update product" : "Could not add product")
+      }
+    } finally {
+      setIsSavingProduct(false)
     }
   }
 
@@ -495,7 +542,7 @@ export default function ProductInventoryPage() {
                   ref={fileInputRef}
                 />
                 
-                <Button variant="outline" size="lg">
+                <Button variant="outline" size="lg" onClick={openAddProduct}>
                   <Plus className="h-5 w-5 mr-2" />
                   Add Product Manually
                 </Button>
@@ -601,7 +648,7 @@ export default function ProductInventoryPage() {
                       {isLoading ? "Loading..." : `Showing ${products.length} of ${totalProducts} products`}
                     </CardDescription>
                   </div>
-                  <Button size="sm" variant="outline">
+                  <Button size="sm" variant="outline" onClick={openAddProduct}>
                     <Plus className="h-4 w-4 mr-2" />
                     Add Product
                   </Button>
@@ -667,7 +714,7 @@ export default function ProductInventoryPage() {
                                       </Button>
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent align="end">
-                                      <DropdownMenuItem>
+                                      <DropdownMenuItem onClick={() => openEditProduct(product)}>
                                         <Edit className="h-4 w-4 mr-2" />
                                         Edit
                                       </DropdownMenuItem>
@@ -776,6 +823,15 @@ export default function ProductInventoryPage() {
           title="Eliminar Todo el Inventario"
           itemName={`todos los ${totalProducts} productos del catálogo`}
           isDeleting={isDeleting}
+        />
+
+        {/* Product Form Dialog (Add/Edit) */}
+        <ProductFormDialog
+          isOpen={productFormOpen}
+          onClose={() => setProductFormOpen(false)}
+          onSubmit={handleProductFormSubmit}
+          product={editingProduct}
+          isSaving={isSavingProduct}
         />
       </div>
     </div>

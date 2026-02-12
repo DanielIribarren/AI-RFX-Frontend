@@ -110,7 +110,7 @@ export function DeleteOrganizationModal({ organizationId, isOpen, onClose }: Pro
             variant="destructive"
             onClick={handleDelete}
             disabled={!isConfirmed || isDeleting}
-            className="bg-destructive hover:bg-red-700"
+            className="bg-destructive hover:bg-destructive/90"
           >
             {isDeleting ? 'Deleting...' : 'Delete Organization'}
           </Button>

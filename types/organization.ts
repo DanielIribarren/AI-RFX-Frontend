@@ -126,6 +126,7 @@ export interface PlanConfig {
   features: string[];
   limits: PlanLimits;
   popular?: boolean;
+  tier?: number; // Added for plan hierarchy comparison
 }
 
 // ============================================================================
@@ -240,4 +241,26 @@ export interface UsageMetrics {
   percentage: number;
   isNearLimit: boolean; // > 80%
   isAtLimit: boolean; // >= 100%
+}
+
+// ============================================================================
+// UPGRADE INFO
+// ============================================================================
+
+export interface UpgradeInfo {
+  current_plan: {
+    tier: PlanTier;
+    name: string;
+    credits_per_month: number;
+    max_rfx_per_month: number | null;
+    max_users: number | null;
+  };
+  next_plan: {
+    tier: PlanTier;
+    name: string;
+    credits_per_month: number;
+    max_rfx_per_month: number | null;
+    max_users: number | null;
+  } | null;
+  benefits: string[];
 }

@@ -90,7 +90,7 @@ export function AcceptInvitationCard({ invitation, hasPersonalPlan }: Props) {
         <div className="flex items-center gap-3 mb-4">
           <Avatar className="h-12 w-12">
             <AvatarImage src={invitation.organization.logo_url} />
-            <AvatarFallback className="bg-foreground text-background text-lg">
+            <AvatarFallback className="bg-primary text-primary-foreground text-lg">
               {orgInitials}
             </AvatarFallback>
           </Avatar>
@@ -138,7 +138,7 @@ export function AcceptInvitationCard({ invitation, hasPersonalPlan }: Props) {
         <Button
           onClick={handleAccept}
           disabled={isAccepting || isProcessing}
-          className="flex-1 bg-foreground hover:bg-gray-800 text-background"
+          className="flex-1 bg-primary hover:bg-primary-dark text-primary-foreground shadow-sm"
         >
           {isAccepting ? 'Accepting...' : 'Accept Invitation'}
         </Button>

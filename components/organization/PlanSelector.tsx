@@ -26,16 +26,16 @@ export function PlanSelector({ selected, onChange }: Props) {
           type="button"
           onClick={() => onChange(plan.id as PlanTier)}
           className={cn(
-            'relative border-2 rounded-lg p-4 text-left transition-all hover:border-gray-400',
+            'relative border-2 rounded-xl p-4 text-left transition-all duration-200',
             selected === plan.id
-              ? 'border-black bg-gray-50'
-              : 'border bg-white'
+              ? 'border-primary bg-accent-light ring-1 ring-primary/20'
+              : 'border-border hover:border-primary/40 bg-white'
           )}
         >
           {/* Popular Badge */}
           {plan.popular && (
             <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-              <span className="bg-foreground text-background text-xs font-medium px-3 py-1 rounded-full">
+              <span className="bg-primary text-primary-foreground text-xs font-medium px-3 py-1 rounded-full shadow-sm">
                 Most Popular
               </span>
             </div>
@@ -59,7 +59,7 @@ export function PlanSelector({ selected, onChange }: Props) {
             <ul className="space-y-2">
               {plan.features.map((feature, i) => (
                 <li key={i} className="flex items-start gap-2 text-sm text-gray-700">
-                  <Check className="w-4 h-4 text-foreground mt-0.5 flex-shrink-0" />
+                  <Check className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
                   <span>{feature}</span>
                 </li>
               ))}
@@ -69,8 +69,8 @@ export function PlanSelector({ selected, onChange }: Props) {
           {/* Selected Indicator */}
           {selected === plan.id && (
             <div className="absolute top-3 right-3">
-              <div className="w-6 h-6 bg-foreground rounded-full flex items-center justify-center">
-                <Check className="w-4 h-4 text-background" />
+              <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center shadow-sm">
+                <Check className="w-4 h-4 text-primary-foreground" />
               </div>
             </div>
           )}

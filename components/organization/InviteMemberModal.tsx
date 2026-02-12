@@ -163,7 +163,7 @@ export function InviteMemberModal({ organizationId, isOpen, onClose }: Props) {
             <Button 
               type="submit" 
               disabled={isInviting}
-              className="bg-foreground hover:bg-gray-800 text-background"
+              className="bg-primary hover:bg-primary-dark text-primary-foreground shadow-sm"
             >
               {isInviting ? 'Sending...' : 'Send Invitation'}
             </Button>

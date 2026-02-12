@@ -315,6 +315,62 @@ export class CatalogAPIClient {
   }
 
   /**
+   * ➕ Agregar un producto individual al catálogo
+   * 
+   * @param product - Datos del producto
+   * @returns Producto creado
+   */
+  async addProduct(
+    product: {
+      product_name: string
+      product_code?: string
+      unit_cost?: number
+      unit_price?: number
+      unit?: string
+    }
+  ): Promise<CatalogProduct> {
+    try {
+      console.log(`➕ Adding product:`, product)
+
+      const response = await fetchWithAuth(
+        `${this.baseUrl}/api/catalog/products`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(product),
+        }
+      )
+
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({ message: "Failed to add product" }))
+        throw new CatalogAPIError(
+          error.message || "Failed to add product",
+          response.status,
+          error
+        )
+      }
+
+      const result = await response.json()
+
+      console.log(`✅ Product added successfully:`, result.product?.id)
+
+      return result.product
+
+    } catch (error) {
+      console.error("❌ Add product failed:", error)
+
+      if (error instanceof CatalogAPIError) {
+        throw error
+      }
+
+      throw new CatalogAPIError(
+        error instanceof Error ? error.message : "Unknown error adding product",
+        500
+      )
+    }
+  }
+
+  /**
    * ✏️ Actualizar un producto
    * 
    * @param productId - ID del producto

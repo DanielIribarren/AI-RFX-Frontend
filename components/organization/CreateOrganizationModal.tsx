@@ -73,8 +73,13 @@ export function CreateOrganizationModal({ isOpen, onClose }: Props) {
     try {
       const result = await createOrganization(data);
       
-      // Redirect to Stripe checkout
-      window.location.href = result.stripe_checkout_url;
+      if (result.stripe_checkout_url) {
+        window.location.href = result.stripe_checkout_url;
+      } else {
+        onClose();
+        // Reload to pick up new organization context
+        window.location.reload();
+      }
     } catch (error) {
       // Error already handled by hook with toast
       console.error('Failed to create organization:', error);
@@ -83,7 +88,7 @@ export function CreateOrganizationModal({ isOpen, onClose }: Props) {
   
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-3xl w-[95vw] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-2xl">Create Organization</DialogTitle>
           <DialogDescription>
@@ -180,7 +185,7 @@ export function CreateOrganizationModal({ isOpen, onClose }: Props) {
             <Button 
               type="submit" 
               disabled={isCreating}
-              className="bg-foreground hover:bg-gray-800 text-background"
+              className="bg-primary hover:bg-primary-dark text-primary-foreground shadow-sm"
             >
               {isCreating ? 'Creating...' : 'Continue to Payment →'}
             </Button>

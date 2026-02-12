@@ -1,6 +1,6 @@
 /**
  * RoleBadge Component
- * Displays user role in organization with black & white styling
+ * Displays user role in organization with brand styling
  */
 
 import { Badge } from '@/components/ui/badge';

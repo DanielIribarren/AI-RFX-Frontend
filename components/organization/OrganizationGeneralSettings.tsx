@@ -101,7 +101,7 @@ export function OrganizationGeneralSettings({ organization, canEdit }: Props) {
           <Button 
             type="submit" 
             disabled={!isDirty || isUpdating}
-            className="bg-foreground hover:bg-gray-800 text-background"
+            className="bg-primary hover:bg-primary-dark text-primary-foreground shadow-sm"
           >
             {isUpdating ? 'Saving...' : 'Save Changes'}
           </Button>

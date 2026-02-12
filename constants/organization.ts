@@ -15,6 +15,7 @@ export const PLANS: Record<string, PlanConfig> = {
     name: 'Free',
     price: 0,
     priceLabel: 'Free',
+    tier: 1, // Added tier for hierarchy
     features: [
       '100 credits/mo (~10 RFX)',
       '1 user (Individual)',
@@ -42,6 +43,7 @@ export const PLANS: Record<string, PlanConfig> = {
     name: 'Starter',
     price: 49,
     priceLabel: '$49',
+    tier: 2, // Added tier for hierarchy
     features: [
       '500 credits/mo (~50 RFX)',
       '2 users',
@@ -70,6 +72,7 @@ export const PLANS: Record<string, PlanConfig> = {
     name: 'Pro',
     price: 99,
     priceLabel: '$99',
+    tier: 3, // Added tier for hierarchy
     features: [
       '1,500 credits/mo (~150 RFX)',
       '5 users',
@@ -100,6 +103,7 @@ export const PLANS: Record<string, PlanConfig> = {
     name: 'Enterprise',
     price: null,
     priceLabel: 'Custom',
+    tier: 4, // Added tier for hierarchy - highest tier
     features: [
       '5,000+ credits/mo',
       'Unlimited users',
@@ -224,27 +228,27 @@ export const ORGANIZATION_VALIDATION = {
 } as const;
 
 // ============================================================================
-// COLORS (Black & White Theme)
+// COLORS (Brand Theme)
 // ============================================================================
 
 export const ROLE_COLORS: Record<OrganizationRole, string> = {
-  owner: 'bg-black text-white border-black',
-  admin: 'bg-gray-800 text-white border-gray-800',
-  member: 'bg-gray-200 text-gray-900 border-gray-300',
+  owner: 'bg-primary text-primary-foreground border-primary',
+  admin: 'bg-primary/80 text-primary-foreground border-primary/80',
+  member: 'bg-accent-light text-primary border-primary/20',
 };
 
 export const PLAN_COLORS: Record<string, string> = {
-  free: 'bg-gray-100 text-gray-800 border-gray-200',
-  starter: 'bg-gray-200 text-gray-900 border-gray-300',
-  pro: 'bg-black text-white border-black',
-  enterprise: 'bg-gray-900 text-white border-gray-900',
+  free: 'bg-muted text-muted-foreground border-border',
+  starter: 'bg-accent-light text-primary border-primary/20',
+  pro: 'bg-primary text-primary-foreground border-primary',
+  enterprise: 'bg-primary-dark text-primary-foreground border-primary-dark',
 };
 
 export const STATUS_COLORS = {
-  active: 'bg-gray-800 text-white',
-  pending: 'bg-gray-400 text-white',
-  suspended: 'bg-gray-600 text-white',
-  invited: 'bg-gray-300 text-gray-900',
+  active: 'bg-primary text-primary-foreground',
+  pending: 'bg-amber-100 text-amber-800',
+  suspended: 'bg-destructive/10 text-destructive',
+  invited: 'bg-accent-light text-primary',
 } as const;
 
 // ============================================================================

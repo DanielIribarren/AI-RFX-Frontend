@@ -135,7 +135,7 @@ export function ChangeRoleModal({ member, organizationId, isOpen, onClose }: Pro
             type="button"
             onClick={handleSubmit}
             disabled={isChangingRole || selectedRole === member.role}
-            className="bg-foreground hover:bg-gray-800 text-background"
+            className="bg-primary hover:bg-primary-dark text-primary-foreground shadow-sm"
           >
             {isChangingRole ? 'Updating...' : 'Update Role'}
           </Button>
