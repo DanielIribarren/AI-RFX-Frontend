@@ -84,6 +84,10 @@ interface BudgetGenerationViewProps {
 
   // Loading state for initial proposal generation
   isLoadingProposal?: boolean
+
+  // Template selection
+  selectedTemplate?: string
+  onTemplateChange?: (templateId: string) => void
 }
 
 export default function BudgetGenerationView({
@@ -115,7 +119,9 @@ export default function BudgetGenerationView({
   isLoadingPricingConfig = false,
   isSavingPricingConfig = false,
   defaultCurrency = "EUR",
-  isLoadingProposal = false
+  isLoadingProposal = false,
+  selectedTemplate = "custom",
+  onTemplateChange,
 }: BudgetGenerationViewProps) {
   
   const [activeTab, setActiveTab] = useState("preview")
@@ -308,6 +314,8 @@ export default function BudgetGenerationView({
               hasEnoughCredits={credits ? checkCredits(propuesta ? 30 : 50) : true}
               currentCredits={credits?.credits_available || 0}
               requiredCredits={propuesta ? 30 : 50}
+              selectedTemplate={selectedTemplate}
+              onSelectTemplate={onTemplateChange}
             />
           </TabsContent>
         </Tabs>

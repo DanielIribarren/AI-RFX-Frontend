@@ -4,6 +4,7 @@ import { useState } from "react";
 import RfxChatInput from "@/components/features/rfx/RFXChatInput";
 import { useRouter } from "next/navigation";
 import type { RFXResponse } from "@/lib/api";
+import { showErrorToast } from "@/lib/toast";
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -31,7 +32,10 @@ export default function DashboardPage() {
       router.push(`/rfx-result-wrapper-v2/data/${response.data.id}`);
     } else {
       console.error("Error processing RFX:", response.message);
-      alert(`Error al procesar RFX: ${response.message || "Error desconocido"}`);
+      showErrorToast({
+        title: "Unable to process RFX",
+        message: response.message || "Unknown error",
+      });
     }
   };
 
@@ -51,7 +55,7 @@ export default function DashboardPage() {
             </h1>
           </div>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            Procesa documentos RFX con <span className="text-brand-gradient font-semibold">inteligencia artificial</span>. 
+            Process RFX documents with <span className="text-brand-gradient font-semibold">artificial intelligence</span>. 
             Write specific instructions or attach files to get started.
           </p>
         </div>
@@ -76,9 +80,9 @@ export default function DashboardPage() {
                 />
               </svg>
             </div>
-            <h3 className="font-bold text-gray-900 mb-2 text-lg">Procesamiento Inteligente</h3>
+            <h3 className="font-bold text-gray-900 mb-2 text-lg">Smart Processing</h3>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              Extrae automáticamente información clave de documentos RFX usando IA avanzada.
+              Automatically extract key details from RFX documents using advanced AI.
             </p>
           </div>
 
@@ -94,11 +98,11 @@ export default function DashboardPage() {
               </svg>
             </div>
             <h3 className="font-bold text-gray-900 mb-2 text-lg flex items-center gap-2">
-              Generación Automática
+              Automatic Generation
               <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium">Popular</span>
             </h3>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              Crea propuestas comerciales personalizadas basadas en los requisitos identificados.
+              Create tailored business proposals based on detected requirements.
             </p>
           </div>
 
@@ -113,9 +117,9 @@ export default function DashboardPage() {
                 />
               </svg>
             </div>
-            <h3 className="font-bold text-gray-900 mb-2 text-lg">Análisis Competitivo</h3>
+            <h3 className="font-bold text-gray-900 mb-2 text-lg">Competitive Analysis</h3>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              Identifica factores clave de competitividad y oportunidades de mejora.
+              Identify competitive factors and key improvement opportunities.
             </p>
           </div>
         </div>

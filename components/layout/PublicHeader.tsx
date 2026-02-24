@@ -36,7 +36,7 @@ export function PublicHeader() {
             href="/casos-de-estudio"
             className="text-sm font-medium text-[#475569] hover:text-[#0B0B0F] transition-colors"
           >
-            Casos
+            Case Studies
           </Link>
         </nav>
         
@@ -53,7 +53,7 @@ export function PublicHeader() {
           <Link href={`/signup?from=${pathname}`}>
             <Button 
               size="sm"
-              className="bg-[#0B0B0F] text-white hover:opacity-90 shadow-md transition-all duration-200"
+              className="bg-[#0B0B0F] text-white hover:bg-[#1A1A20] hover:text-white shadow-md hover:shadow-lg"
             >
               Sign up
             </Button>

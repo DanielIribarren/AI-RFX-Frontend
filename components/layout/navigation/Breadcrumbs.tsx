@@ -32,6 +32,9 @@ export default function Breadcrumbs() {
       case "history":
         label = "History";
         break;
+      case "overview":
+        label = "Overview";
+        break;
       case "budget-settings":
         label = "Budget Settings";
         break;

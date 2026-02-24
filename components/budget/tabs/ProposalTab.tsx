@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { RefreshCw, Download, Maximize2, Minimize2, FileText, Info } from "lucide-react"
 import { LowCreditsAlert } from "@/components/credits/LowCreditsAlert"
+import { TemplateSelector } from "../TemplateSelector"
 
 interface ProposalTabProps {
   htmlContent: string
@@ -17,6 +18,9 @@ interface ProposalTabProps {
   hasEnoughCredits?: boolean
   currentCredits?: number
   requiredCredits?: number
+  // Template selection
+  selectedTemplate?: string
+  onSelectTemplate?: (templateId: string) => void
 }
 
 export function ProposalTab({
@@ -27,7 +31,9 @@ export function ProposalTab({
   onDownload,
   hasEnoughCredits = true,
   currentCredits = 0,
-  requiredCredits = 0
+  requiredCredits = 0,
+  selectedTemplate = "custom",
+  onSelectTemplate,
 }: ProposalTabProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const contentRef = useRef<HTMLDivElement>(null)
@@ -76,8 +82,19 @@ export function ProposalTab({
                 No proposal generated
               </h3>
               <p className="text-sm text-muted-foreground mb-4">
-                Click 'Generate with AI' to create the commercial proposal
+                Selecciona un estilo y genera tu propuesta comercial
               </p>
+              
+              {onSelectTemplate && (
+                <div className="mb-6 w-full text-left">
+                  <TemplateSelector
+                    selectedTemplate={selectedTemplate}
+                    onSelectTemplate={onSelectTemplate}
+                    disabled={isRegenerating || isLoadingProposal}
+                  />
+                </div>
+              )}
+
               <Button 
                 onClick={onRegenerate} 
                 className="gap-2"
@@ -118,6 +135,15 @@ export function ProposalTab({
           </div>
         </CardHeader>
         <CardContent>
+          {onSelectTemplate && (
+            <div className="mb-4">
+              <TemplateSelector
+                selectedTemplate={selectedTemplate}
+                onSelectTemplate={onSelectTemplate}
+                disabled={isRegenerating}
+              />
+            </div>
+          )}
           <div className="flex flex-wrap gap-2">
             <Button
               size="sm"

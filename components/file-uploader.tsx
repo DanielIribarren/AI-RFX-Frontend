@@ -391,7 +391,7 @@ export default function FileUploader({ onFileProcessed, onRFXProcessed, isLoadin
               <div className="flex justify-center gap-2">
                 <Button 
                   onClick={handleProcessFile} 
-                  className="bg-foreground hover:bg-black-700 text-background"
+                  className="bg-foreground text-background hover:bg-foreground/90 hover:text-background"
                   disabled={serviceStatus === 'offline'}
                 >
                   Procesar RFX con IA

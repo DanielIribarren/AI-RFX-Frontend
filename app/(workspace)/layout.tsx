@@ -54,6 +54,7 @@ export default function WorkspaceLayout({ children }: WorkspaceLayoutProps) {
           <OrganizationProvider>
             <AppSidebar
               onNewRfx={() => router.push("/dashboard")}
+              onNavigateToOverview={() => router.push("/overview")}
               onNavigateToHistory={() => router.push("/history")}
               onNavigateToProductInventory={() => router.push("/product-inventory")}
               onNavigateToBudgetSettings={() => router.push("/budget-settings")}

@@ -14,10 +14,10 @@ import { DeleteConfirmationDialog } from "@/components/shared/DeleteConfirmation
 import { showSuccessToast, showErrorToast } from "@/lib/toast"
 
 // Enum para estados posibles de RFX en la base de datos
-type RFXDatabaseStatus = 'draft' | 'in_progress' | 'completed' | 'cancelled' | 'expired';
+type RFXDatabaseStatus = 'draft' | 'in_progress' | 'completed' | 'cancelled' | 'expired' | 'processed' | 'sent' | 'accepted';
 
 // Enum para estados mostrados en frontend
-type RFXDisplayStatus = 'Draft' | 'In progress' | 'Completed' | 'Cancelled' | 'Expired';
+type RFXDisplayStatus = 'Draft' | 'In progress' | 'Processed' | 'Sent' | 'Accepted' | 'Completed' | 'Cancelled' | 'Expired';
 
 interface HistoryItem {
   id: string
@@ -69,6 +69,12 @@ const mapDatabaseStatusToDisplay = (dbStatus: string): { displayStatus: RFXDispl
       return { displayStatus: 'In progress', databaseStatus: 'in_progress' };
     case 'completed':
       return { displayStatus: 'Completed', databaseStatus: 'completed' };
+    case 'processed':
+      return { displayStatus: 'Processed', databaseStatus: 'processed' };
+    case 'sent':
+      return { displayStatus: 'Sent', databaseStatus: 'sent' };
+    case 'accepted':
+      return { displayStatus: 'Accepted', databaseStatus: 'accepted' };
     case 'cancelled':
       return { displayStatus: 'Cancelled', databaseStatus: 'cancelled' };
     case 'expired':
@@ -98,6 +104,24 @@ const getStatusBadgeProps = (status: RFXDisplayStatus) => {
       return {
         variant: 'default' as const,
         className: 'bg-green-100 text-green-800 hover:bg-green-100',
+        icon: <CheckCircle className="h-3 w-3 mr-1" />
+      };
+    case 'Processed':
+      return {
+        variant: 'secondary' as const,
+        className: 'bg-cyan-100 text-cyan-800 hover:bg-cyan-100',
+        icon: <Archive className="h-3 w-3 mr-1" />
+      };
+    case 'Sent':
+      return {
+        variant: 'secondary' as const,
+        className: 'bg-blue-100 text-blue-800 hover:bg-blue-100',
+        icon: <Clock className="h-3 w-3 mr-1" />
+      };
+    case 'Accepted':
+      return {
+        variant: 'default' as const,
+        className: 'bg-emerald-100 text-emerald-800 hover:bg-emerald-100',
         icon: <CheckCircle className="h-3 w-3 mr-1" />
       };
     case 'Cancelled':
@@ -174,8 +198,9 @@ const RfxHistory = forwardRef<RfxHistoryRef, RfxHistoryProps>(
             console.log(`🔍 RFX ${item.id}: processed_by =`, item.processed_by);
           }
 
-          // Map database status to display status using our utility function
-          const statusMapping = mapDatabaseStatusToDisplay(item.status || 'in_progress');
+          // Prefer new agentic status when available
+          const sourceStatus = (item as any).agentic_status || item.status || 'in_progress'
+          const statusMapping = mapDatabaseStatusToDisplay(sourceStatus);
           
           // Resolve most recent timestamp for "Last activity"
           const mostRecentISO = item.updated_at || item.last_activity_at || item.last_updated || item.date;
@@ -278,6 +303,37 @@ const RfxHistory = forwardRef<RfxHistoryRef, RfxHistoryProps>(
 
     const handleRetry = async () => {
       await handleRefresh()
+    }
+
+    const handleUpdateCommercialStatus = async (
+      rfxId: string,
+      status: "sent" | "accepted",
+      event: React.MouseEvent
+    ) => {
+      event.stopPropagation()
+      try {
+        const proposalsResponse = await api.getProposalsByRFX(rfxId)
+        const latestProposal = proposalsResponse.data?.[0]
+        if (!latestProposal?.id) {
+          showErrorToast({
+            title: "No proposal found",
+            message: "Generate a proposal first to update commercial status.",
+          })
+          return
+        }
+
+        await api.updateProposalStatus(latestProposal.id, status)
+        showSuccessToast({
+          title: "Status updated",
+          message: `RFX marked as ${status}.`,
+        })
+        await handleRefresh()
+      } catch (err: any) {
+        showErrorToast({
+          title: "Update failed",
+          message: err?.message || "Could not update proposal status.",
+        })
+      }
     }
 
     const handleDeleteRFX = async (rfxId: string, rfxTitle: string, event: React.MouseEvent) => {
@@ -450,7 +506,7 @@ const RfxHistory = forwardRef<RfxHistoryRef, RfxHistoryProps>(
           <h1 className="text-3xl font-bold text-gray-900 mb-1">Your RFX History</h1>
           <p className="text-muted-foreground">Manage and review your processed documents</p>
         </div>
-        <Button onClick={onNewRfx} className="gap-2 bg-brand-gradient hover:opacity-90 shadow-md hover:shadow-lg transition-all duration-200 self-start sm:self-auto h-11 px-6 rounded-xl font-semibold">
+        <Button onClick={onNewRfx} className="gap-2 bg-brand-gradient text-white hover:brightness-95 hover:text-white shadow-md hover:shadow-lg self-start sm:self-auto h-11 px-6 rounded-xl font-semibold">
           <Plus className="h-4 w-4" />
           New RFX
         </Button>
@@ -562,6 +618,28 @@ const RfxHistory = forwardRef<RfxHistoryRef, RfxHistoryProps>(
                     </div>
                   </div>
                   <div className="flex items-center gap-2 flex-shrink-0 ml-4">
+                    {rfx.estado !== "Accepted" && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => handleUpdateCommercialStatus(rfx.id, "accepted", e)}
+                        className="h-8 text-emerald-700 hover:text-emerald-800 hover:bg-emerald-50"
+                        title="Mark as accepted"
+                      >
+                        Accept
+                      </Button>
+                    )}
+                    {rfx.estado !== "Sent" && rfx.estado !== "Accepted" && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => handleUpdateCommercialStatus(rfx.id, "sent", e)}
+                        className="h-8 text-blue-700 hover:text-blue-800 hover:bg-blue-50"
+                        title="Mark as sent"
+                      >
+                        Send
+                      </Button>
+                    )}
                     <Button
                       variant="ghost"
                       size="sm"

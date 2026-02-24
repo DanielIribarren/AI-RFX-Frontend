@@ -94,7 +94,7 @@ export default function PricingPage() {
               </ul>
               
               <Button 
-                className="w-full bg-[#0B0B0F] text-white hover:opacity-90 shadow-md transition-all duration-200"
+                className="w-full bg-[#0B0B0F] text-white hover:bg-[#1A1A20] hover:text-white shadow-md hover:shadow-lg"
                 onClick={() => handleSelectPlan(key)}
               >
                 {key === 'enterprise' ? 'Contact Sales' : 'Get Started'}

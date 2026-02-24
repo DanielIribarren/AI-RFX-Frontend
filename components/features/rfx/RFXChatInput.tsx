@@ -141,7 +141,7 @@ export default function RfxChatInput({ onFileProcessed, onRFXProcessed, isLoadin
       // Check for empty files
       for (const attachedFile of attachedFiles) {
         if (attachedFile.file.size === 0) {
-          throw new Error(`El archivo "${attachedFile.file.name}" está vacío`)
+          throw new Error(`The file "${attachedFile.file.name}" is empty`)
         }
       }
 
@@ -231,22 +231,22 @@ export default function RfxChatInput({ onFileProcessed, onRFXProcessed, isLoadin
           case 400:
             // 🆕 Enhanced error message for file requirement
             if (error.message?.includes("File upload is required") || error.message?.includes("No file provided")) {
-              userMessage = "❌ El backend requiere un archivo. Adjunte un documento RFX (PDF, DOCX o TXT) para continuar."
+              userMessage = "A file is required by the backend. Attach an RFX document (PDF, DOCX, or TXT) to continue."
             } else {
-              userMessage = "Los datos no son válidos o faltan campos requeridos. Verifique que los archivos sean PDF, DOCX o TXT válidos."
+              userMessage = "Input data is invalid or required fields are missing. Verify files are valid PDF, DOCX, or TXT."
             }
             break
           case 413:
-            userMessage = "Uno o más archivos son demasiado grandes. El tamaño máximo permitido es 16MB por archivo."
+            userMessage = "One or more files are too large. Maximum allowed size is 16MB per file."
             break
           case 422:
-            userMessage = "No se pudo extraer información del contenido. Asegúrese de que los documentos contengan texto legible."
+            userMessage = "Unable to extract information from the content. Make sure the documents contain readable text."
             break
           case 500:
-            userMessage = "Error interno del servidor. Por favor, inténtelo más tarde."
+            userMessage = "Internal server error. Please try again later."
             break
           case 0:
-            userMessage = "Error de conexión. Verifique su conexión a internet y que el servidor esté funcionando."
+            userMessage = "Connection error. Check your internet connection and confirm the server is running."
             break
           default:
             userMessage = error.message || userMessage
@@ -270,46 +270,46 @@ export default function RfxChatInput({ onFileProcessed, onRFXProcessed, isLoadin
   }
 
   return (
-    <div className="w-full max-w-4xl mx-auto space-y-4">
+    <div className="w-full max-w-4xl mx-auto space-y-4 motion-fade-up">
       {/* Service Status Indicator */}
-      <div className="flex items-center justify-center gap-2 text-xs">
+      <div className="flex items-center justify-center gap-2 text-xs transition-[opacity,transform] duration-200 ease-out">
         {serviceStatus === 'checking' && (
           <>
             <div className="animate-spin h-3 w-3 border border-input border-t-blue-600 rounded-full"></div>
-            <span className="text-muted-foreground">Verificando servicio RFX...</span>
+            <span className="text-muted-foreground">Checking RFX service...</span>
           </>
         )}
         {serviceStatus === "online" && (
           <>
             <CheckCircle className="h-3 w-3 text-green-500" />
-            <span className="text-green-600">Servicio RFX conectado</span>
+            <span className="text-green-600">RFX service connected</span>
           </>
         )}
         {serviceStatus === "offline" && (
           <>
             <WifiOff className="h-3 w-3 text-red-500" />
-            <span className="text-destructive">Servicio RFX no disponible</span>
+            <span className="text-destructive">RFX service unavailable</span>
           </>
         )}
       </div>
 
       {/* Processing Progress */}
       {isProcessing && (
-        <Card className="border-primary/20 bg-primary/5">
+        <Card className="border-primary/20 bg-primary/5 motion-enter">
           <CardContent className="p-4">
             <div className="flex items-center gap-3 mb-2">
               <Loader2 className="h-4 w-4 animate-spin text-primary" />
-              <span className="text-sm font-medium text-blue-800">🤖 Procesando RFX con IA...</span>
+              <span className="text-sm font-medium text-blue-800">Processing RFX with AI...</span>
             </div>
             <Progress value={uploadProgress} className="w-full h-2" />
-            <p className="text-xs text-primary mt-1">Extrayendo información y generando propuesta comercial</p>
+            <p className="text-xs text-primary mt-1">Extracting data and generating business proposal</p>
           </CardContent>
         </Card>
       )}
 
       {/* Error Alert */}
       {error && (
-        <Alert variant="destructive">
+        <Alert variant="destructive" className="motion-enter">
           <AlertCircle className="h-4 w-4" />
           <AlertTitle>Error</AlertTitle>
           <AlertDescription>{error}</AlertDescription>
@@ -317,16 +317,16 @@ export default function RfxChatInput({ onFileProcessed, onRFXProcessed, isLoadin
       )}
 
       {/* Main Input Card */}
-      <Card className="border border shadow-sm">
+      <Card className="border border shadow-sm transition-[box-shadow,transform] duration-200 ease-out">
         <CardContent className="p-0">
           {/* Attached Files Preview */}
           {attachedFiles.length > 0 && (
-            <div className="p-4 border-b border-gray-100 bg-secondary">
+            <div className="p-4 border-b border-gray-100 bg-secondary motion-enter">
               <div className="flex flex-wrap gap-2">
                 {attachedFiles.map((attachedFile) => (
                   <div
                     key={attachedFile.id}
-                    className="flex items-center gap-2 bg-background border border rounded-lg px-3 py-2 text-sm"
+                    className="flex items-center gap-2 bg-background border border rounded-lg px-3 py-2 text-sm motion-stagger-item"
                   >
                     {attachedFile.preview ? (
                       <img
@@ -361,7 +361,7 @@ export default function RfxChatInput({ onFileProcessed, onRFXProcessed, isLoadin
                     onClick={() => setAttachedFiles([])}
                     className="text-xs text-muted-foreground hover:text-gray-700"
                   >
-                    Quitar todos los archivos
+                    Remove all files
                   </Button>
                 </div>
               )}
@@ -376,7 +376,7 @@ export default function RfxChatInput({ onFileProcessed, onRFXProcessed, isLoadin
               onChange={(e) => setMessage(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder="Describe tu RFX o adjunta documentos para procesarlos con IA..."
-              className="min-h-[60px] max-h-[200px] resize-none border-0 shadow-none focus-visible:ring-0 text-base placeholder:text-muted-foreground/60"
+              className="min-h-[60px] max-h-[200px] resize-none border-0 shadow-none focus-visible:ring-0 text-base placeholder:text-muted-foreground/60 transition-[opacity,transform] duration-200 ease-out"
               disabled={isProcessing || isLoading}
             />
           </div>
@@ -408,8 +408,7 @@ export default function RfxChatInput({ onFileProcessed, onRFXProcessed, isLoadin
               {/* Status Text */}
               {attachedFiles.length > 0 && (
                 <span className="text-xs text-muted-foreground">
-                  {attachedFiles.length} archivo{attachedFiles.length !== 1 ? "s" : ""} adjunto
-                  {attachedFiles.length !== 1 ? "s" : ""}
+                  {attachedFiles.length} file{attachedFiles.length !== 1 ? "s" : ""} attached
                 </span>
               )}
             </div>
@@ -418,7 +417,7 @@ export default function RfxChatInput({ onFileProcessed, onRFXProcessed, isLoadin
             <Button
               onClick={handleSubmit}
               disabled={!canSubmit()}
-              className="h-8 w-8 p-0 bg-gray-900 hover:bg-gray-800 disabled:bg-gray-300 disabled:cursor-not-allowed"
+              className="h-8 w-8 p-0 bg-gray-900 hover:bg-gray-800 disabled:bg-gray-300 disabled:cursor-not-allowed transition-[transform,opacity,background-color] duration-200 ease-out hover:scale-[1.02]"
             >
               {isProcessing ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowUp className="h-4 w-4" />}
             </Button>
@@ -426,11 +425,11 @@ export default function RfxChatInput({ onFileProcessed, onRFXProcessed, isLoadin
 
           {/* Service Offline Warning */}
           {serviceStatus === 'offline' && (
-            <div className="px-4 pb-4">
+            <div className="px-4 pb-4 motion-enter">
               <Alert variant="destructive">
                 <WifiOff className="h-4 w-4" />
                 <AlertDescription>
-                  El servicio RFX no está disponible. Verifique la conexión.
+                  The RFX service is unavailable. Check your connection.
                 </AlertDescription>
               </Alert>
             </div>
@@ -445,7 +444,7 @@ export default function RfxChatInput({ onFileProcessed, onRFXProcessed, isLoadin
         </p>
         <p className="text-xs text-muted-foreground/60 mt-1">
           Press <kbd className="px-1 py-0.5 bg-muted rounded text-xs">Enter</kbd> to send,
-          <kbd className="px-1 py-0.5 bg-muted rounded text-xs ml-1">Shift + Enter</kbd> para nueva línea
+          <kbd className="px-1 py-0.5 bg-muted rounded text-xs ml-1">Shift + Enter</kbd> for a new line
         </p>
       </div>
     </div>

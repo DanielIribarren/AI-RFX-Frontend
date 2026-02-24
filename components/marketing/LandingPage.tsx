@@ -38,18 +38,18 @@ export function LandingPage() {
           {/* Badge índigo con glow */}
           <div className="landing-badge-indigo">
             <Sparkles className="h-3.5 w-3.5" />
-            <span className="font-semibold">Agente IA que piensa como tu equipo comercial</span>
+            <span className="font-semibold">AI agent that thinks like your sales team</span>
           </div>
           
           {/* Título en negro #0B0B0F */}
           <h1 className="text-4xl md:text-6xl font-bold text-[#0B0B0F] leading-tight tracking-tight">
-            Tu asistente inteligente para propuestas ganadoras
+            Your smart assistant for winning proposals
           </h1>
           
           {/* Descripción con highlight índigo */}
           <p className="text-xl text-[#475569] max-w-2xl leading-relaxed">
-            Sube cualquier RFX y obtén una propuesta profesional completa. <span className="text-[#4F46E5] font-semibold">Reduce 92% el tiempo de preparación.</span> 
-            {' '}Desde análisis hasta exportación con tu branding.
+            Upload any RFX and get a complete professional proposal. <span className="text-[#4F46E5] font-semibold">Cut preparation time by 92%.</span>
+            {' '}From analysis to export with your branding.
           </p>
 
           {/* Value Props - Cards con glass-morphism */}
@@ -58,24 +58,24 @@ export function LandingPage() {
               <div className="landing-icon-wrapper mb-4">
                 <Zap className="h-8 w-8 text-white stroke-[2]" />
               </div>
-              <h3 className="font-bold text-lg text-[#0B0B0F] mb-2">Velocidad empresarial</h3>
-              <p className="text-sm text-[#475569]">De 4 horas a 20 minutos por propuesta con IA avanzada</p>
+              <h3 className="font-bold text-lg text-[#0B0B0F] mb-2">Enterprise speed</h3>
+              <p className="text-sm text-[#475569]">From 4 hours to 20 minutes per proposal with advanced AI</p>
             </div>
             
             <div className="landing-card-glass rounded-2xl p-8 flex flex-col items-center text-center">
               <div className="landing-icon-wrapper mb-4">
                 <Target className="h-8 w-8 text-white stroke-[2]" />
               </div>
-              <h3 className="font-bold text-lg text-[#0B0B0F] mb-2">Precisión garantizada</h3>
-              <p className="text-sm text-[#475569]">Validación automática de partidas, cantidades y totales</p>
+              <h3 className="font-bold text-lg text-[#0B0B0F] mb-2">Guaranteed accuracy</h3>
+              <p className="text-sm text-[#475569]">Automatic validation of line items, quantities, and totals</p>
             </div>
             
             <div className="landing-card-glass rounded-2xl p-8 flex flex-col items-center text-center">
               <div className="landing-icon-wrapper mb-4">
                 <FileText className="h-8 w-8 text-white stroke-[2]" />
               </div>
-              <h3 className="font-bold text-lg text-[#0B0B0F] mb-2">Listo para enviar</h3>
-              <p className="text-sm text-[#475569]">Excel y PDF con tu logo, colores y formato corporativo</p>
+              <h3 className="font-bold text-lg text-[#0B0B0F] mb-2">Ready to send</h3>
+              <p className="text-sm text-[#475569]">Excel and PDF with your logo, colors, and corporate format</p>
             </div>
           </div>
 
@@ -83,10 +83,10 @@ export function LandingPage() {
           <div className="flex flex-col sm:flex-row gap-4 mt-8">
             <Button 
               size="lg" 
-              className="text-lg px-8 py-6 bg-[#0B0B0F] text-white hover:opacity-90 shadow-md hover:shadow-lg transition-all duration-200 rounded-xl"
+              className="text-lg px-8 py-6 bg-[#0B0B0F] text-white hover:bg-[#1A1A20] hover:text-white shadow-md hover:shadow-lg rounded-xl"
               onClick={() => router.push('/signup')}
             >
-              Comenzar prueba gratuita
+              Start free trial
               <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
             <Button 
@@ -95,12 +95,12 @@ export function LandingPage() {
               className="text-lg px-8 py-6 border-2 border-[#0B0B0F]/20 text-[#0B0B0F] hover:bg-[#0B0B0F]/5 transition-all duration-200 rounded-xl"
               onClick={() => router.push('/casos-de-estudio')}
             >
-              Ver casos reales
+              View real case studies
             </Button>
           </div>
 
           <p className="text-sm text-[#475569] mt-4">
-            Sin tarjeta de crédito • 14 días gratis • Cancela cuando quieras
+            No credit card required • 14-day free trial • Cancel anytime
           </p>
         </div>
       </section>
@@ -109,7 +109,7 @@ export function LandingPage() {
       <section className="max-w-7xl mx-auto px-6 py-12 border-t border-[#0B0B0F]/10">
         <div className="text-center">
           <p className="text-[#475569] text-base">
-            Más de <strong className="text-[#4F46E5] font-semibold">500 empresas</strong> generan <strong className="text-[#4F46E5] font-semibold">2,000+ propuestas/mes</strong> con AI-RFX
+            More than <strong className="text-[#4F46E5] font-semibold">500 companies</strong> generate <strong className="text-[#4F46E5] font-semibold">2,000+ proposals/month</strong> with AI-RFX
           </p>
         </div>
       </section>
@@ -119,14 +119,14 @@ export function LandingPage() {
         <HowItWorks />
       </div>
 
-      {/* Por dentro del agente - Sección técnica detallada */}
+      {/* Inside the Agent - Sección técnica detallada */}
       <section className="max-w-7xl mx-auto px-6 py-20 border-t border-[#0B0B0F]/10">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-5xl font-bold text-[#0B0B0F] mb-4 tracking-tight">
-            Por dentro del agente
+            Inside the Agent
           </h2>
           <p className="text-xl text-[#475569] max-w-2xl mx-auto">
-            Así trabaja la IA para generar propuestas perfectas en cada paso
+            This is how AI works to create high-quality proposals at every step
           </p>
         </div>
 
@@ -139,7 +139,7 @@ export function LandingPage() {
               </div>
               <div>
                 <h3 className="text-xl font-bold text-[#0B0B0F]">Process Flow</h3>
-                <p className="text-sm text-[#475569]">Análisis inteligente del documento</p>
+                <p className="text-sm text-[#475569]">Smart document analysis</p>
               </div>
             </div>
 
@@ -150,8 +150,8 @@ export function LandingPage() {
                 </div>
                 <div className="flow-step-content">
                   <div className="flow-step-label">Input</div>
-                  <div className="flow-step-title">Recibe solicitud RFX</div>
-                  <div className="flow-step-desc">PDF/Word con requisitos del cliente</div>
+                  <div className="flow-step-title">Receive RFX request</div>
+                  <div className="flow-step-desc">PDF/Word file with client requirements</div>
                 </div>
               </div>
 
@@ -161,11 +161,11 @@ export function LandingPage() {
                 </div>
                 <div className="flow-step-content">
                   <div className="flow-step-label">AI Thinking</div>
-                  <div className="flow-step-title">Extrae entidades clave</div>
-                  <div className="flow-step-desc">Identifica partidas, cantidades, alcance, restricciones</div>
+                  <div className="flow-step-title">Extract key entities</div>
+                  <div className="flow-step-desc">Identify line items, quantities, scope, and constraints</div>
                   <span className="status-badge status-processing">
                     <Circle className="h-3 w-3" />
-                    Procesando
+                    Processing
                   </span>
                 </div>
               </div>
@@ -176,8 +176,8 @@ export function LandingPage() {
                 </div>
                 <div className="flow-step-content">
                   <div className="flow-step-label">Structure</div>
-                  <div className="flow-step-title">Arma estructura lógica</div>
-                  <div className="flow-step-desc">Organiza en capítulos, secciones, líneas presupuestarias</div>
+                  <div className="flow-step-title">Build logical structure</div>
+                  <div className="flow-step-desc">Organize chapters, sections, and budget lines</div>
                 </div>
               </div>
 
@@ -187,11 +187,11 @@ export function LandingPage() {
                 </div>
                 <div className="flow-step-content">
                   <div className="flow-step-label">Output</div>
-                  <div className="flow-step-title">Propuesta estructurada</div>
-                  <div className="flow-step-desc">JSON con alcance + presupuesto + metadatos</div>
+                  <div className="flow-step-title">Structured proposal</div>
+                  <div className="flow-step-desc">JSON output with scope, budget, and metadata</div>
                   <span className="status-badge status-success">
                     <CheckCircle className="h-3 w-3" />
-                    Completo
+                    Complete
                   </span>
                 </div>
               </div>
@@ -206,7 +206,7 @@ export function LandingPage() {
               </div>
               <div>
                 <h3 className="text-xl font-bold text-[#0B0B0F]">Iterate ChatAgent</h3>
-                <p className="text-sm text-[#475569]">Refina con chat inteligente</p>
+                <p className="text-sm text-[#475569]">Refine with smart chat</p>
               </div>
             </div>
 
@@ -217,8 +217,8 @@ export function LandingPage() {
                 </div>
                 <div className="flow-step-content">
                   <div className="flow-step-label">User Intent</div>
-                  <div className="flow-step-title">Detecta intención</div>
-                  <div className="flow-step-desc">"Agrega partida de diseño web"</div>
+                  <div className="flow-step-title">Detect user intent</div>
+                  <div className="flow-step-desc">"Add a web design line item"</div>
                 </div>
               </div>
 
@@ -228,8 +228,8 @@ export function LandingPage() {
                 </div>
                 <div className="flow-step-content">
                   <div className="flow-step-label">Search</div>
-                  <div className="flow-step-title">Busca info de RFX</div>
-                  <div className="flow-step-desc">Consulta partidas existentes y contexto</div>
+                  <div className="flow-step-title">Search RFX data</div>
+                  <div className="flow-step-desc">Look up existing line items and context</div>
                 </div>
               </div>
 
@@ -239,11 +239,11 @@ export function LandingPage() {
                 </div>
                 <div className="flow-step-content">
                   <div className="flow-step-label">Execute Tool</div>
-                  <div className="flow-step-title">Ejecuta modificación</div>
+                  <div className="flow-step-title">Execute modification</div>
                   <div className="flow-step-desc">add_budget_line(item, quantity, price)</div>
                   <span className="status-badge status-processing">
                     <Circle className="h-3 w-3" />
-                    Ejecutando
+                    Running
                   </span>
                 </div>
               </div>
@@ -254,11 +254,11 @@ export function LandingPage() {
                 </div>
                 <div className="flow-step-content">
                   <div className="flow-step-label">Result</div>
-                  <div className="flow-step-title">RFX actualizado</div>
-                  <div className="flow-step-desc">Nueva partida agregada, presupuesto recalculado</div>
+                  <div className="flow-step-title">RFX updated</div>
+                  <div className="flow-step-desc">New line item added, budget recalculated</div>
                   <span className="status-badge status-success">
                     <CheckCircle className="h-3 w-3" />
-                    Actualizado
+                    Updated
                   </span>
                 </div>
               </div>
@@ -272,8 +272,8 @@ export function LandingPage() {
                 <Palette className="h-7 w-7 text-white stroke-[2]" />
               </div>
               <div>
-                <h3 className="text-xl font-bold text-[#0B0B0F]">Configura branding</h3>
-                <p className="text-sm text-[#475569]">Tu identidad en cada propuesta</p>
+                <h3 className="text-xl font-bold text-[#0B0B0F]">Configure branding</h3>
+                <p className="text-sm text-[#475569]">Your identity on every proposal</p>
               </div>
             </div>
 
@@ -284,7 +284,7 @@ export function LandingPage() {
                 </div>
                 <div className="flow-step-content">
                   <div className="flow-step-label">Upload</div>
-                  <div className="flow-step-title">Adjuntas assets</div>
+                  <div className="flow-step-title">Upload assets</div>
                   <div className="flow-step-desc">Template Excel + Logo PNG/SVG</div>
                 </div>
               </div>
@@ -295,11 +295,11 @@ export function LandingPage() {
                 </div>
                 <div className="flow-step-content">
                   <div className="flow-step-label">Process</div>
-                  <div className="flow-step-title">Extrae configuración</div>
-                  <div className="flow-step-desc">Colores, fuentes, estructura de celdas, fórmulas</div>
+                  <div className="flow-step-title">Extract configuration</div>
+                  <div className="flow-step-desc">Colors, fonts, cell structure, and formulas</div>
                   <span className="status-badge status-processing">
                     <Circle className="h-3 w-3" />
-                    Procesando
+                    Processing
                   </span>
                 </div>
               </div>
@@ -310,8 +310,8 @@ export function LandingPage() {
                 </div>
                 <div className="flow-step-content">
                   <div className="flow-step-label">Store</div>
-                  <div className="flow-step-title">Guarda en perfil</div>
-                  <div className="flow-step-desc">Branding disponible para todas las propuestas</div>
+                  <div className="flow-step-title">Save to profile</div>
+                  <div className="flow-step-desc">Branding available for all proposals</div>
                 </div>
               </div>
 
@@ -321,11 +321,11 @@ export function LandingPage() {
                 </div>
                 <div className="flow-step-content">
                   <div className="flow-step-label">Ready</div>
-                  <div className="flow-step-title">Configuración activa</div>
-                  <div className="flow-step-desc">Próximas exportaciones usan tu branding</div>
+                  <div className="flow-step-title">Configuration active</div>
+                  <div className="flow-step-desc">Future exports use your branding</div>
                   <span className="status-badge status-success">
                     <CheckCircle className="h-3 w-3" />
-                    Configurado
+                    Configured
                   </span>
                 </div>
               </div>
@@ -340,7 +340,7 @@ export function LandingPage() {
               </div>
               <div>
                 <h3 className="text-xl font-bold text-[#0B0B0F]">Generate Budget</h3>
-                <p className="text-sm text-[#475569]">Exportación profesional</p>
+                <p className="text-sm text-[#475569]">Professional export</p>
               </div>
             </div>
 
@@ -351,11 +351,11 @@ export function LandingPage() {
                 </div>
                 <div className="flow-step-content">
                   <div className="flow-step-label">Generate</div>
-                  <div className="flow-step-title">Genera first budget</div>
-                  <div className="flow-step-desc">Aplica template con datos de la propuesta</div>
+                  <div className="flow-step-title">Generate first budget</div>
+                  <div className="flow-step-desc">Apply template with proposal data</div>
                   <span className="status-badge status-processing">
                     <Circle className="h-3 w-3" />
-                    Generando
+                    Generating
                   </span>
                 </div>
               </div>
@@ -366,11 +366,11 @@ export function LandingPage() {
                 </div>
                 <div className="flow-step-content">
                   <div className="flow-step-label">Validate</div>
-                  <div className="flow-step-title">Valida branding</div>
-                  <div className="flow-step-desc">Verifica logo, colores, fórmulas, totales</div>
+                  <div className="flow-step-title">Validate branding</div>
+                  <div className="flow-step-desc">Verify logo, colors, formulas, and totals</div>
                   <span className="status-badge status-validating">
                     <Clock className="h-3 w-3" />
-                    Validando
+                    Validating
                   </span>
                 </div>
               </div>
@@ -381,8 +381,8 @@ export function LandingPage() {
                 </div>
                 <div className="flow-step-content">
                   <div className="flow-step-label">Format</div>
-                  <div className="flow-step-title">Asegura formato PDF</div>
-                  <div className="flow-step-desc">Convierte Excel → PDF con layout perfecto</div>
+                  <div className="flow-step-title">Ensure PDF formatting</div>
+                  <div className="flow-step-desc">Convert Excel to PDF with perfect layout</div>
                 </div>
               </div>
 
@@ -392,11 +392,11 @@ export function LandingPage() {
                 </div>
                 <div className="flow-step-content">
                   <div className="flow-step-label">Download</div>
-                  <div className="flow-step-title">Listo para enviar</div>
-                  <div className="flow-step-desc">Excel + PDF descargables, con tu branding</div>
+                  <div className="flow-step-title">Ready to send</div>
+                  <div className="flow-step-desc">Downloadable Excel and PDF with your branding</div>
                   <span className="status-badge status-success">
                     <CheckCircle className="h-3 w-3" />
-                    Listo
+                    Ready
                   </span>
                 </div>
               </div>
@@ -410,21 +410,21 @@ export function LandingPage() {
         <div className="max-w-3xl mx-auto">
           <div className="landing-cta-card text-center">
             <h2 className="text-3xl md:text-4xl font-bold text-[#0B0B0F] mb-4 tracking-tight">
-              Empieza a generar propuestas en minutos
+              Start generating proposals in minutes
             </h2>
             <p className="text-xl text-[#475569] mb-8">
-              Únete a cientos de empresas que ya automatizan sus propuestas
+              Join hundreds of companies already automating their proposals
             </p>
             <Button 
               size="lg" 
-              className="text-lg px-8 py-6 bg-[#4F46E5] text-white hover:bg-[#4338CA] shadow-md hover:shadow-lg transition-all duration-200 rounded-xl"
+              className="text-lg px-8 py-6 bg-[#4F46E5] text-white hover:bg-[#4338CA] hover:text-white shadow-md hover:shadow-lg rounded-xl"
               onClick={() => router.push('/signup')}
             >
-              Prueba gratis 14 días
+              Try it free for 14 days
               <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
             <p className="text-sm text-[#475569] mt-4">
-              Sin tarjeta de crédito • Cancela cuando quieras
+              No credit card required • Cancel anytime
             </p>
           </div>
         </div>

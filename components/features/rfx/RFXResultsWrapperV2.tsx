@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { api, RFXResponse, ProposalRequest, useAPICall } from "@/lib/api"
+import { api, RFXResponse, ProposalRequest } from "@/lib/api"
 import { useCurrency } from "@/hooks/use-currency"
 import { useCredits } from "@/contexts/CreditsContext"
 import { pricingApiV2, pricingConverter, pricingDefaults } from "@/lib/api-pricing-v2"
@@ -17,6 +17,7 @@ import type {
   PricingCalculationResult,
   LegacyPricingConfig
 } from "@/types/pricing-v2"
+import { showErrorToast, showInfoToast, showSuccessToast, showWarningToast } from "@/lib/toast"
 import RFXDataView from "@/components/features/rfx/RFXDataView"
 import BudgetGenerationView from "@/components/budget/BudgetGenerationView"
 import { RFXUpdateChatPanel, type RFXChange } from "@/components/features/rfx/update-chat"
@@ -201,7 +202,7 @@ export default function RfxResultsWrapperV2({
       coordination_enabled: false,
       coordination_type: 'standard',
       coordination_rate: 0.18,
-      coordination_description: 'Coordinación y logística',
+      coordination_description: 'Coordination and logistics',
       coordination_apply_to_subtotal: true,
 
       // Cost per person
@@ -210,7 +211,7 @@ export default function RfxResultsWrapperV2({
       headcount_source: 'manual',
       calculation_base: 'final_total',
       display_in_proposal: true,
-      cost_per_person_description: 'Cálculo de costo individual',
+      cost_per_person_description: 'Cost per person calculation',
 
       // Tax
       taxes_enabled: false,
@@ -254,9 +255,6 @@ export default function RfxResultsWrapperV2({
   const [proposalStatus, setProposalStatus] = useState<string>("")
   const [proposalGeneratedAt, setProposalGeneratedAt] = useState<string>("")
 
-  // Use the new API error handler
-  const { handleAPIError } = useAPICall()
-
   // Hook para manejo de monedas
   const {
     selectedCurrency,
@@ -286,7 +284,7 @@ export default function RfxResultsWrapperV2({
           coordination_enabled: backendConfig.coordination_enabled,
           coordination_type: backendConfig.coordination_type,
           coordination_rate: backendConfig.coordination_rate,
-          coordination_description: backendConfig.coordination_description || 'Coordinación y logística',
+          coordination_description: backendConfig.coordination_description || 'Coordination and logistics',
           coordination_apply_to_subtotal: true, // Default
 
           cost_per_person_enabled: backendConfig.cost_per_person_enabled,
@@ -294,7 +292,7 @@ export default function RfxResultsWrapperV2({
           headcount_source: 'manual', // Default
           calculation_base: backendConfig.calculation_base,
           display_in_proposal: true, // Default
-          cost_per_person_description: 'Cálculo de costo individual',
+          cost_per_person_description: 'Cost per person calculation',
 
           taxes_enabled: backendConfig.taxes_enabled,
           tax_name: backendConfig.tax_name,
@@ -321,7 +319,7 @@ export default function RfxResultsWrapperV2({
             coordination_enabled: config.coordination?.is_enabled || false,
             coordination_type: config.coordination?.coordination_type || 'standard',
             coordination_rate: config.coordination?.rate || 0.18,
-            coordination_description: config.coordination?.description || 'Coordinación y logística',
+            coordination_description: config.coordination?.description || 'Coordination and logistics',
             coordination_apply_to_subtotal: config.coordination?.apply_to_subtotal || true,
 
             // Cost per person
@@ -330,7 +328,7 @@ export default function RfxResultsWrapperV2({
             headcount_source: config.cost_per_person?.headcount_source || 'manual',
             calculation_base: config.cost_per_person?.calculation_base || 'final_total',
             display_in_proposal: config.cost_per_person?.display_in_proposal || true,
-            cost_per_person_description: config.cost_per_person?.description || 'Cálculo de costo individual',
+            cost_per_person_description: config.cost_per_person?.description || 'Cost per person calculation',
 
             // Tax
             taxes_enabled: config.tax?.is_enabled || false,
@@ -614,7 +612,10 @@ export default function RfxResultsWrapperV2({
   // Función para enviar costos unitarios al backend
   const saveProductCosts = async () => {
     if (!backendData?.data?.id) {
-      alert("Error: No hay datos del RFX disponibles para guardar costos")
+      showErrorToast({
+        title: "Data unavailable",
+        message: "No RFX data is available to save costs.",
+      })
       return
     }
 
@@ -634,9 +635,15 @@ export default function RfxResultsWrapperV2({
 
       if (hasValidPrices) {
         const total = calculateProductsTotal(productosIndividuales)
-        alert(`Costos guardados exitosamente para ${result.data.updated_products.length} productos (Total: €${total.toFixed(2)}). Ahora puede generar la propuesta.`)
+        showSuccessToast({
+          title: "Costs saved",
+          message: `${result.data.updated_products.length} products updated (Total: EUR ${total.toFixed(2)}).`,
+        })
       } else {
-        alert(`Costos guardados, pero algunos productos necesitan precios válidos antes de generar la propuesta.`)
+        showWarningToast({
+          title: "Review required",
+          message: "Costs were saved, but some products still have invalid prices.",
+        })
       }
 
       // Refresco automático de datos después de actualizar costos
@@ -644,14 +651,21 @@ export default function RfxResultsWrapperV2({
     } catch (error) {
       console.error("Error saving product costs:", error)
 
-      const errorInfo = handleAPIError(error)
-
       if (error instanceof Error && error.message.includes("404")) {
-        alert("RFX no encontrado. Por favor recargue la página e intente nuevamente.")
+        showErrorToast({
+          title: "RFX not found",
+          message: "Reload the page and try again.",
+        })
       } else if (error instanceof Error && error.message.includes("400")) {
-        alert("Datos de costos inválidos. Verifique que todos los precios sean válidos.")
+        showErrorToast({
+          title: "Invalid data",
+          message: "Verify all prices are valid.",
+        })
       } else {
-        alert("No se pudo guardar los costos de los productos. Por favor, intente nuevamente.")
+        showErrorToast({
+          title: "Unable to save costs",
+          message: "Please try again in a few seconds.",
+        })
       }
     } finally {
       setIsSavingCosts(false)
@@ -671,7 +685,10 @@ export default function RfxResultsWrapperV2({
 
     // Validar créditos suficientes
     if (credits && !checkCredits(requiredCredits)) {
-      alert(`Créditos insuficientes. Necesitas ${requiredCredits} créditos para ${isFirstGeneration ? 'generar' : 'regenerar'} la propuesta. Tienes ${credits.available_credits} disponibles.`)
+      showWarningToast({
+        title: "Insufficient credits",
+        message: `You need ${requiredCredits} credits and you currently have ${credits.available_credits}.`,
+      })
       return
     }
 
@@ -686,7 +703,10 @@ export default function RfxResultsWrapperV2({
       if (productosIndividuales.length > 0) {
         const hasCosts = productosIndividuales.some(p => p.precio > 0)
         if (!hasCosts) {
-          alert("Por favor ingrese y guarde los costos unitarios primero usando el botón 'Guardar Costos'")
+          showInfoToast({
+            title: "Complete costs first",
+            message: "Enter and save unit costs before generating the proposal.",
+          })
           // Resetear el estado correspondiente
           if (isFirstGeneration) {
             setIsLoadingProposal(false)
@@ -710,12 +730,12 @@ export default function RfxResultsWrapperV2({
       const proposalRequest: ProposalRequest = {
         rfx_id: backendData.data.id,
         costs: costsForValidation,
-        history: "Propuesta generada con costos reales proporcionados por el usuario",
+        history: "Proposal generated with user-provided real costs",
         notes: {
           modality: "buffet",
-          modality_description: "Servicio de buffet completo",
-          coordination: "Coordinación incluida en el servicio",
-          additional_notes: "Propuesta generada con costos reales del usuario"
+          modality_description: "Full buffet service",
+          coordination: "Coordination included in service",
+          additional_notes: "Proposal generated with user-provided real costs"
         }
       }
 
@@ -750,14 +770,21 @@ export default function RfxResultsWrapperV2({
     } catch (error) {
       console.error("Error regenerating proposal:", error)
 
-      const errorInfo = handleAPIError(error)
-
       if (error instanceof Error && error.message.includes("404")) {
-        alert("RFX no encontrado. Por favor recargue la página e intente nuevamente.")
+        showErrorToast({
+          title: "RFX not found",
+          message: "Reload the page and try again.",
+        })
       } else if (error instanceof Error && error.message.includes("500")) {
-        alert("Error del servidor al generar la propuesta. Verifique que los costos estén guardados e intente nuevamente.")
+        showErrorToast({
+          title: "Server error",
+          message: "Verify costs are saved and try again.",
+        })
       } else {
-        alert("Error al generar la propuesta. Por favor intente nuevamente.")
+        showErrorToast({
+          title: "Unable to generate proposal",
+          message: "Please try again.",
+        })
       }
     } finally {
       // Resetear el estado correspondiente
@@ -773,7 +800,10 @@ export default function RfxResultsWrapperV2({
     try {
       // Validar que hay propuesta generada
       if (!propuesta || propuesta.trim().length === 0) {
-        alert("No hay propuesta generada para descargar.\n\nPor favor usa el botón 'Regenerar con IA' primero para crear una propuesta.")
+        showInfoToast({
+          title: "No proposal available for download",
+          message: "Generate or regenerate the proposal before downloading.",
+        })
         return
       }
 
@@ -821,13 +851,13 @@ export default function RfxResultsWrapperV2({
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => null)
-        throw new Error(errorData?.message || `Error del servidor: ${response.status}`)
+        throw new Error(errorData?.message || `Server error: ${response.status}`)
       }
 
       const blob = await response.blob()
 
       if (blob.size === 0) {
-        throw new Error("El archivo descargado está vacío")
+        throw new Error("The downloaded file is empty")
       }
 
       // Crear link de descarga
@@ -838,7 +868,7 @@ export default function RfxResultsWrapperV2({
       // Determinar extensión basada en el tipo de contenido
       const isHTML = blob.type.includes('html') || blob.type.includes('text')
       const extension = isHTML ? 'html' : 'pdf'
-      const fileName = `propuesta-${clientName.replace(/\s+/g, "-").toLowerCase()}.${extension}`
+      const fileName = `proposal-${clientName.replace(/\s+/g, "-").toLowerCase()}.${extension}`
 
       element.download = fileName
       document.body.appendChild(element)
@@ -848,29 +878,38 @@ export default function RfxResultsWrapperV2({
 
       // Mostrar mensaje apropiado
       if (isHTML) {
-        alert(`PDF no disponible temporalmente. Se descargó como HTML: ${fileName}\n\nPara convertir a PDF:\n1. Abre el archivo HTML en tu navegador\n2. Presiona Ctrl+P (o Cmd+P en Mac)\n3. Selecciona "Guardar como PDF"\n4. Ajusta configuración para A4 si es necesario`)
+        showWarningToast({
+          title: "Downloaded as HTML",
+          message: `PDF is temporarily unavailable. ${fileName} was downloaded instead.`,
+        })
       } else {
-        alert(`Propuesta descargada exitosamente como PDF: ${fileName}`)
+        showSuccessToast({
+          title: "Proposal downloaded",
+          message: `${fileName} downloaded successfully.`,
+        })
       }
 
     } catch (error) {
       console.error("❌ Error downloading proposal:", error)
 
-      let errorMessage = "Error desconocido al descargar la propuesta"
+      let errorMessage = "Unknown error while downloading the proposal"
 
       if (error instanceof Error) {
         if (error.message.includes("html_content is required")) {
-          errorMessage = "No se encontró contenido HTML. Genere la propuesta primero."
+          errorMessage = "No HTML content found. Generate the proposal first."
         } else if (error.message.includes("PDF conversion methods failed")) {
-          errorMessage = "Error de conversión a PDF. Se intentará descargar como HTML."
+          errorMessage = "PDF conversion failed. HTML download will be used as fallback."
         } else if (error.message.includes("network") || error.message.includes("fetch")) {
-          errorMessage = "Error de conexión. Verifica tu conexión a internet."
+          errorMessage = "Connection error. Check your internet connection."
         } else {
           errorMessage = error.message
         }
       }
 
-      alert(`No se pudo descargar la propuesta\n\nError: ${errorMessage}\n\nSoluciones:\n1. Verifica que la propuesta esté generada (visible en pantalla)\n2. Revisa tu conexión a internet\n3. Si persiste, contacta al administrador`)
+      showErrorToast({
+        title: "Unable to download proposal",
+        message: errorMessage,
+      })
     }
   }
 
@@ -1103,19 +1142,19 @@ export default function RfxResultsWrapperV2({
   // Mostrar mensaje si no hay datos
   if (!hasData) {
     return (
-      <div className="container mx-auto px-4 py-6">
-        <div className="text-center py-12 bg-background rounded-lg border border">
+      <div className="container mx-auto px-4 py-6 motion-fade-up">
+        <div className="text-center py-12 bg-background rounded-lg border border motion-scale-in transition-[opacity,transform] duration-200 ease-out">
           <h2 className="text-xl font-semibold text-gray-900 mb-2">
-            Aún no se ha procesado ningún RFX
+            No RFX has been processed yet
           </h2>
           <p className="text-muted-foreground mb-6">
-            Carga un documento para ver los resultados del análisis aquí.
+            Upload a document to see analysis results here.
           </p>
           <button
             onClick={onNewRfx}
-            className="bg-primary hover:bg-primary-dark text-background px-6 py-2 rounded-lg font-medium"
+            className="bg-primary hover:bg-primary-dark text-background px-6 py-2 rounded-lg font-medium transition-[transform,opacity,background-color] duration-200 ease-out hover:scale-[1.02]"
           >
-            Procesar Nuevo RFX
+            Process New RFX
           </button>
         </div>
       </div>
@@ -1244,7 +1283,7 @@ export default function RfxResultsWrapperV2({
           onGenerateBudget={handleNavigateToBudget}
           onNavigateToHistory={onNavigateToHistory}
           rfxId={backendData?.data?.id}
-          rfxTitle={(backendData?.data as any)?.title || extractedData.nombreEmpresa || "Datos Extraídos"}
+          rfxTitle={(backendData?.data as any)?.title || extractedData.nombreEmpresa || "Extracted Data"}
           fechaCreacion={fechaCreacion}
           validationMetadata={validationMetadata}
           originalText={originalText}

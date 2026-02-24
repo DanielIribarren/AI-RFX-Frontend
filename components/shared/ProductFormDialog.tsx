@@ -207,7 +207,7 @@ export function ProductFormDialog({
             <Button type="button" variant="outline" onClick={onClose} disabled={isSaving}>
               Cancel
             </Button>
-            <Button type="submit" disabled={isSaving} className="bg-brand-gradient text-white">
+            <Button type="submit" disabled={isSaving} className="bg-brand-gradient text-white hover:brightness-95 hover:text-white">
               {isSaving ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />

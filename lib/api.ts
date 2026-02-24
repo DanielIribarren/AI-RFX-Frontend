@@ -231,6 +231,7 @@ export interface ProposalRequest {
     additional_notes?: string;
   };
   custom_template?: string;
+  template_type?: string;
 }
 
 // Updated to match backend ProposalResponse V2.0 (English schema)
@@ -311,6 +312,10 @@ export interface RFXHistoryItem {
   date: string;
   status: 'draft' | 'in_progress' | 'completed' | 'cancelled' | 'expired';
   rfxId: string;
+  // Agentic statuses
+  processing_status?: 'in_progress' | 'processed';
+  commercial_status?: 'not_sent' | 'sent' | 'accepted' | 'rejected';
+  agentic_status?: 'in_progress' | 'processed' | 'sent' | 'accepted';
   // Optional timestamps for last activity resolution
   updated_at?: string;
   last_activity_at?: string;
@@ -367,6 +372,41 @@ export interface RFXLatestResponse {
   data: RFXHistoryItem[];
   pagination: PaginationInfo;
   timestamp: string;
+}
+
+export interface RFXMetricsOverviewResponse {
+  status: "success" | "error";
+  message: string;
+  data: {
+    range_days: number;
+    kpis: {
+      total_rfx: number;
+      in_progress: number;
+      processed: number;
+      sent: number;
+      accepted: number;
+      acceptance_rate: number;
+    };
+    funnel: {
+      processed: number;
+      sent: number;
+      accepted: number;
+    };
+    distribution: {
+      in_progress: number;
+      processed: number;
+      sent: number;
+      accepted: number;
+    };
+    timeseries: Array<{
+      date: string;
+      created: number;
+      processed: number;
+      sent: number;
+      accepted: number;
+    }>;
+  };
+  timestamp?: string;
 }
 
 // Enhanced API client with better error handling
@@ -520,6 +560,20 @@ export const api = {
     }
   },
 
+  // Metrics overview for dashboard analytics
+  async getRFXMetricsOverview(rangeDays: number = 30): Promise<RFXMetricsOverviewResponse> {
+    try {
+      const url = `${API_BASE_URL}/api/rfx/metrics/overview?range_days=${rangeDays}`;
+      const response = await fetchWithAuth(url);
+      return handleResponse<RFXMetricsOverviewResponse>(response);
+    } catch (error) {
+      if (error instanceof APIError) {
+        throw error;
+      }
+      throw new APIError('Failed to load RFX metrics overview', 500);
+    }
+  },
+
   // Get recent RFX for sidebar (limited to 12 items) with JWT
   async getRecentRFX(): Promise<{ status: string; message: string; data: RecentRFXItem[] }> {
     try {
@@ -603,6 +657,22 @@ export const api = {
         throw error;
       }
       throw new APIError('Network error fetching proposal', 0, 'NETWORK_ERROR');
+    }
+  },
+
+  // Update proposal commercial status
+  async updateProposalStatus(proposalId: string, status: 'generated' | 'sent' | 'accepted' | 'rejected'): Promise<{ status: string; message: string; data: any }> {
+    try {
+      const response = await fetchWithAuth(`${API_BASE_URL}/api/proposals/${proposalId}/status`, {
+        method: 'PATCH',
+        body: JSON.stringify({ status }),
+      });
+      return handleResponse<{ status: string; message: string; data: any }>(response);
+    } catch (error) {
+      if (error instanceof APIError) {
+        throw error;
+      }
+      throw new APIError('Network error updating proposal status', 0, 'NETWORK_ERROR');
     }
   },
 

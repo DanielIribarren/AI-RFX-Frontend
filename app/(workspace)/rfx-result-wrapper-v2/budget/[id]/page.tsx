@@ -93,6 +93,7 @@ export default function RfxBudgetPage() {
   const [isRegenerating, setIsRegenerating] = useState(false);
   const [isLoadingProposal, setIsLoadingProposal] = useState(false);
   const [propuesta, setPropuesta] = useState<string>("");
+  const [selectedTemplate, setSelectedTemplate] = useState<string>("custom");
 
   // Load pricing configuration from API
   const loadPricingConfig = async (rfxId: string) => {
@@ -219,7 +220,8 @@ export default function RfxBudgetPage() {
             ? `Coordinación ${pricingConfigV2.coordination_type} al ${(pricingConfigV2.coordination_rate * 100).toFixed(1)}%`
             : "Sin coordinación adicional",
           additional_notes: `Configurado desde vista de presupuesto. Costo por persona: ${pricingConfigV2.cost_per_person_enabled ? 'activado' : 'desactivado'}`
-        }
+        },
+        template_type: selectedTemplate,
       };
 
       console.log("📤 Proposal request prepared:", proposalRequest);
@@ -836,6 +838,8 @@ export default function RfxBudgetPage() {
           useApiCalculations={true}
           onCalculationUpdate={handleCalculationUpdate}
           useRealBackend={true}
+          selectedTemplate={selectedTemplate}
+          onTemplateChange={setSelectedTemplate}
         />
       </div>
     </div>

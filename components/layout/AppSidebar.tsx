@@ -18,8 +18,18 @@ import {
 } from "@/components/ui/sidebar"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { useSidebar } from "@/components/ui/sidebar"
-import { api, APIError, RFXHistoryItem, useAPICall } from "@/lib/api"
+import { api, APIError, RFXHistoryItem } from "@/lib/api"
 import { useCachedData } from "@/lib/use-cached-data"
 import { CreditsBadge } from '@/components/credits/CreditsBadge'
 import { SidebarUser } from "@/components/layout/SidebarUser"
@@ -29,7 +39,7 @@ interface RfxItem {
   title: string
   client: string
   date: string
-  status: "Draft" | "In progress" | "Completed" | "Cancelled" | "Expired"
+  status: "Draft" | "In progress" | "Processed" | "Sent" | "Accepted" | "Completed" | "Cancelled" | "Expired"
   // Usuario que procesó el RFX
   processed_by?: {
     id: string
@@ -43,11 +53,12 @@ interface RfxItem {
 
 interface AppSidebarProps {
   onNewRfx: () => void
+  onNavigateToOverview?: () => void
   onNavigateToHistory: () => void
   onNavigateToProductInventory?: () => void
   onNavigateToBudgetSettings?: () => void
   onSelectRfx?: (rfxId: string) => void
-  currentView?: "main" | "results" | "history" | "product-inventory" | "budget-settings" | undefined
+  currentView?: "main" | "results" | "overview" | "history" | "product-inventory" | "budget-settings" | undefined
 }
 
 export interface AppSidebarRef {
@@ -55,10 +66,16 @@ export interface AppSidebarRef {
 }
 
 // Función utilitaria para mapear estados de backend a estados de display
-const mapBackendStatusToDisplay = (backendStatus: string): "Draft" | "In progress" | "Completed" | "Cancelled" | "Expired" => {
+const mapBackendStatusToDisplay = (backendStatus: string): "Draft" | "In progress" | "Processed" | "Sent" | "Accepted" | "Completed" | "Cancelled" | "Expired" => {
   const status = backendStatus.toLowerCase();
   
   switch (status) {
+    case 'processed':
+      return 'Processed';
+    case 'sent':
+      return 'Sent';
+    case 'accepted':
+      return 'Accepted';
     case 'draft':
       return 'Draft';
     case 'in_progress':
@@ -84,6 +101,12 @@ const getStatusIcon = (status: string) => {
       return <Clock className="h-3 w-3 text-primary-light flex-shrink-0 mt-0.5 group-data-[collapsible=icon]:hidden" />;
     case 'Completed':
       return <CheckCircle className="h-3 w-3 text-green-500 flex-shrink-0 mt-0.5 group-data-[collapsible=icon]:hidden" />;
+    case 'Processed':
+      return <Archive className="h-3 w-3 text-cyan-500 flex-shrink-0 mt-0.5 group-data-[collapsible=icon]:hidden" />;
+    case 'Sent':
+      return <Clock className="h-3 w-3 text-blue-500 flex-shrink-0 mt-0.5 group-data-[collapsible=icon]:hidden" />;
+    case 'Accepted':
+      return <CheckCircle className="h-3 w-3 text-emerald-500 flex-shrink-0 mt-0.5 group-data-[collapsible=icon]:hidden" />;
     case 'Cancelled':
       return <XCircle className="h-3 w-3 text-red-500 flex-shrink-0 mt-0.5 group-data-[collapsible=icon]:hidden" />;
     case 'Expired':
@@ -113,9 +136,8 @@ const formatRelativeDate = (dateString: string) => {
 }
 
 const AppSidebar = forwardRef<AppSidebarRef, AppSidebarProps>(
-  ({ onNewRfx, onNavigateToHistory, onNavigateToProductInventory, onNavigateToBudgetSettings, onSelectRfx, currentView }, ref) => {
+  ({ onNewRfx, onNavigateToOverview, onNavigateToHistory, onNavigateToProductInventory, onNavigateToBudgetSettings, onSelectRfx, currentView }, ref) => {
     const { toggleSidebar } = useSidebar()
-    const { handleAPIError } = useAPICall()
     
     // Estado de feedback inline (sin toasts)
     const [feedback, setFeedback] = useState<{
@@ -123,6 +145,7 @@ const AppSidebar = forwardRef<AppSidebarRef, AppSidebarProps>(
       title: string
       message?: string
     } | null>(null)
+    const [deleteCandidate, setDeleteCandidate] = useState<{ id: string; title: string } | null>(null)
     
     // Auto-clear feedback después de 4 segundos
     useEffect(() => {
@@ -145,7 +168,7 @@ const AppSidebar = forwardRef<AppSidebarRef, AppSidebarProps>(
             title: item.title,
             client: item.client,
             date: formatRelativeDate(mostRecentISO),
-            status: mapBackendStatusToDisplay(item.status),
+            status: mapBackendStatusToDisplay(item.agentic_status || item.status),
             processed_by: item.processed_by, // ✅ Include user who processed the RFX
           }
         })
@@ -174,19 +197,12 @@ const AppSidebar = forwardRef<AppSidebarRef, AppSidebarProps>(
           console.log("Duplicate RFX:", rfxId)
           break
         case "delete":
-          handleDeleteRFX(rfxId, rfxTitle || "este RFX")
+          setDeleteCandidate({ id: rfxId, title: rfxTitle || "este RFX" })
           break
       }
     }
 
     const handleDeleteRFX = async (rfxId: string, rfxTitle: string) => {
-      // Note: Sidebar uses dropdown menu, so we can't use a dialog easily
-      // We'll use window.confirm here but with toast for feedback
-      const confirmed = window.confirm(`Are you sure you want to delete "${rfxTitle}"?
-
-This action cannot be undone.`)
-      if (!confirmed) return
-      
       try {
         console.log(`🗑️ Deleting RFX: ${rfxId}`)
         await api.deleteRFX(rfxId)
@@ -204,27 +220,27 @@ This action cannot be undone.`)
         setFeedback({
           type: "success",
           title: "RFX deleted",
-          message: `"${rfxTitle}" has been deleted successfully`,
+          message: `"${rfxTitle}" was deleted successfully.`,
         })
       } catch (error) {
         console.error(`❌ Error deleting RFX:`, error)
         
         // Determine error type and show appropriate message
         let errorTitle = "Delete error"
-        let errorMessage = "Could not delete RFX"
+        let errorMessage = "Could not delete the RFX."
         
         if (error instanceof APIError) {
           if (error.status === 403) {
             errorTitle = "Access denied"
-            errorMessage = "You don't have permission to delete this RFX. Only the creator can delete it."
+            errorMessage = "You do not have permission to delete this RFX."
           } else if (error.status === 404) {
             errorTitle = "RFX not found"
-            errorMessage = "The RFX you're trying to delete no longer exists."
+            errorMessage = "The RFX you are trying to delete no longer exists."
           } else if (error.status === 401) {
             errorTitle = "Session expired"
-            errorMessage = "Your session has expired. Please sign in again."
+            errorMessage = "Your session expired. Please sign in again."
           } else {
-            errorMessage = error.message || "An error occurred while deleting the RFX"
+            errorMessage = error.message || "An error occurred while deleting the RFX."
           }
         }
         
@@ -234,6 +250,8 @@ This action cannot be undone.`)
           title: errorTitle,
           message: errorMessage,
         })
+      } finally {
+        setDeleteCandidate(null)
       }
     }
 
@@ -270,7 +288,7 @@ This action cannot be undone.`)
               <SidebarMenuItem>
                 <SidebarMenuButton
                   onClick={onNewRfx}
-                  className="w-full bg-brand-gradient text-background font-semibold h-10 rounded-xl shadow-md hover:shadow-lg hover:scale-[1.02] transition-all duration-200 ease-out border-0"
+                  className="w-full bg-brand-gradient text-background hover:text-background hover:brightness-95 font-semibold h-10 rounded-xl shadow-md hover:shadow-lg hover:scale-[1.02] transition-all duration-200 ease-out border-0"
                 >
                   <Plus className="h-4 w-4" />
                   <span>New RFX</span>
@@ -289,6 +307,16 @@ This action cannot be undone.`)
         <SidebarGroup className="mb-6">
           <SidebarGroupContent>
             <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  onClick={onNavigateToOverview}
+                  isActive={currentView === "overview"}
+                  className="w-full justify-start text-gray-700 hover:bg-primary/5 hover:text-primary h-9 rounded-lg transition-all duration-200 data-[active=true]:bg-primary/10 data-[active=true]:text-primary data-[active=true]:font-semibold"
+                >
+                  <Archive className="h-4 w-4" />
+                  <span>Overview</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
               <SidebarMenuItem>
                 <SidebarMenuButton
                   onClick={onNavigateToHistory}
@@ -332,7 +360,7 @@ This action cannot be undone.`)
             <div
               role="status"
               aria-live="polite"
-              className={`group-data-[collapsible=icon]:hidden mb-3 rounded-lg p-3 text-sm border ${
+              className={`group-data-[collapsible=icon]:hidden mb-3 rounded-lg p-3 text-sm border motion-fade-up ${
                 feedback.type === "success"
                   ? "bg-green-50 text-green-800 border-green-200"
                   : "bg-red-50 text-red-800 border-red-200"
@@ -424,6 +452,31 @@ This action cannot be undone.`)
         <SidebarUser />
       </SidebarFooter>
 
+      <AlertDialog open={Boolean(deleteCandidate)} onOpenChange={(open) => !open && setDeleteCandidate(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete RFX</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. It will permanently delete
+              {deleteCandidate?.title ? ` "${deleteCandidate.title}"` : " this RFX"}.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => {
+                if (deleteCandidate) {
+                  handleDeleteRFX(deleteCandidate.id, deleteCandidate.title)
+                }
+              }}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       <SidebarRail />
     </Sidebar>
   )
@@ -432,4 +485,3 @@ This action cannot be undone.`)
 AppSidebar.displayName = "AppSidebar"
 
 export default AppSidebar
-

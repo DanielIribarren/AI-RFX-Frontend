@@ -385,7 +385,7 @@ export default function ProductInventoryPage() {
                   Export
                 </Button>
                 <label htmlFor="file-upload">
-                  <Button size="sm" className="bg-brand-gradient text-white" asChild>
+                  <Button size="sm" className="bg-brand-gradient text-white hover:brightness-95 hover:text-white" asChild>
                     <span>
                       <Upload className="h-4 w-4 mr-2" />
                       Upload File
@@ -525,7 +525,7 @@ export default function ProductInventoryPage() {
 
               <div className="flex flex-col sm:flex-row gap-4 mb-8">
                 <label htmlFor="file-upload-empty">
-                  <Button size="lg" className="bg-brand-gradient text-white shadow-lg hover:shadow-xl" asChild>
+                  <Button size="lg" className="bg-brand-gradient text-white hover:brightness-95 hover:text-white shadow-lg hover:shadow-xl" asChild>
                     <span>
                       <Upload className="h-5 w-5 mr-2" />
                       Upload Excel/CSV
