@@ -1,12 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-const BACKEND_URL = process.env.AUTH_API_URL || process.env.NEXT_PUBLIC_AUTH_API_URL || 'http://localhost:5001/api/auth'
+const AUTH_BASE_URL =
+  process.env.AUTH_API_URL ||
+  process.env.NEXT_PUBLIC_AUTH_API_URL ||
+  (process.env.NEXT_PUBLIC_API_URL ? `${process.env.NEXT_PUBLIC_API_URL}/api/auth` : undefined) ||
+  'http://localhost:5001/api/auth'
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
     
-    const response = await fetch(`${BACKEND_URL}/signup`, {
+    const response = await fetch(`${AUTH_BASE_URL}/signup`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

@@ -312,6 +312,8 @@ export interface RFXHistoryItem {
   date: string;
   status: 'draft' | 'in_progress' | 'completed' | 'cancelled' | 'expired';
   rfxId: string;
+  rfx_code?: string;
+  proposal_code?: string;
   // Agentic statuses
   processing_status?: 'in_progress' | 'processed';
   commercial_status?: 'not_sent' | 'sent' | 'accepted' | 'rejected';
@@ -686,6 +688,19 @@ export const api = {
         throw error;
       }
       throw new APIError('Network error fetching proposals', 0, 'NETWORK_ERROR');
+    }
+  },
+
+  async searchProposalsByCode(code: string, limit: number = 20): Promise<{ status: string; message: string; data: any[] }> {
+    try {
+      const query = encodeURIComponent(code.trim());
+      const response = await fetchWithAuth(`${API_BASE_URL}/api/proposals/search/by-code?code=${query}&limit=${limit}`);
+      return handleResponse<{ status: string; message: string; data: any[] }>(response);
+    } catch (error) {
+      if (error instanceof APIError) {
+        throw error;
+      }
+      throw new APIError('Network error searching proposals by code', 0, 'NETWORK_ERROR');
     }
   },
 

@@ -30,6 +30,8 @@ interface HistoryItem {
   propuesta?: string
   lastActivity: string
   rfxId: string
+  rfxCode?: string
+  proposalCode?: string
   // Información de empresa opcional
   empresa?: {
     nombre_empresa?: string
@@ -216,6 +218,8 @@ const RfxHistory = forwardRef<RfxHistoryRef, RfxHistoryProps>(
             productos: `${item.numero_productos} productos`,
             lastActivity: formatRelativeDate(mostRecentISO),
             rfxId: item.rfxId, // ⚠️ Legacy field - may contain name instead of UUID
+            rfxCode: (item as any).rfx_code,
+            proposalCode: (item as any).proposal_code,
             processed_by: item.processed_by, // ✅ Include user who processed the RFX
           };
         })
@@ -280,7 +284,9 @@ const RfxHistory = forwardRef<RfxHistoryRef, RfxHistoryProps>(
           item.title.toLowerCase().includes(query) ||
           item.client.toLowerCase().includes(query) ||
           item.productos.toLowerCase().includes(query) ||
-          item.rfxId.toLowerCase().includes(query),
+          item.rfxId.toLowerCase().includes(query) ||
+          (item.rfxCode || "").toLowerCase().includes(query) ||
+          (item.proposalCode || "").toLowerCase().includes(query),
       )
     }, [searchQuery, historyItems])
 
@@ -517,7 +523,7 @@ const RfxHistory = forwardRef<RfxHistoryRef, RfxHistoryProps>(
         <Search className="absolute left-5 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground/60" />
         <Input
           type="text"
-          placeholder="Search by title, client, or products..."
+          placeholder="Search by title, client, products, or code..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="pl-14 h-14 text-base border rounded-2xl bg-background shadow-sm focus:bg-background focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-200"
@@ -584,8 +590,13 @@ const RfxHistory = forwardRef<RfxHistoryRef, RfxHistoryProps>(
                     </div>
                     <div className="space-y-1">
                       <p className="text-sm text-muted-foreground">
-                        <span className="font-medium">{rfx.client}</span> • {rfx.rfxId}
+                        <span className="font-medium">{rfx.client}</span> • {rfx.rfxCode || rfx.rfxId}
                       </p>
+                      {rfx.proposalCode && (
+                        <p className="text-xs text-muted-foreground">
+                          {rfx.proposalCode ? `Presupuesto: ${rfx.proposalCode}` : ""}
+                        </p>
+                      )}
                       {rfx.empresa?.nombre_empresa && (
                         <p className="text-xs text-primary">
                           🏢 {rfx.empresa.nombre_empresa}
