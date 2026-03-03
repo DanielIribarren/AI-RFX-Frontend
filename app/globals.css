@@ -363,18 +363,15 @@ body {
 /* Legacy support para .proposal-content */
 .proposal-content {
   width: 100% !important;
-  max-width: none !important;
+  max-width: 100% !important;
   margin: 0 !important;
   padding: 0 !important;
 }
 
-.proposal-content>*,
-.proposal-content table,
-.proposal-content div,
-.proposal-content section,
-.proposal-content article {
-  max-width: none !important;
-  width: 100% !important;
+.proposal-content > *,
+.proposal-content table {
+  max-width: 100% !important;
+  width: auto !important;
   box-sizing: border-box;
   margin-left: 0 !important;
   margin-right: 0 !important;

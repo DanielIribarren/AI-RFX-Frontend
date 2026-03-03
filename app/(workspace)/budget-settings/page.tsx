@@ -1,14 +1,16 @@
 "use client"
 
+import { useState } from "react"
 import { Separator } from "@/components/ui/separator"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Settings, Upload, Eye, AlertCircle, Loader2 } from "lucide-react"
+import { Upload, Eye, AlertCircle, Loader2 } from "lucide-react"
 import BrandingUpload from "@/components/features/branding/BrandingUpload"
 import BrandingPreview from "@/components/features/branding/BrandingPreview"
 import { useAuth } from "@/contexts/AuthContext"
 
 export default function BudgetSettingsPage() {
   const { user, loading } = useAuth()
+  const [refreshCounter, setRefreshCounter] = useState(0)
 
   // El middleware ya maneja la protección de rutas
   // Mostramos loading mientras se carga el usuario
@@ -55,7 +57,10 @@ export default function BudgetSettingsPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <BrandingUpload companyId={user.id} />
+              <BrandingUpload
+                companyId={user.id}
+                onUploadComplete={() => setRefreshCounter((prev) => prev + 1)}
+              />
             </CardContent>
           </Card>
         </div>
@@ -73,7 +78,7 @@ export default function BudgetSettingsPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <BrandingPreview companyId={user.id} />
+              <BrandingPreview companyId={user.id} refreshTrigger={refreshCounter} />
             </CardContent>
           </Card>
         </div>

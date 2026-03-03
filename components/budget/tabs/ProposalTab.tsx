@@ -41,10 +41,25 @@ export function ProposalTab({
   const [isFullscreen, setIsFullscreen] = useState(false)
 
   useEffect(() => {
-    // Deshabilitado: El auto-scaling causaba compresión del ancho
-    // Ahora el contenedor mantiene su ancho completo con overflow-auto
-    setScale(1)
-  }, [htmlContent])
+    const updateScale = () => {
+      if (!containerRef.current || !contentRef.current) return
+
+      const containerWidth = Math.max(containerRef.current.clientWidth - 64, 320)
+      const contentWidth = contentRef.current.scrollWidth || contentRef.current.clientWidth
+      if (!contentWidth) {
+        setScale(1)
+        return
+      }
+
+      const fitScale = containerWidth / contentWidth
+      const nextScale = Math.max(1, Math.min(1.35, fitScale))
+      setScale(Number(nextScale.toFixed(3)))
+    }
+
+    updateScale()
+    window.addEventListener("resize", updateScale)
+    return () => window.removeEventListener("resize", updateScale)
+  }, [htmlContent, isFullscreen])
 
   if (!htmlContent) {
     return (
@@ -184,12 +199,12 @@ export function ProposalTab({
           isFullscreen ? 'fixed inset-4 z-50 overflow-auto' : 'min-h-[600px] overflow-x-auto'
         }`}
       >
-        <CardContent className="p-0 w-full">
+        <CardContent className="p-0 w-full overflow-x-auto">
           <div 
-            className="w-full"
+            className="w-full flex justify-center"
             style={{ 
               transform: `scale(${scale})`,
-              transformOrigin: 'top left',
+              transformOrigin: 'top center',
               transition: 'transform 0.3s ease'
             }}
           >
@@ -197,9 +212,9 @@ export function ProposalTab({
               ref={contentRef}
               className="proposal-content-wrapper bg-background"
               style={{ 
-                width: '100%',
-                minWidth: '100%',
-                padding: '3rem',
+                width: 'fit-content',
+                minWidth: 'fit-content',
+                padding: '2rem',
                 boxSizing: 'border-box'
               }}
               dangerouslySetInnerHTML={{ __html: htmlContent }}

@@ -16,11 +16,12 @@ import {
 
 interface BrandingUploadProps {
   companyId: string
+  onUploadComplete?: () => void
 }
 
 type UploadState = 'idle' | 'uploading' | 'analyzing' | 'completed' | 'error'
 
-export default function BrandingUpload({ companyId }: BrandingUploadProps) {
+export default function BrandingUpload({ companyId, onUploadComplete }: BrandingUploadProps) {
   const [logoFile, setLogoFile] = useState<File | null>(null)
   const [templateFile, setTemplateFile] = useState<File | null>(null)
   const [uploadState, setUploadState] = useState<UploadState>('idle')
@@ -51,10 +52,10 @@ export default function BrandingUpload({ companyId }: BrandingUploadProps) {
       if (templateFile.size > 10 * 1024 * 1024) {
         errors.push('Template debe ser menor a 10MB')
       }
-      if (!['pdf', 'png', 'jpg', 'jpeg', 'xlsx', 'xls'].includes(
+      if (!['pdf', 'png', 'jpg', 'jpeg'].includes(
         templateFile.name.split('.').pop()?.toLowerCase() || ''
       )) {
-        errors.push('Template debe ser PDF, PNG, JPG, JPEG, XLSX o XLS')
+        errors.push('Template debe ser PDF, PNG, JPG o JPEG')
       }
     }
 
@@ -110,12 +111,26 @@ export default function BrandingUpload({ companyId }: BrandingUploadProps) {
       const result = await response.json()
       
       if (result.status === 'success') {
-        setUploadState('analyzing')
-        setAnalysisProgress('Analizando logo y template con IA...')
-        setPollingAttempts(0) // Reset polling attempts counter
-        
-        // Start polling for analysis status
-        pollAnalysisStatus(companyId)
+        if (result.analysis_status === 'completed' || result.analysis_status === 'pending') {
+          setUploadState('completed')
+          setAnalysisProgress(
+            result.analysis_status === 'completed'
+              ? 'Análisis completado exitosamente'
+              : 'Archivos subidos exitosamente'
+          )
+          onUploadComplete?.()
+          setTimeout(() => {
+            setUploadState('idle')
+            setError(null)
+          }, 2000)
+        } else {
+          setUploadState('analyzing')
+          setAnalysisProgress('Analizando logo y template con IA...')
+          setPollingAttempts(0) // Reset polling attempts counter
+          
+          // Start polling for analysis status
+          pollAnalysisStatus(companyId)
+        }
       } else {
         throw new Error(result.message || 'Error al subir archivos')
       }
@@ -159,6 +174,7 @@ export default function BrandingUpload({ companyId }: BrandingUploadProps) {
           setUploadState('completed')
           setAnalysisProgress('Análisis completado exitosamente')
           setPollingAttempts(0)
+          onUploadComplete?.()
           // Reset to idle after 2 seconds to allow re-upload
           setTimeout(() => {
             setUploadState('idle')
@@ -286,7 +302,7 @@ export default function BrandingUpload({ companyId }: BrandingUploadProps) {
             ref={templateInputRef}
             type="file"
             className="hidden"
-            accept=".pdf,.png,.jpg,.jpeg,.xlsx,.xls"
+            accept=".pdf,.png,.jpg,.jpeg"
             onChange={(e) => setTemplateFile(e.target.files?.[0] || null)}
             disabled={uploadState === 'uploading' || uploadState === 'analyzing'}
           />
@@ -298,7 +314,7 @@ export default function BrandingUpload({ companyId }: BrandingUploadProps) {
                 {templateFile ? templateFile.name : 'Click para subir template'}
               </p>
               <p className="text-xs text-muted-foreground">
-                PDF, PNG, JPG, JPEG, XLSX, XLS (máx. 10MB)
+                PDF, PNG, JPG, JPEG (máx. 10MB)
               </p>
             </div>
           </div>

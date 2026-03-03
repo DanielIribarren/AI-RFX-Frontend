@@ -56,9 +56,10 @@ interface BrandingConfig {
 
 interface BrandingPreviewProps {
   companyId: string
+  refreshTrigger?: number
 }
 
-export default function BrandingPreview({ companyId }: BrandingPreviewProps) {
+export default function BrandingPreview({ companyId, refreshTrigger = 0 }: BrandingPreviewProps) {
   const [config, setConfig] = useState<BrandingConfig | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -207,7 +208,7 @@ export default function BrandingPreview({ companyId }: BrandingPreviewProps) {
 
   useEffect(() => {
     loadBrandingConfig()
-  }, [companyId])
+  }, [companyId, refreshTrigger])
 
   if (isLoading) {
     return (
@@ -240,6 +241,13 @@ export default function BrandingPreview({ companyId }: BrandingPreviewProps) {
     hasBranding: config?.has_branding,
     configKeys: config ? Object.keys(config) : []
   })
+
+  const logoAnalysis = config?.logo_analysis && typeof config.logo_analysis === 'object' ? config.logo_analysis : undefined
+  const dominantColors = Array.isArray(logoAnalysis?.dominant_colors) ? logoAnalysis.dominant_colors : []
+  const templateAnalysis = config?.template_analysis && typeof config.template_analysis === 'object' ? config.template_analysis : undefined
+  const layoutStructure = templateAnalysis?.layout_structure || 'n/a'
+  const designStyle = templateAnalysis?.design_style || 'n/a'
+  const fontFamily = templateAnalysis?.typography?.font_family
 
   if (!config || !config.has_branding) {
     console.log('[BrandingPreview] Showing empty state')
@@ -299,7 +307,7 @@ export default function BrandingPreview({ companyId }: BrandingPreviewProps) {
       )}
 
       {/* Color Analysis */}
-      {config.logo_analysis && (
+      {logoAnalysis && (
         <div className="space-y-3">
           <h4 className="text-sm font-medium flex items-center gap-2">
             <Palette className="h-4 w-4" />
@@ -310,35 +318,35 @@ export default function BrandingPreview({ companyId }: BrandingPreviewProps) {
             <div className="space-y-2">
               <span className="text-xs text-muted-foreground">Primario</span>
               <div className="flex items-center gap-2">
-                <div 
-                  className="w-6 h-6 rounded border"
-                  style={{ backgroundColor: config.logo_analysis.primary_color }}
-                />
-                <span className="text-xs font-mono">
-                  {config.logo_analysis.primary_color}
-                </span>
+                  <div 
+                    className="w-6 h-6 rounded border"
+                    style={{ backgroundColor: logoAnalysis.primary_color }}
+                  />
+                  <span className="text-xs font-mono">
+                    {logoAnalysis.primary_color || 'n/a'}
+                  </span>
+                </div>
               </div>
-            </div>
             
             <div className="space-y-2">
               <span className="text-xs text-muted-foreground">Secundario</span>
               <div className="flex items-center gap-2">
-                <div 
-                  className="w-6 h-6 rounded border"
-                  style={{ backgroundColor: config.logo_analysis.secondary_color }}
-                />
-                <span className="text-xs font-mono">
-                  {config.logo_analysis.secondary_color}
-                </span>
+                  <div 
+                    className="w-6 h-6 rounded border"
+                    style={{ backgroundColor: logoAnalysis.secondary_color }}
+                  />
+                  <span className="text-xs font-mono">
+                    {logoAnalysis.secondary_color || 'n/a'}
+                  </span>
+                </div>
               </div>
-            </div>
           </div>
 
-          {config.logo_analysis.dominant_colors.length > 2 && (
+          {dominantColors.length > 2 && (
             <div className="space-y-2">
               <span className="text-xs text-muted-foreground">Paleta Completa</span>
               <div className="flex gap-1 flex-wrap">
-                {config.logo_analysis.dominant_colors.map((color, index) => (
+                {dominantColors.map((color, index) => (
                   <div 
                     key={index}
                     className="w-8 h-8 rounded border"
@@ -353,7 +361,7 @@ export default function BrandingPreview({ companyId }: BrandingPreviewProps) {
       )}
 
       {/* Template Analysis */}
-      {config.template_analysis && (
+      {templateAnalysis && (
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <h4 className="text-sm font-medium flex items-center gap-2">
@@ -369,21 +377,21 @@ export default function BrandingPreview({ companyId }: BrandingPreviewProps) {
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <span className="text-xs text-muted-foreground block">Estilo</span>
-                <span className="capitalize">{config.template_analysis.design_style}</span>
+                <span className="capitalize">{designStyle}</span>
               </div>
               
               <div>
                 <span className="text-xs text-muted-foreground block">Estructura</span>
-                <span className="capitalize">{config.template_analysis.layout_structure.replace(/-/g, ' ')}</span>
+                <span className="capitalize">{layoutStructure.replace(/-/g, ' ')}</span>
               </div>
             </div>
 
-            {config.template_analysis.typography && (
+            {fontFamily && (
               <div>
                 <span className="text-xs text-muted-foreground block mb-1">Tipografía</span>
                 <div className="flex items-center gap-2">
                   <Type className="h-4 w-4 text-muted-foreground/60" />
-                  <span className="text-xs">{config.template_analysis.typography.font_family}</span>
+                  <span className="text-xs">{fontFamily}</span>
                 </div>
               </div>
             )}
