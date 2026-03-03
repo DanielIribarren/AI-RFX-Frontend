@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Alert, AlertDescription } from "@/components/ui/alert"
@@ -26,6 +26,10 @@ interface ProductoIndividual {
   unidad: string
   precio: number
   isQuantityModified: boolean
+  specifications?: Record<string, any> | null
+  bundle_breakdown?: Array<any>
+  is_bundle?: boolean
+  inferred_bundle?: boolean
 }
 
 interface ExtractedData {
@@ -88,6 +92,11 @@ interface BudgetGenerationViewProps {
   // Template selection
   selectedTemplate?: string
   onTemplateChange?: (templateId: string) => void
+
+  // UI controls for route-level layout composition
+  showBackButton?: boolean
+  showHeaderDownloadAction?: boolean
+  showPreviewTab?: boolean
 }
 
 export default function BudgetGenerationView({
@@ -122,9 +131,18 @@ export default function BudgetGenerationView({
   isLoadingProposal = false,
   selectedTemplate = "custom",
   onTemplateChange,
+  showBackButton = true,
+  showHeaderDownloadAction = true,
+  showPreviewTab = true,
 }: BudgetGenerationViewProps) {
   
-  const [activeTab, setActiveTab] = useState("preview")
+  const [activeTab, setActiveTab] = useState(showPreviewTab ? "preview" : "pricing")
+
+  useEffect(() => {
+    if (!showPreviewTab && activeTab === "preview") {
+      setActiveTab("pricing")
+    }
+  }, [showPreviewTab, activeTab])
   
   // Auth context for company ID
   const { user } = useAuth()
@@ -206,16 +224,18 @@ export default function BudgetGenerationView({
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <Button 
-                onClick={onBackToData} 
-                variant="outline" 
-                size="sm"
-                className="gap-2"
-                disabled={isRegenerating || isFinalized}
-              >
-                <ArrowLeft className="h-4 w-4" />
-                Back
-              </Button>
+              {showBackButton && (
+                <Button 
+                  onClick={onBackToData} 
+                  variant="outline" 
+                  size="sm"
+                  className="gap-2"
+                  disabled={isRegenerating || isFinalized}
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                  Back
+                </Button>
+              )}
               <div>
                 <h1 className="text-xl font-bold">
                   Budget Configuration
@@ -227,16 +247,18 @@ export default function BudgetGenerationView({
             </div>
             
             <div className="flex gap-2">
-              <Button 
-                onClick={onDownloadPDF}
-                disabled={!transformedPropuesta || isFinalized}
-                variant="outline"
-                size="sm"
-                className="gap-2"
-              >
-                <Download className="h-4 w-4" />
-                PDF
-              </Button>
+              {showHeaderDownloadAction && (
+                <Button 
+                  onClick={onDownloadPDF}
+                  disabled={!transformedPropuesta || isFinalized}
+                  variant="outline"
+                  size="sm"
+                  className="gap-2"
+                >
+                  <Download className="h-4 w-4" />
+                  PDF
+                </Button>
+              )}
               
               {!isFinalized && (
                 <Button
@@ -256,11 +278,13 @@ export default function BudgetGenerationView({
       {/* Content con Tabs */}
       <div className="w-full px-6 py-6">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6 w-full">
-          <TabsList className="grid w-full grid-cols-3 !flex-none max-w-full">
-            <TabsTrigger value="preview" className="gap-2 flex-1">
-              <Eye className="h-4 w-4" />
-              Vista Previa
-            </TabsTrigger>
+          <TabsList className={`grid w-full !flex-none max-w-full ${showPreviewTab ? "grid-cols-3" : "grid-cols-2"}`}>
+            {showPreviewTab && (
+              <TabsTrigger value="preview" className="gap-2 flex-1">
+                <Eye className="h-4 w-4" />
+                Vista Previa
+              </TabsTrigger>
+            )}
             <TabsTrigger value="pricing" className="gap-2 flex-1">
               <Settings className="h-4 w-4" />
               Configuración
@@ -272,23 +296,25 @@ export default function BudgetGenerationView({
           </TabsList>
 
           {/* Tab 1: Vista Previa de Costos */}
-          <TabsContent value="preview" className="space-y-6 mt-6">
-            <PreviewTab
-              productos={productosIndividuales}
-              config={currentPricingConfig}
-              formatPrice={(amount: number) => formatPrice(amount, selectedCurrency)}
-              currencySymbol={getCurrencyInfo()?.symbol || "€"}
-              selectedCurrency={selectedCurrency}
-              onQuantityChange={onQuantityChange}
-              onPriceChange={onPriceChange}
-              onCostChange={onCostChange}
-              onUnitChange={onUnitChange}
-              onDeleteProduct={onDeleteProduct}
-              onCoordinationToggle={handleCoordinationToggle}
-              onCoordinationRateChange={handleCoordinationRateChange}
-              isEditable={!isFinalized}
-            />
-          </TabsContent>
+          {showPreviewTab && (
+            <TabsContent value="preview" className="space-y-6 mt-6">
+              <PreviewTab
+                productos={productosIndividuales}
+                config={currentPricingConfig}
+                formatPrice={(amount: number) => formatPrice(amount, selectedCurrency)}
+                currencySymbol={getCurrencyInfo()?.symbol || "€"}
+                selectedCurrency={selectedCurrency}
+                onQuantityChange={onQuantityChange}
+                onPriceChange={onPriceChange}
+                onCostChange={onCostChange}
+                onUnitChange={onUnitChange}
+                onDeleteProduct={onDeleteProduct}
+                onCoordinationToggle={handleCoordinationToggle}
+                onCoordinationRateChange={handleCoordinationRateChange}
+                isEditable={!isFinalized}
+              />
+            </TabsContent>
+          )}
 
           {/* Tab 2: Configuración de Pricing */}
           <TabsContent value="pricing" className="space-y-6 mt-6">

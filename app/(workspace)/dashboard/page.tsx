@@ -2,13 +2,61 @@
 
 import { useState } from "react";
 import RfxChatInput from "@/components/features/rfx/RFXChatInput";
-import { useRouter } from "next/navigation";
+import RFXReviewInlineChat from "@/components/features/rfx/RFXReviewInlineChat";
+import { useRouter, useSearchParams } from "next/navigation";
+import { api } from "@/lib/api";
 import type { RFXResponse } from "@/lib/api";
+import { getReviewState } from "@/lib/review-api";
 import { showErrorToast } from "@/lib/toast";
+import { useEffect } from "react";
 
 export default function DashboardPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [reviewSession, setReviewSession] = useState<{ rfxId: string; entityType: "rfx" | "session"; data?: any } | null>(null);
+  const reviewRfxId = searchParams.get("review_rfx_id");
+
+  useEffect(() => {
+    if (!reviewRfxId || reviewSession?.rfxId === reviewRfxId) return;
+
+    let cancelled = false;
+    const loadPendingReview = async () => {
+      try {
+        const reviewResp = await getReviewState(reviewRfxId, "rfx");
+        if (cancelled) return;
+
+        const reviewData = reviewResp?.data;
+        if (reviewData?.review_required && !reviewData?.review_confirmed) {
+          const inferredEntityType = (
+            reviewData?.entity_type === "session" ||
+            reviewData?.session_id === reviewRfxId
+              ? "session"
+              : "rfx"
+          ) as "rfx" | "session";
+
+          let payloadData: any = undefined;
+          if (inferredEntityType === "session") {
+            payloadData = reviewData?.preview_data;
+          } else {
+            const rfxResp = await api.getRFXById(reviewRfxId);
+            if (rfxResp.status === "success" && rfxResp.data) {
+              payloadData = rfxResp.data;
+            }
+          }
+
+          setReviewSession({ rfxId: reviewRfxId, entityType: inferredEntityType, data: payloadData });
+        }
+      } catch (error) {
+        console.error("Error loading pending review from query param:", error);
+      }
+    };
+
+    loadPendingReview();
+    return () => {
+      cancelled = true;
+    };
+  }, [reviewRfxId, reviewSession?.rfxId]);
 
   const handleFileProcessed = async (text: string) => {
     setIsAnalyzing(true);
@@ -28,7 +76,22 @@ export default function DashboardPage() {
     console.log("RFX processed, navigating to results:", response);
     
     if (response.status === "success" && response.data?.id) {
-      // Navigate to results using the RFX ID
+      const useReviewStep = Boolean(response.review_required) || response.next_step === "review_chat";
+      if (useReviewStep) {
+        const entityType = (
+          response.entity_type === "session" ||
+          (response.session_id && response.session_id === response.data.id)
+            ? "session"
+            : "rfx"
+        ) as "rfx" | "session";
+        setReviewSession({
+          rfxId: response.data.id,
+          entityType,
+          data: response.data,
+        });
+        return;
+      }
+
       router.push(`/rfx-result-wrapper-v2/data/${response.data.id}`);
     } else {
       console.error("Error processing RFX:", response.message);
@@ -59,13 +122,6 @@ export default function DashboardPage() {
             Write specific instructions or attach files to get started.
           </p>
         </div>
-
-        {/* Chat Input */}
-        <RfxChatInput
-          onFileProcessed={handleFileProcessed}
-          onRFXProcessed={handleRFXProcessed}
-          isLoading={isAnalyzing}
-        />
 
         {/* Feature Cards */}
         <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
@@ -123,6 +179,29 @@ export default function DashboardPage() {
             </p>
           </div>
         </div>
+
+        {/* Chat Input */}
+        <div className="pt-2">
+          <RfxChatInput
+            onFileProcessed={handleFileProcessed}
+            onRFXProcessed={handleRFXProcessed}
+            isLoading={isAnalyzing}
+          />
+        </div>
+
+        {reviewSession && (
+          <div className="max-w-5xl mx-auto pt-4">
+            <RFXReviewInlineChat
+              rfxId={reviewSession.rfxId}
+              entityType={reviewSession.entityType}
+              initialData={reviewSession.data}
+              onConfirmed={(rfxId) => {
+                setReviewSession(null);
+                router.push(`/rfx-result-wrapper-v2/data/${rfxId}`);
+              }}
+            />
+          </div>
+        )}
       </div>
     </div>
   );

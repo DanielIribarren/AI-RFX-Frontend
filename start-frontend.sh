@@ -33,11 +33,11 @@ check_port() {
     fi
 }
 
-# Kill any existing processes on port 3000
+# Kill any existing processes on port 3004
 echo "🧹 Cleaning up existing processes..."
-if check_port 3000; then
-    echo "   - Stopping processes on port 3000"
-    lsof -ti :3000 | xargs kill -9 2>/dev/null
+if check_port 3004; then
+    echo "   - Stopping processes on port 3004"
+    lsof -ti :3004 | xargs kill -9 2>/dev/null
 fi
 
 # Wait a moment for port to be freed
@@ -45,7 +45,7 @@ sleep 2
 
 # Start the frontend server
 echo "⚛️  Starting Frontend Server..."
-echo "🌐 App will be available at: http://localhost:3000"
+echo "🌐 App will be available at: http://localhost:3004"
 echo "🔗 Make sure backend is running at: http://localhost:5001"
 echo "=" * 50
 

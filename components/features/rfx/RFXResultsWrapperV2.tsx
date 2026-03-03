@@ -53,6 +53,10 @@ interface ProductoIndividual {
   ganancia_unitaria?: number
   margen_ganancia?: number
   total_profit?: number // Campo adicional del backend
+  specifications?: Record<string, any> | null
+  bundle_breakdown?: Array<any>
+  is_bundle?: boolean
+  inferred_bundle?: boolean
 }
 
 interface RfxResultsWrapperV2Props {
@@ -131,7 +135,7 @@ export default function RfxResultsWrapperV2({
         return products.map((p: any) => {
           const name = p?.product_name || p?.nombre || 'Producto'
           const quantity = p?.quantity || p?.cantidad || 1
-          const unit = p?.unit || p?.unidad || 'unidades'
+          const unit = p?.unit || p?.unidad || p?.unit_of_measure || 'unidades'
           return `${name} (${quantity} ${unit})`
         }).join(', ')
       }
@@ -533,6 +537,17 @@ export default function RfxResultsWrapperV2({
 
     const products = (data as any).products || (data as any).productos || (data as any).requested_products || []
 
+    const parseMaybeJson = (value: any) => {
+      if (!value) return null
+      if (typeof value === "object") return value
+      if (typeof value !== "string") return null
+      try {
+        return JSON.parse(value)
+      } catch {
+        return null
+      }
+    }
+
     return products.map((product: any, index: number) => {
       let originalQuantity = 1
 
@@ -545,8 +560,14 @@ export default function RfxResultsWrapperV2({
       }
 
       const productName = product.product_name || product.nombre || product.name || `Producto ${index + 1}`
-      const productUnit = product.unit || product.unidad || product.measurement_unit || 'unidades'
+      const productUnit = product.unit || product.unidad || product.unit_of_measure || product.measurement_unit || 'unidades'
       const productPrice = parseFloat(String(product.precio_unitario || product.estimated_unit_price || product.unit_price || product.price || 0)) || 0
+      const specifications = parseMaybeJson(product.specifications || product.especificaciones)
+      const bundleBreakdown = Array.isArray(product.bundle_breakdown)
+        ? product.bundle_breakdown
+        : Array.isArray(specifications?.bundle_breakdown)
+          ? specifications.bundle_breakdown
+          : []
 
       // Extraer nuevos campos de ganancias con nombres correctos del backend
       const costoUnitario = parseFloat(String(product.unit_cost || product.costo_unitario || 0)) || 0
@@ -567,7 +588,11 @@ export default function RfxResultsWrapperV2({
         costo_unitario: costoUnitario,
         ganancia_unitaria: gananciaUnitaria,
         margen_ganancia: margenGanancia,
-        total_profit: totalProfit
+        total_profit: totalProfit,
+        specifications,
+        bundle_breakdown: bundleBreakdown,
+        is_bundle: Boolean(product.is_bundle || specifications?.is_bundle || bundleBreakdown.length > 0),
+        inferred_bundle: Boolean(product.inferred_bundle || specifications?.inferred_bundle)
       }
     })
   }
@@ -687,7 +712,7 @@ export default function RfxResultsWrapperV2({
     if (credits && !checkCredits(requiredCredits)) {
       showWarningToast({
         title: "Insufficient credits",
-        message: `You need ${requiredCredits} credits and you currently have ${credits.available_credits}.`,
+        message: `You need ${requiredCredits} credits and you currently have ${credits.credits_available ?? (credits.credits_total - credits.credits_used)}.`,
       })
       return
     }
@@ -1051,7 +1076,7 @@ export default function RfxResultsWrapperV2({
         const newExtractedData = {
           solicitante: (completeData as any).requester_name || (completeData as any).nombre_solicitante || (completeData as any).nombre_cliente || metadata.nombre_solicitante || "",
           email: completeData.email || metadata.email || "",
-          productos: ((completeData as any).products?.map((p: any) => `${p.product_name || p.nombre} (${p.quantity || p.cantidad} ${p.unit || p.unidad})`).join(', '))
+          productos: ((completeData as any).products?.map((p: any) => `${p.product_name || p.nombre} (${p.quantity || p.cantidad} ${p.unit || p.unidad || p.unit_of_measure || "u"})`).join(', '))
             || ((completeData as any).productos?.map((p: any) => `${p.nombre} (${p.cantidad} ${p.unidad})`).join(', ')) || "",
           fechaEntrega: (completeData as any).delivery_date || (completeData as any).fecha || metadata.fecha || "",
           lugarEntrega: (completeData as any).location || (completeData as any).lugar || metadata.lugar || "",

@@ -27,7 +27,8 @@ export default function RFXUpdateChatPanel({
   onClose,
   rfxId,
   rfxData,
-  onUpdate
+  onUpdate,
+  skipCreditsCheck = false
 }: RFXUpdateChatPanelProps) {
   // ==================== HOOKS ====================
   const { credits, checkCredits, refreshCredits } = useCredits()
@@ -39,6 +40,7 @@ export default function RFXUpdateChatPanel({
   const [isMinimized, setIsMinimized] = useState(false)
   const [attachedFiles, setAttachedFiles] = useState<File[]>([])
   const [isLoadingHistory, setIsLoadingHistory] = useState(false)
+  const hasInsufficientCredits = !skipCreditsCheck && Boolean(credits && !checkCredits(CHAT_MESSAGE_COST))
 
   // Estado para redimensionamiento
   const [panelWidth, setPanelWidth] = useState(() => {
@@ -239,7 +241,9 @@ Write your request below ↓`,
       }
 
       // Refrescar créditos después de enviar mensaje
-      await refreshCredits()
+      if (!skipCreditsCheck) {
+        await refreshCredits()
+      }
 
     } catch (error) {
       console.error("Error sending message:", error)
@@ -527,7 +531,7 @@ Por favor, intenta de nuevo o reformula tu solicitud.`,
           {/* Input Area */}
           <div className="p-4 border-t shrink-0">
             {/* Low Credits Alert */}
-            {credits && !checkCredits(CHAT_MESSAGE_COST) && (
+            {hasInsufficientCredits && credits && (
               <div className="mb-3">
                 <LowCreditsAlert
                   currentCredits={credits.credits_available}
@@ -581,10 +585,10 @@ Por favor, intenta de nuevo o reformula tu solicitud.`,
               </div>
               <Button
                 size="icon"
-                disabled={!inputValue.trim() || isTyping || (credits ? !checkCredits(CHAT_MESSAGE_COST) : false)}
+                disabled={!inputValue.trim() || isTyping || hasInsufficientCredits}
                 onClick={handleSendMessage}
                 title={
-                  credits && !checkCredits(CHAT_MESSAGE_COST)
+                  hasInsufficientCredits
                     ? "Créditos insuficientes"
                     : "Enviar mensaje"
                 }

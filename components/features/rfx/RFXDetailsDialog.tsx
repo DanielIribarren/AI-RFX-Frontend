@@ -33,6 +33,10 @@ interface ProductoIndividual {
   cantidad: number
   unidad: string
   precio: number
+  specifications?: Record<string, any> | null
+  bundle_breakdown?: Array<any>
+  is_bundle?: boolean
+  inferred_bundle?: boolean
 }
 
 interface RFXDetailsDialogProps {
@@ -167,7 +171,7 @@ const RFXDetailsDialog = ({ rfxId, isOpen, onClose, rfxData, onViewFullAnalysis 
           // Handle both V2.0 structure and legacy structure
           const name = p?.product_name || p?.nombre || 'Producto'
           const quantity = p?.quantity || p?.cantidad || 1
-          const unit = p?.unit || p?.unidad || 'unidades'
+          const unit = p?.unit || p?.unidad || p?.unit_of_measure || 'unidades'
           return `${name} (${quantity} ${unit})`
         }).join(', ')
       }
@@ -204,15 +208,42 @@ const RFXDetailsDialog = ({ rfxId, isOpen, onClose, rfxData, onViewFullAnalysis 
       ?? []
     
     const productsArray = Array.isArray(possibleProducts) ? possibleProducts : []
+
+    const parseMaybeJson = (value: any) => {
+      if (!value) return null
+      if (typeof value === 'object') return value
+      if (typeof value !== 'string') return null
+      try {
+        return JSON.parse(value)
+      } catch {
+        return null
+      }
+    }
     
     return productsArray.map((product: any, index: number) => {
       const id = product?.id ?? `product-${index}`
       const nombre = product?.product_name ?? product?.nombre ?? product?.name ?? `Producto ${index + 1}`
       const cantidad = parseInt(String(product?.quantity ?? product?.cantidad ?? product?.qty ?? 1)) || 1
-      const unidad = product?.unit ?? product?.unidad ?? product?.measurement_unit ?? 'unidades'
+      const unidad = product?.unit ?? product?.unidad ?? product?.unit_of_measure ?? product?.measurement_unit ?? 'unidades'
       const precio = parseFloat(String(product?.precio_unitario ?? product?.estimated_unit_price ?? product?.unit_price ?? product?.price ?? 0)) || 0
-      
-      return { id, nombre, cantidad, unidad, precio }
+      const specifications = parseMaybeJson(product?.specifications ?? product?.especificaciones)
+      const bundleBreakdown = Array.isArray(product?.bundle_breakdown)
+        ? product.bundle_breakdown
+        : Array.isArray(specifications?.bundle_breakdown)
+          ? specifications.bundle_breakdown
+          : []
+
+      return {
+        id,
+        nombre,
+        cantidad,
+        unidad,
+        precio,
+        specifications,
+        bundle_breakdown: bundleBreakdown,
+        is_bundle: Boolean(product?.is_bundle || specifications?.is_bundle || bundleBreakdown.length > 0),
+        inferred_bundle: Boolean(product?.inferred_bundle || specifications?.inferred_bundle)
+      }
     })
   }
 
@@ -241,7 +272,7 @@ const RFXDetailsDialog = ({ rfxId, isOpen, onClose, rfxData, onViewFullAnalysis 
       const result = await api.getRFXById(rfxId)
       console.log("🔍 DEBUG RFXDetailsDialog: Response status:", result.status)
       console.log("🔍 DEBUG RFXDetailsDialog: Response data keys:", result.data ? Object.keys(result.data) : 'no data')
-      console.log("🔍 DEBUG RFXDetailsDialog: generated_html in response:", result.data?.generated_html)
+      console.log("🔍 DEBUG RFXDetailsDialog: generated_html in response:", (result.data as any)?.generated_html)
       
       if (result.status === "success" && result.data) {
         return result.data
@@ -506,6 +537,26 @@ const RFXDetailsDialog = ({ rfxId, isOpen, onClose, rfxData, onViewFullAnalysis 
                             <p className="text-xs text-muted-foreground">
                               {producto.cantidad} {producto.unidad}
                             </p>
+                            {Array.isArray(producto.bundle_breakdown) && producto.bundle_breakdown.length > 0 && (
+                              <div className="mt-2 rounded-md bg-muted/40 p-2 text-xs text-muted-foreground">
+                                {producto.bundle_breakdown.map((item: any, idx: number) => {
+                                  const name =
+                                    item?.selected?.name ||
+                                    item?.selected ||
+                                    item?.nombre ||
+                                    item?.name ||
+                                    item?.option ||
+                                    item?.plato ||
+                                    item?.day ||
+                                    `Subitem ${idx + 1}`
+                                  return (
+                                    <div key={`${producto.id}-breakdown-${idx}`} className="leading-5">
+                                      ↳ {name}
+                                    </div>
+                                  )
+                                })}
+                              </div>
+                            )}
                           </div>
                           <div className="text-right">
                             <div className="text-sm font-semibold text-gray-900">

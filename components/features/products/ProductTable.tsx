@@ -91,6 +91,10 @@ interface ProductoIndividual {
   // Campos para animaciones del chat
   isNew?: boolean
   isModified?: boolean
+  specifications?: Record<string, any> | null
+  bundle_breakdown?: Array<any>
+  is_bundle?: boolean
+  inferred_bundle?: boolean
 }
 
 interface ProductTableProps {
@@ -111,6 +115,45 @@ interface ProductTableProps {
   coordinationRate?: number
   onCoordinationToggle?: (enabled: boolean) => void
   onCoordinationRateChange?: (rate: number) => void
+}
+
+const toNumberOrNull = (value: unknown): number | null => {
+  const n = Number(value)
+  return Number.isFinite(n) ? n : null
+}
+
+const getProductBreakdown = (producto: ProductoIndividual): Array<any> => {
+  const direct = Array.isArray(producto.bundle_breakdown) ? producto.bundle_breakdown : []
+  if (direct.length > 0) return direct
+
+  const nested = Array.isArray((producto.specifications as any)?.bundle_breakdown)
+    ? (producto.specifications as any).bundle_breakdown
+    : []
+  return nested
+}
+
+const formatBreakdownNode = (item: any, currencySymbol: string) => {
+  const name =
+    item?.selected?.name ||
+    item?.selected ||
+    item?.nombre ||
+    item?.name ||
+    item?.option ||
+    item?.plato ||
+    item?.day ||
+    "Subitem"
+
+  const qty = toNumberOrNull(item?.cantidad ?? item?.quantity ?? item?.qty)
+  const unit = item?.unidad || item?.unit || ""
+  const price = toNumberOrNull(item?.precio_unitario ?? item?.unit_price ?? item?.price ?? item?.price_unit)
+
+  const qtyPart = qty !== null ? `${qty}${unit ? ` ${unit}` : ""}` : ""
+  const pricePart = price !== null ? `${currencySymbol}${price.toFixed(2)}` : ""
+
+  return {
+    name: String(name),
+    meta: [qtyPart, pricePart].filter(Boolean).join(" · ")
+  }
 }
 
 interface InlineEditableCellProps {
@@ -354,6 +397,7 @@ export default function ProductTable({
         {productos.map((producto) => {
           const safeQuantity = producto.cantidadEditada ?? producto.cantidadOriginal ?? producto.cantidad ?? 1
           const subtotal = safeQuantity * producto.precio
+          const breakdown = getProductBreakdown(producto)
           
           // Check if product price needs review
           const needsPriceReview = isProductPriceUnreviewed && isProductPriceUnreviewed(producto.id)
@@ -403,6 +447,19 @@ export default function ProductTable({
                   <div className="text-xs text-amber-600 font-medium flex items-center gap-1 mt-1">
                     <AlertTriangle className="h-3 w-3" />
                     Precio requiere revisión
+                  </div>
+                )}
+                {breakdown.length > 0 && (
+                  <div className="mt-2 space-y-1 rounded-md bg-gray-50 p-2">
+                    {breakdown.map((item: any, idx: number) => {
+                      const node = formatBreakdownNode(item, currencySymbol || "$")
+                      return (
+                        <div key={`${producto.id}-breakdown-${idx}`} className="text-xs text-gray-600">
+                          <span className="font-medium">↳ {node.name}</span>
+                          {node.meta ? <span className="ml-1 text-gray-500">({node.meta})</span> : null}
+                        </div>
+                      )
+                    })}
                   </div>
                 )}
               </div>

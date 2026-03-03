@@ -18,6 +18,10 @@ interface ProductoIndividual {
   ganancia_unitaria?: number
   margen_ganancia?: number
   total_profit?: number
+  specifications?: Record<string, any> | null
+  bundle_breakdown?: Array<any>
+  is_bundle?: boolean
+  inferred_bundle?: boolean
 }
 
 interface PreviewTabProps {

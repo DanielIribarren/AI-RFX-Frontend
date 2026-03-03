@@ -41,12 +41,17 @@ interface ProductoIndividual {
   ganancia_unitaria?: number
   margen_ganancia?: number
   total_profit?: number // Campo adicional del backend
+  specifications?: Record<string, any> | null
+  bundle_breakdown?: Array<any>
+  is_bundle?: boolean
+  inferred_bundle?: boolean
 }
 
 interface RFXDataViewProps {
   extractedData: ExtractedData
   onFieldSave: (field: keyof ExtractedData, value: string | number) => Promise<void>
-  onGenerateBudget: () => void
+  onGenerateBudget?: () => void
+  showGenerateBudgetAction?: boolean
   rfxId?: string
   rfxTitle?: string
   onTitleSave?: (newTitle: string) => Promise<void>
@@ -75,6 +80,7 @@ export default function RFXDataView({
   extractedData,
   onFieldSave,
   onGenerateBudget,
+  showGenerateBudgetAction = true,
   rfxId,
   rfxTitle = "Datos Extraídos",
   onTitleSave,
@@ -165,13 +171,15 @@ export default function RFXDataView({
             <MessageSquare className="h-4 w-4" />
             Abrir Chat
           </Button>
-          <Button
-            onClick={onGenerateBudget}
-            className="gap-2 hover:text-foreground"
-          >
-            <Briefcase className="h-4 w-4" />
-            Generar Presupuesto
-          </Button>
+          {showGenerateBudgetAction && onGenerateBudget && (
+            <Button
+              onClick={onGenerateBudget}
+              className="gap-2 hover:text-foreground"
+            >
+              <Briefcase className="h-4 w-4" />
+              Generar Presupuesto
+            </Button>
+          )}
         </div>
       </div>
 

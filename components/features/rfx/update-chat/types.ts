@@ -75,4 +75,5 @@ export interface RFXUpdateChatPanelProps {
   rfxId: string
   rfxData: any
   onUpdate: (changes: RFXChange[]) => void
+  skipCreditsCheck?: boolean
 }

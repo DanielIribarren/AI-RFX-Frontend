@@ -20,11 +20,37 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
 
+  const getCookieValue = (name: string): string | null => {
+    if (typeof document === 'undefined') return null
+    const cookie = document.cookie
+      .split('; ')
+      .find((row) => row.startsWith(`${name}=`))
+    return cookie ? decodeURIComponent(cookie.split('=')[1]) : null
+  }
+
   const loadUser = async () => {
     console.log('🔄 AuthContext: Loading user...')
     
-    // Check if we have a token first
-    const hasToken = typeof window !== 'undefined' && localStorage.getItem('access_token')
+    // Sync tokens from cookies to localStorage (needed when port/origin changes)
+    let accessToken = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null
+
+    if (!accessToken) {
+      const cookieAccessToken = getCookieValue('access_token')
+      const cookieRefreshToken = getCookieValue('refresh_token')
+
+      if (cookieAccessToken && typeof window !== 'undefined') {
+        localStorage.setItem('access_token', cookieAccessToken)
+        accessToken = cookieAccessToken
+        console.log('🍪 AuthContext: Hydrated access token from cookie')
+      }
+
+      if (cookieRefreshToken && typeof window !== 'undefined') {
+        localStorage.setItem('refresh_token', cookieRefreshToken)
+        console.log('🍪 AuthContext: Hydrated refresh token from cookie')
+      }
+    }
+
+    const hasToken = !!accessToken
     
     if (!hasToken) {
       console.log('❌ AuthContext: No access token found, skipping user load')

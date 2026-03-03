@@ -183,6 +183,12 @@ export interface RFXRequest {
 export interface RFXResponse {
   status: "success" | "error";
   message: string;
+  entity_type?: "rfx" | "session" | string;
+  session_id?: string;
+  review_required?: boolean;
+  workflow_status?: string;
+  next_step?: "review_chat" | "data_view" | string;
+  can_proceed_without_answers?: boolean;
   data?: {
     id: string;
     // V2.0 structure (primary)
@@ -217,6 +223,32 @@ export interface RFXResponse {
   propuesta_url?: string;
   error?: string;
   timestamp?: string; // ISO datetime string
+}
+
+export interface RFXReviewStateData {
+  rfx_id: string;
+  session_id?: string;
+  entity_type?: "rfx" | "session" | string;
+  workflow_status: string;
+  review_required: boolean;
+  review_confirmed: boolean;
+  can_proceed_without_answers: boolean;
+  suggested_first_message?: string;
+  requires_clarification?: boolean;
+  status?: string;
+  preview_data?: Record<string, any>;
+  recent_events?: Array<{
+    role: "user" | "assistant" | "system";
+    message: string;
+    created_at?: string;
+    payload?: Record<string, any>;
+  }>;
+}
+
+export interface RFXReviewStateResponse {
+  status: "success" | "error";
+  message?: string;
+  data?: RFXReviewStateData;
 }
 
 // Updated to match backend ProposalRequest V2.0 (English schema)
@@ -918,9 +950,11 @@ export const api = {
   
   chat: {
     // Send message to chat with FormData (like processRFX)
-    async send(rfxId: string, message: string, context: any, files?: File[]): Promise<any> {
+    async send(rfxId: string, message: string, context: any, files?: File[], entityType: "rfx" | "session" = "rfx"): Promise<any> {
       try {
-        const url = `${API_BASE_URL}/api/rfx/${rfxId}/chat`;
+        let url = entityType === "session"
+          ? `${API_BASE_URL}/api/rfx/session/${rfxId}/chat`
+          : `${API_BASE_URL}/api/rfx/${rfxId}/chat`;
         
         // Get JWT token for authentication
         const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
@@ -949,12 +983,22 @@ export const api = {
           fileCount: files?.length || 0
         });
 
-        const response = await fetch(url, { 
+        let response = await fetch(url, { 
           method: 'POST', 
           body: form,
           headers 
         });
         
+        // Compatibilidad: si llegó session_id al endpoint legacy /api/rfx/{id}/chat, reintentar por /session/{id}/chat.
+        if (!response.ok && response.status === 404 && entityType === "rfx") {
+          url = `${API_BASE_URL}/api/rfx/session/${rfxId}/chat`;
+          response = await fetch(url, {
+            method: 'POST',
+            body: form,
+            headers
+          });
+        }
+
         if (!response.ok) {
           const errorText = await response.text();
           let errorMessage = `Error ${response.status}: ${response.statusText}`;
@@ -1030,6 +1074,80 @@ export const api = {
           throw error;
         }
         throw new APIError('Network error confirming option', 0, 'NETWORK_ERROR');
+      }
+    }
+  },
+
+  review: {
+    async getState(rfxId: string, entityType: "rfx" | "session" = "rfx"): Promise<RFXReviewStateResponse> {
+      try {
+        const url = entityType === "session"
+          ? `${API_BASE_URL}/api/rfx/session/${rfxId}/review/state`
+          : `${API_BASE_URL}/api/rfx/${rfxId}/review/state`;
+        const response = await fetchWithAuth(url);
+        return handleResponse<RFXReviewStateResponse>(response);
+      } catch (error) {
+        // Compatibilidad: si llegó session_id con entityType=rfx, reintentar por endpoint de sesión.
+        if (entityType === "rfx" && error instanceof APIError && error.status === 404) {
+          try {
+            const retryUrl = `${API_BASE_URL}/api/rfx/session/${rfxId}/review/state`;
+            const retryResponse = await fetchWithAuth(retryUrl);
+            return handleResponse<RFXReviewStateResponse>(retryResponse);
+          } catch (retryError) {
+            if (retryError instanceof APIError) {
+              throw retryError;
+            }
+            throw new APIError('Network error fetching review state', 0, 'NETWORK_ERROR');
+          }
+        }
+        if (error instanceof APIError) {
+          throw error;
+        }
+        throw new APIError('Network error fetching review state', 0, 'NETWORK_ERROR');
+      }
+    },
+
+    async confirm(rfxId: string, entityType: "rfx" | "session" = "rfx"): Promise<any> {
+      try {
+        const url = entityType === "session"
+          ? `${API_BASE_URL}/api/rfx/session/${rfxId}/review/confirm`
+          : `${API_BASE_URL}/api/rfx/${rfxId}/review/confirm`;
+        const response = await fetchWithAuth(url, {
+          method: 'POST'
+        });
+        return handleResponse<any>(response);
+      } catch (error) {
+        // Compatibilidad: si llegó session_id con entityType=rfx, reintentar por endpoint de sesión.
+        if (entityType === "rfx" && error instanceof APIError && error.status === 404) {
+          try {
+            const retryUrl = `${API_BASE_URL}/api/rfx/session/${rfxId}/review/confirm`;
+            const retryResponse = await fetchWithAuth(retryUrl, { method: 'POST' });
+            return handleResponse<any>(retryResponse);
+          } catch (retryError) {
+            if (retryError instanceof APIError) {
+              throw retryError;
+            }
+            throw new APIError('Network error confirming review', 0, 'NETWORK_ERROR');
+          }
+        }
+        if (error instanceof APIError) {
+          throw error;
+        }
+        throw new APIError('Network error confirming review', 0, 'NETWORK_ERROR');
+      }
+    },
+
+    async reopen(rfxId: string): Promise<any> {
+      try {
+        const response = await fetchWithAuth(`${API_BASE_URL}/api/rfx/${rfxId}/review/reopen`, {
+          method: 'POST'
+        });
+        return handleResponse<any>(response);
+      } catch (error) {
+        if (error instanceof APIError) {
+          throw error;
+        }
+        throw new APIError('Network error reopening review', 0, 'NETWORK_ERROR');
       }
     }
   }

@@ -1,14 +1,19 @@
 "use client";
 
-import { useParams, useRouter } from "next/navigation";
+import { useParams, usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState, useCallback } from "react";
 import { api } from "@/lib/api";
-import type { RFXResponse } from "@/lib/api";
+import type { ProposalRequest, RFXResponse } from "@/lib/api";
+import { getReviewState } from "@/lib/review-api";
 import RFXDataView from "@/components/features/rfx/RFXDataView";
+import BudgetGenerationView from "@/components/budget/BudgetGenerationView";
 import { useRFXCurrency } from "@/contexts/RFXCurrencyContext";
 import RFXUpdateChatPanel from "@/components/features/rfx/update-chat/RFXUpdateChatPanel";
 import type { PricingConfigFormData } from "@/types/pricing-v2";
 import { getFrontendPricingConfig, updateFrontendPricingConfigOptimized } from "@/lib/api-pricing-backend-real";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { MessageSquare, ReceiptText, Settings2 } from "lucide-react";
 
 interface ProductoIndividual {
   id: string;
@@ -24,11 +29,19 @@ interface ProductoIndividual {
   ganancia_unitaria?: number;
   margen_ganancia?: number;
   total_profit?: number;
+  specifications?: Record<string, any> | null;
+  bundle_breakdown?: Array<any>;
+  is_bundle?: boolean;
+  inferred_bundle?: boolean;
 }
+
+const UUID_V4_OR_COMPAT_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 export default function RfxDataPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [backendData, setBackendData] = useState<RFXResponse | undefined>(undefined);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -39,6 +52,14 @@ export default function RfxDataPage() {
   
   // Chat panel state
   const [isChatOpen, setIsChatOpen] = useState(false);
+  const [activeWorkspaceTab, setActiveWorkspaceTab] = useState<"informacion" | "presupuesto">("informacion");
+
+  // Proposal/budget states
+  const [isRegenerating, setIsRegenerating] = useState(false);
+  const [isLoadingProposal, setIsLoadingProposal] = useState(false);
+  const [propuesta, setPropuesta] = useState<string>("");
+  const [selectedTemplate, setSelectedTemplate] = useState<string>("custom");
+  const isValidRfxId = typeof id === "string" && UUID_V4_OR_COMPAT_REGEX.test(id);
 
   // Pricing configuration state
   const [pricingConfigV2, setPricingConfigV2] = useState<PricingConfigFormData>({
@@ -63,18 +84,12 @@ export default function RfxDataPage() {
 
   // RFX Currency context
   const rfxCurrency = useRFXCurrency();
-  const { 
-    selectedCurrency, 
-    formatPriceWithSymbol,
-    getCurrencyInfo
-  } = rfxCurrency;
-
-  const currencyInfo = getCurrencyInfo();
+  const { selectedCurrency } = rfxCurrency;
 
   // Load pricing configuration
   useEffect(() => {
     const loadPricingConfig = async () => {
-      if (!id) return;
+      if (!isValidRfxId) return;
       
       try {
         const config = await getFrontendPricingConfig(id);
@@ -90,7 +105,30 @@ export default function RfxDataPage() {
     };
 
     loadPricingConfig();
-  }, [id]);
+  }, [id, isValidRfxId]);
+
+  const updateTabInUrl = useCallback((tab: "informacion" | "presupuesto") => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (tab === "presupuesto") {
+      params.set("tab", "presupuesto");
+    } else {
+      params.delete("tab");
+    }
+    const query = params.toString();
+    router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
+  }, [pathname, router, searchParams]);
+
+  const handleWorkspaceTabChange = useCallback((nextTab: string) => {
+    const tab = nextTab === "presupuesto" ? "presupuesto" : "informacion";
+    setActiveWorkspaceTab(tab);
+    updateTabInUrl(tab);
+  }, [updateTabInUrl]);
+
+  useEffect(() => {
+    const tabParam = searchParams.get("tab");
+    const nextTab = tabParam === "presupuesto" ? "presupuesto" : "informacion";
+    setActiveWorkspaceTab(nextTab);
+  }, [searchParams]);
 
   // Auto-save pricing config with debounce
   const autoSavePricingConfig = useCallback(async (partialConfig: Partial<PricingConfigFormData>) => {
@@ -148,6 +186,17 @@ export default function RfxDataPage() {
 
     const products = data.products || data.productos || data.requested_products || [];
 
+    const parseMaybeJson = (value: any) => {
+      if (!value) return null;
+      if (typeof value === "object") return value;
+      if (typeof value !== "string") return null;
+      try {
+        return JSON.parse(value);
+      } catch {
+        return null;
+      }
+    };
+
     return products.map((product: any, index: number) => {
       let originalQuantity = 1;
 
@@ -160,8 +209,14 @@ export default function RfxDataPage() {
       }
 
       const productName = product.product_name || product.nombre || product.name || `Producto ${index + 1}`;
-      const productUnit = product.unit || product.unidad || product.measurement_unit || 'unidades';
+      const productUnit = product.unit || product.unidad || product.unit_of_measure || product.measurement_unit || 'unidades';
       const productPrice = parseFloat(String(product.precio_unitario || product.estimated_unit_price || product.unit_price || product.price || 0)) || 0;
+      const specifications = parseMaybeJson(product.specifications || product.especificaciones);
+      const bundleBreakdown = Array.isArray(product.bundle_breakdown)
+        ? product.bundle_breakdown
+        : Array.isArray(specifications?.bundle_breakdown)
+          ? specifications.bundle_breakdown
+          : [];
 
       // Extraer nuevos campos de ganancias con nombres correctos del backend
       const costoUnitario = parseFloat(String(product.unit_cost || product.costo_unitario || 0)) || 0;
@@ -182,7 +237,11 @@ export default function RfxDataPage() {
         costo_unitario: costoUnitario,
         ganancia_unitaria: gananciaUnitaria,
         margen_ganancia: margenGanancia,
-        total_profit: totalProfit
+        total_profit: totalProfit,
+        specifications,
+        bundle_breakdown: bundleBreakdown,
+        is_bundle: Boolean(product.is_bundle || specifications?.is_bundle || bundleBreakdown.length > 0),
+        inferred_bundle: Boolean(product.inferred_bundle || specifications?.inferred_bundle)
       };
     });
   };
@@ -270,7 +329,7 @@ export default function RfxDataPage() {
           solicitante: updatedData.requester_name || (updatedData as any)?.nombre_solicitante || "",
           email: updatedData.email || "",
           productos: updatedData.products?.map((p: any) => 
-            `${p.product_name || p.nombre} (${p.quantity || p.cantidad} ${p.unit || p.unidad})`
+            `${p.product_name || p.nombre} (${p.quantity || p.cantidad} ${p.unit || p.unidad || p.unit_of_measure || "u"})`
           ).join(', ') || "",
           fechaEntrega: updatedData.delivery_date || (updatedData as any)?.fecha || "",
           lugarEntrega: updatedData.location || (updatedData as any)?.lugar || "",
@@ -631,6 +690,171 @@ export default function RfxDataPage() {
     }
   };
 
+  const handleGenerateProposal = async () => {
+    if (!backendData?.data || !id) {
+      console.error("❌ No backend data or ID available for proposal generation");
+      return;
+    }
+
+    setIsRegenerating(true);
+    setIsLoadingProposal(true);
+    try {
+      const costsForValidation = productosIndividuales.length > 0
+        ? productosIndividuales.map((product: any) => product.precio || 0)
+        : [1];
+
+      const proposalRequest: ProposalRequest = {
+        rfx_id: id,
+        costs: costsForValidation,
+        history: "Propuesta generada desde workspace unificado",
+        notes: {
+          modality: "buffet",
+          modality_description: `Servicio con coordinación ${pricingConfigV2.coordination_enabled ? 'incluida' : 'no incluida'}`,
+          coordination: pricingConfigV2.coordination_enabled
+            ? `Coordinación ${pricingConfigV2.coordination_type} al ${(pricingConfigV2.coordination_rate * 100).toFixed(1)}%`
+            : "Sin coordinación adicional",
+          additional_notes: `Configurado desde vista unificada. Costo por persona: ${pricingConfigV2.cost_per_person_enabled ? 'activado' : 'desactivado'}`
+        },
+        template_type: selectedTemplate,
+      };
+
+      const response = await api.generateProposal(proposalRequest);
+      const proposalContent = response.proposal?.content_html || response.proposal?.content_markdown || "";
+
+      if (proposalContent) {
+        setPropuesta(proposalContent);
+      }
+
+      setBackendData(prevData => {
+        if (!prevData?.data) return prevData;
+        return {
+          ...prevData,
+          data: {
+            ...prevData.data,
+            generated_html: proposalContent,
+            generated_proposal: proposalContent,
+            actual_cost: response.proposal?.total_cost || prevData.data.actual_cost,
+            estimated_budget: response.proposal?.total_cost || prevData.data.estimated_budget
+          }
+        };
+      });
+    } catch (error) {
+      console.error("❌ Error generating proposal:", error);
+      alert("❌ Error al generar la propuesta. Por favor intente nuevamente.");
+    } finally {
+      setIsRegenerating(false);
+      setIsLoadingProposal(false);
+    }
+  };
+
+  const handleDownloadPDF = async () => {
+    try {
+      if (!propuesta || propuesta.trim().length === 0) {
+        alert("⚠️ No hay propuesta generada para descargar.\n\nPor favor usa el botón 'Regenerar Propuesta' primero para crear una propuesta.");
+        return;
+      }
+
+      const clientName = extractedData.solicitante || "cliente";
+      const rfxId = id || "unknown";
+
+      const structuredData = {
+        client_info: {
+          name: extractedData.solicitante,
+          email: extractedData.email,
+          company: extractedData.nombreEmpresa,
+          delivery_date: extractedData.fechaEntrega,
+          location: extractedData.lugarEntrega
+        },
+        costs: {
+          total: backendData?.data?.actual_cost || backendData?.data?.estimated_budget,
+          products: productosIndividuales
+        },
+        metadata: {
+          rfx_id: rfxId,
+          generated_at: new Date().toISOString(),
+          status: "generated"
+        }
+      };
+
+      const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
+      const response = await fetch(`${apiBaseUrl}/api/download/html-to-pdf`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          html_content: propuesta,
+          document_id: rfxId,
+          client_name: clientName,
+          structured_data: structuredData
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        throw new Error(errorData?.message || `Error del servidor: ${response.status}`);
+      }
+
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const element = document.createElement("a");
+      element.href = url;
+      const isHTML = blob.type.includes("html") || blob.type.includes("text");
+      const extension = isHTML ? "html" : "pdf";
+      const fileName = `propuesta-${clientName.replace(/\s+/g, "-").toLowerCase()}.${extension}`;
+
+      element.download = fileName;
+      document.body.appendChild(element);
+      element.click();
+      document.body.removeChild(element);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("❌ Error downloading proposal:", error);
+      alert("❌ No se pudo descargar la propuesta.");
+    }
+  };
+
+  const handleFinalize = async () => {
+    if (!backendData?.data?.id || !id) {
+      console.error("❌ No backend data or ID available for finalization");
+      return;
+    }
+
+    try {
+      const updatableFields = [
+        "solicitante",
+        "email",
+        "nombreEmpresa",
+        "emailEmpresa",
+        "telefonoEmpresa",
+        "telefonoSolicitante",
+        "cargoSolicitante",
+        "fechaEntrega",
+        "lugarEntrega",
+        "requirements"
+      ];
+
+      for (const [field, value] of Object.entries(extractedData)) {
+        if (updatableFields.includes(field) && value && value.toString().trim()) {
+          try {
+            await api.updateRFXField(id, field, value.toString());
+          } catch (error) {
+            console.error(`❌ Error guardando campo ${field}:`, error);
+          }
+        }
+      }
+
+      await api.finalizeRFX(id);
+      alert("✅ Analysis completed successfully. The RFX has been saved to your history.");
+      setTimeout(() => {
+        router.push("/dashboard");
+      }, 800);
+    } catch (error) {
+      console.error("❌ Error finalizando RFX:", error);
+      alert("❌ Error al finalizar el análisis. Intente nuevamente.");
+    }
+  };
+
   // Handle chat updates
   const handleChatUpdate = async (changes: any[]) => {
     console.log("🔄 Applying chat changes:", changes);
@@ -643,9 +867,10 @@ export default function RfxDataPage() {
     let isMounted = true;
 
     const loadRfxData = async () => {
-      if (!id) {
+      if (!isValidRfxId) {
         setError("ID de RFX no válido");
         setIsLoading(false);
+        router.replace("/dashboard");
         return;
       }
 
@@ -659,6 +884,19 @@ export default function RfxDataPage() {
       }
 
       try {
+        // Gate obligatorio: no entrar a Data View sin confirmación de review
+        try {
+          const reviewResponse = await getReviewState(id, "rfx");
+          const reviewData = reviewResponse?.data;
+          if (reviewData?.review_required && !reviewData?.review_confirmed) {
+            router.replace(`/dashboard?review_rfx_id=${id}`);
+            return;
+          }
+        } catch (reviewError) {
+          // Si falla el endpoint de review, mantener comportamiento legacy
+          console.warn("⚠️ Review state unavailable, continuing to Data View:", reviewError);
+        }
+
         console.log("🔍 Loading RFX data for ID:", id);
         const response = await api.getRFXById(id);
 
@@ -691,6 +929,7 @@ export default function RfxDataPage() {
             }
 
             setBackendData({ ...response, data: completeData });
+            setPropuesta((completeData as any)?.generated_html || (completeData as any)?.generated_proposal || "");
 
             // Initialize RFX context with currency
             const backendCurrency = (completeData as any)?.currency;
@@ -731,7 +970,7 @@ export default function RfxDataPage() {
       // Clean up RFX context when component unmounts
       rfxCurrency.clearRfxContext();
     };
-  }, [id]);
+  }, [id, isValidRfxId]);
 
   // Initialize extractedData from backendData when it loads
   useEffect(() => {
@@ -740,7 +979,7 @@ export default function RfxDataPage() {
         solicitante: backendData.data?.requester_name || (backendData.data as any)?.nombre_solicitante || "",
         email: backendData.data?.email || "",
         productos: backendData.data?.products?.map((p: any) => 
-          `${p.product_name || p.nombre} (${p.quantity || p.cantidad} ${p.unit || p.unidad})`
+          `${p.product_name || p.nombre} (${p.quantity || p.cantidad} ${p.unit || p.unidad || p.unit_of_measure || "u"})`
         ).join(', ') || "",
         fechaEntrega: backendData.data?.delivery_date || (backendData.data as any)?.fecha || "",
         lugarEntrega: backendData.data?.location || (backendData.data as any)?.lugar || "",
@@ -822,42 +1061,97 @@ export default function RfxDataPage() {
   return (
     <>
       <div className="container mx-auto px-4 py-6 space-y-6">
-        {/* RFX Data View */}
-        <RFXDataView
-          extractedData={extractedData}
-          onFieldSave={handleFieldSave}
-          onGenerateBudget={() => router.push(`/rfx-result-wrapper-v2/budget/${id}`)}
-          rfxId={id}
-          rfxTitle={(backendData.data as any)?.title || extractedData.nombreEmpresa || "Datos Extraídos"}
-          onTitleSave={handleTitleSave}
-          fechaCreacion={(backendData.data as any)?.created_at || new Date().toISOString()}
-          validationMetadata={backendData.data?.metadata_json || null}
-          originalText={backendData.data?.metadata_json?.texto_original_relevante || ""}
-          isFinalized={false}
-          productosIndividuales={productosIndividuales}
-          onAddProduct={handleAddProduct}
-          onDeleteProduct={handleDeleteProduct}
-          onQuantityChange={handleQuantityChange}
-          onPriceChange={handleProductPriceChange}
-          onCostChange={handleProductCostChange}
-          onUnitChange={handleUnitChange}
-          onSaveProductCosts={saveProductCosts}
-          isSavingCosts={isSavingCosts}
-          costsSaved={costsSaved}
-          // Chat panel control
-          isChatOpen={isChatOpen}
-          onChatToggle={() => setIsChatOpen(!isChatOpen)}
-          // Pass default currency to children
-          // @ts-ignore allow prop injection without breaking existing types
-          defaultCurrency={(backendData.data as any)?.currency || selectedCurrency}
-          // @ts-ignore pass currency change handler
-          onCurrencyChange={handleCurrencyChange}
-          // @ts-ignore Coordination props
-          coordinationEnabled={pricingConfigV2.coordination_enabled}
-          coordinationRate={pricingConfigV2.coordination_rate}
-          onCoordinationToggle={handleCoordinationToggle}
-          onCoordinationRateChange={handleCoordinationRateChange}
-        />
+        <Tabs value={activeWorkspaceTab} onValueChange={handleWorkspaceTabChange} className="space-y-6">
+          <div className="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
+            <TabsList className="grid grid-cols-2 w-full sm:w-auto">
+              <TabsTrigger value="informacion" className="gap-2">
+                <ReceiptText className="h-4 w-4" />
+                Información RFX
+              </TabsTrigger>
+              <TabsTrigger value="presupuesto" className="gap-2">
+                <Settings2 className="h-4 w-4" />
+                Presupuesto
+              </TabsTrigger>
+            </TabsList>
+            <Button variant="outline" className="gap-2" onClick={() => setIsChatOpen(true)}>
+              <MessageSquare className="h-4 w-4" />
+              Chat de Iteración
+            </Button>
+          </div>
+
+          <TabsContent value="informacion" className="mt-0">
+            <RFXDataView
+              extractedData={extractedData}
+              onFieldSave={handleFieldSave}
+              onGenerateBudget={() => handleWorkspaceTabChange("presupuesto")}
+              showGenerateBudgetAction={false}
+              rfxId={id}
+              rfxTitle={(backendData.data as any)?.title || extractedData.nombreEmpresa || "Datos Extraídos"}
+              onTitleSave={handleTitleSave}
+              fechaCreacion={(backendData.data as any)?.created_at || new Date().toISOString()}
+              validationMetadata={backendData.data?.metadata_json || null}
+              originalText={backendData.data?.metadata_json?.texto_original_relevante || ""}
+              isFinalized={false}
+              productosIndividuales={productosIndividuales}
+              onAddProduct={handleAddProduct}
+              onDeleteProduct={handleDeleteProduct}
+              onQuantityChange={handleQuantityChange}
+              onPriceChange={handleProductPriceChange}
+              onCostChange={handleProductCostChange}
+              onUnitChange={handleUnitChange}
+              onSaveProductCosts={saveProductCosts}
+              isSavingCosts={isSavingCosts}
+              costsSaved={costsSaved}
+              isChatOpen={isChatOpen}
+              onChatToggle={() => setIsChatOpen(!isChatOpen)}
+              // @ts-ignore allow prop injection without breaking existing types
+              defaultCurrency={(backendData.data as any)?.currency || selectedCurrency}
+              // @ts-ignore pass currency change handler
+              onCurrencyChange={handleCurrencyChange}
+              // @ts-ignore Coordination props
+              coordinationEnabled={pricingConfigV2.coordination_enabled}
+              coordinationRate={pricingConfigV2.coordination_rate}
+              onCoordinationToggle={handleCoordinationToggle}
+              onCoordinationRateChange={handleCoordinationRateChange}
+            />
+          </TabsContent>
+
+          <TabsContent value="presupuesto" className="mt-0">
+            <BudgetGenerationView
+              extractedData={extractedData}
+              productosIndividuales={productosIndividuales}
+              propuesta={propuesta}
+              costoTotal={backendData.data?.actual_cost || backendData.data?.estimated_budget || null}
+              rfxId={id}
+              defaultCurrency={selectedCurrency}
+              onBackToData={() => handleWorkspaceTabChange("informacion")}
+              onGenerateProposal={handleGenerateProposal}
+              onDownloadPDF={handleDownloadPDF}
+              onFinalize={handleFinalize}
+              isRegenerating={isRegenerating}
+              isLoadingProposal={isLoadingProposal}
+              isFinalized={false}
+              isSavingCosts={isSavingCosts}
+              costsSaved={costsSaved}
+              pricingConfigV2={pricingConfigV2}
+              onPricingConfigChange={setPricingConfigV2}
+              onAutoSave={autoSavePricingConfig}
+              saveStatus={saveStatus}
+              isLoadingPricingConfig={false}
+              isSavingPricingConfig={false}
+              enableAdvancedPricing={true}
+              enableTaxConfiguration={false}
+              useApiCalculations={true}
+              onCalculationUpdate={() => {}}
+              useRealBackend={true}
+              selectedTemplate={selectedTemplate}
+              onTemplateChange={setSelectedTemplate}
+              showBackButton={false}
+              showHeaderDownloadAction={false}
+              showPreviewTab={false}
+            />
+          </TabsContent>
+        </Tabs>
       </div>
 
       {/* RFX Update Chat Panel - Outside container for proper fixed positioning */}

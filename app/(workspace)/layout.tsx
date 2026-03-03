@@ -4,7 +4,6 @@ import { ReactNode, useEffect } from "react";
 import AppSidebar from "@/components/layout/AppSidebar";
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
-import { AiModelSelector } from "@/components/shared/AIModelSelector";
 import { useRouter } from "next/navigation";
 import Breadcrumbs from "@/components/layout/navigation/Breadcrumbs";
 import { RFXCurrencyProvider } from "@/contexts/RFXCurrencyContext";
@@ -66,11 +65,6 @@ export default function WorkspaceLayout({ children }: WorkspaceLayoutProps) {
                 <SidebarTrigger className="-ml-1" />
                 <Separator orientation="vertical" className="mr-2 h-4" />
                 <Breadcrumbs />
-                
-                {/* AI Model Selector in Header */}
-                <div className="ml-auto">
-                  <AiModelSelector selectedModel="chatgpt-4o" onModelChange={(model) => console.log("Model changed:", model)} />
-                </div>
               </header>
               <div className="flex flex-1 flex-col bg-background">{children}</div>
             </SidebarInset>

@@ -346,12 +346,23 @@ export const authService = {
     console.log('   Access token exists:', !!token)
     console.log('   Refresh token exists:', !!refreshToken)
     
-    if (!token || !refreshToken) {
-      console.log('❌ refreshTokenIfNeeded: Missing tokens')
+    if (!token) {
+      console.log('❌ refreshTokenIfNeeded: Missing access token')
       return false
     }
     
-    // Check if token is expired or about to expire
+    // If current access token is still valid, auth is valid even without refresh token
+    if (!isTokenExpired(token)) {
+      console.log('✅ refreshTokenIfNeeded: Token is still valid')
+      return true
+    }
+
+    // Access token expired: refresh token is required from here
+    if (!refreshToken) {
+      console.log('❌ refreshTokenIfNeeded: Access token expired and no refresh token available')
+      return false
+    }
+
     if (isTokenExpired(token)) {
       console.log('⚠️ refreshTokenIfNeeded: Token expired, attempting refresh...')
       try {
@@ -378,8 +389,6 @@ export const authService = {
         return false
       }
     }
-    
-    console.log('✅ refreshTokenIfNeeded: Token is still valid')
-    return true // Token is still valid
+    return true
   },
 }

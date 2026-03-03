@@ -24,6 +24,6 @@ npm run build
 
 # 5. Iniciar servidor
 echo "5. Iniciando servidor de desarrollo..."
-echo "🌐 Ve a: http://localhost:3000"
+echo "🌐 Ve a: http://localhost:3004"
 echo "🔍 Ctrl+Shift+R para refresh forzado"
 npm run dev
