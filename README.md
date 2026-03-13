@@ -65,7 +65,7 @@ La aplicación estará disponible en [http://localhost:3000](http://localhost:30
 
 - `npm run deploy` - Deploy a producción (Vercel)
 - `npm run deploy:preview` - Deploy de preview
-- `npm run deploy:complete` - Deploy completo con limpieza
+- `npm run deploy:complete` - Deploy automático (main=prod, ramas=preview)
 - `npm run hook:trigger` - Disparar deploy hook manualmente
 - `npm run check:status` - Verificar estado de deploys
 
@@ -93,7 +93,7 @@ El proyecto está configurado con **deploy hooks automáticos** que se activan a
 ### Manual Deploy
 
 ```bash
-# Deploy completo con limpieza
+# Deploy automático (main=prod, ramas=preview)
 npm run deploy:complete
 
 # Deploy directo
@@ -115,8 +115,9 @@ Para configurar deploy hooks por primera vez:
 ### Legacy: Deploy Manual a Plataformas
 
 ```bash
-# Vercel CLI
-vercel deploy
+# Script simplificado
+./scripts/deploy-vercel.sh --preview
+./scripts/deploy-vercel.sh --prod
 
 # Build para otros proveedores
 npm run build
