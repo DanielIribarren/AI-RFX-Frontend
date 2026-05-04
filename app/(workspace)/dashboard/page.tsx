@@ -6,7 +6,7 @@ import { Building2, FolderKanban, LayoutDashboard, Package } from "lucide-react"
 import { PageHeader } from "@/components/common";
 import { LoadingSpinner } from "@/components/common";
 import { BusinessUnitSwitcher } from "@/components/features/budy/BusinessUnitSwitcher";
-import { OpportunityKanban } from "@/components/features/budy/OpportunityKanban";
+import { OpportunityTable } from "@/components/features/budy/OpportunityTable";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useOrganization } from "@/contexts/OrganizationContext";
@@ -191,7 +191,7 @@ export default function DashboardPage() {
           <CardTitle>Commercial pipeline</CardTitle>
         </CardHeader>
         <CardContent>
-          <OpportunityKanban
+          <OpportunityTable
             opportunities={opportunities}
             onStageChange={handleStageChange}
             onOpenOpportunity={(opportunityId) => router.push(`/opportunities/${opportunityId}`)}

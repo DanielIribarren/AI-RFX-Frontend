@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { FolderKanban } from "lucide-react";
 import { PageHeader, LoadingSpinner } from "@/components/common";
 import { BusinessUnitSwitcher } from "@/components/features/budy/BusinessUnitSwitcher";
-import { OpportunityKanban } from "@/components/features/budy/OpportunityKanban";
+import { OpportunityTable } from "@/components/features/budy/OpportunityTable";
 import { Card, CardContent } from "@/components/ui/card";
 import { useOrganization } from "@/contexts/OrganizationContext";
 import { budyApi, type Opportunity, type SalesStage } from "@/lib/api-budy";
@@ -79,7 +79,7 @@ export default function HistoryPage() {
 
       <Card>
         <CardContent className="pt-6">
-          <OpportunityKanban
+          <OpportunityTable
             opportunities={opportunities}
             onStageChange={handleStageChange}
             onOpenOpportunity={(opportunityId) => router.push(`/opportunities/${opportunityId}`)}
