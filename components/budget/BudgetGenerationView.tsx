@@ -4,18 +4,33 @@ import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { ArrowLeft, Download, CheckCircle, Eye, Settings, FileText } from "lucide-react"
+import {
+  ArrowLeft,
+  Calculator,
+  CheckCircle,
+  Download,
+  Eye,
+  FileText,
+  Settings,
+} from "lucide-react"
 import type { PricingConfigFormData } from "@/types/pricing-v2"
 import { useRFXCurrencyCompatible } from "@/contexts/RFXCurrencyContext"
 import { useAuth } from "@/contexts/AuthContext"
 import { useCredits } from "@/contexts/CreditsContext"
 import { LowCreditsAlert } from "@/components/credits/LowCreditsAlert"
 import { transformHtmlUrls } from "@/utils/transform-html-urls"
+import { apuApi, type APUResult } from "@/lib/api-apu"
+import {
+  showErrorToast,
+  showSuccessToast,
+  showWarningToast,
+} from "@/lib/toast"
 
 // Import tab components
 import { PreviewTab } from "./tabs/PreviewTab"
 import { PricingTab } from "./tabs/PricingTab"
 import { ProposalTab } from "./tabs/ProposalTab"
+import { APUTab } from "./tabs/APUTab"
 
 interface ProductoIndividual {
   id: string
@@ -143,6 +158,81 @@ export default function BudgetGenerationView({
       setActiveTab("pricing")
     }
   }, [showPreviewTab, activeTab])
+
+  // APU (Análisis de Precio Unitario) state — lifted here so the result survives
+  // tab switches and can be auto-shown after generation.
+  const [apuResult, setApuResult] = useState<APUResult | null>(null)
+  const [isGeneratingApu, setIsGeneratingApu] = useState(false)
+  const [apuError, setApuError] = useState<string | null>(null)
+  const [isLoadingApu, setIsLoadingApu] = useState(false)
+
+  // Rehydrate APU on mount / rfxId change. Silent on failure — if there's no
+  // APU yet, the tab simply shows the initial CTA.
+  useEffect(() => {
+    if (!rfxId) {
+      setApuResult(null)
+      return
+    }
+    let cancelled = false
+    setIsLoadingApu(true)
+    apuApi
+      .getLatest(rfxId)
+      .then((result) => {
+        if (!cancelled) setApuResult(result)
+      })
+      .catch(() => {
+        // Silent: no toast on rehydrate failure — user can still generate manually
+      })
+      .finally(() => {
+        if (!cancelled) setIsLoadingApu(false)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [rfxId])
+
+  const handleGenerateApu = async () => {
+    if (!rfxId) {
+      showErrorToast({
+        title: "No hay RFX cargado",
+        message: "No se puede generar APU sin un RFX activo.",
+      })
+      return
+    }
+    setIsGeneratingApu(true)
+    setApuError(null)
+    try {
+      const result = await apuApi.generate({ rfx_id: rfxId })
+      setApuResult(result)
+      setActiveTab("apu")
+      const partidasMsg =
+        result.partidas_count === 1
+          ? "1 partida generada"
+          : `${result.partidas_count} partidas generadas`
+      if (result.warnings.length > 0) {
+        showWarningToast({
+          title: "APU generado con advertencias",
+          message: `${partidasMsg}. Revisa el preview.`,
+        })
+      } else {
+        showSuccessToast({
+          title: "APU generado correctamente",
+          message: partidasMsg,
+        })
+      }
+    } catch (err) {
+      const detail =
+        err instanceof Error ? err.message : "Error desconocido al generar APU"
+      setApuError(detail)
+      showErrorToast({
+        title: "Error generando APU",
+        message: detail,
+        duration: 6000,
+      })
+    } finally {
+      setIsGeneratingApu(false)
+    }
+  }
   
   // Auth context for company ID
   const { user } = useAuth()
@@ -248,7 +338,7 @@ export default function BudgetGenerationView({
             
             <div className="flex gap-2">
               {showHeaderDownloadAction && (
-                <Button 
+                <Button
                   onClick={onDownloadPDF}
                   disabled={!transformedPropuesta || isFinalized}
                   variant="outline"
@@ -259,7 +349,7 @@ export default function BudgetGenerationView({
                   PDF
                 </Button>
               )}
-              
+
               {!isFinalized && (
                 <Button
                   onClick={onFinalize}
@@ -278,7 +368,7 @@ export default function BudgetGenerationView({
       {/* Content con Tabs */}
       <div className="w-full px-6 py-6">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6 w-full">
-          <TabsList className={`grid w-full !flex-none max-w-full ${showPreviewTab ? "grid-cols-3" : "grid-cols-2"}`}>
+          <TabsList className={`grid w-full !flex-none max-w-full ${showPreviewTab ? "grid-cols-4" : "grid-cols-3"}`}>
             {showPreviewTab && (
               <TabsTrigger value="preview" className="gap-2 flex-1">
                 <Eye className="h-4 w-4" />
@@ -292,6 +382,10 @@ export default function BudgetGenerationView({
             <TabsTrigger value="proposal" className="gap-2 flex-1">
               <FileText className="h-4 w-4" />
               Propuesta
+            </TabsTrigger>
+            <TabsTrigger value="apu" className="gap-2 flex-1">
+              <Calculator className="h-4 w-4" />
+              APU
             </TabsTrigger>
           </TabsList>
 
@@ -342,6 +436,19 @@ export default function BudgetGenerationView({
               requiredCredits={propuesta ? 30 : 50}
               selectedTemplate={selectedTemplate}
               onSelectTemplate={onTemplateChange}
+            />
+          </TabsContent>
+
+          {/* Tab 4: APU técnico (Construcción VE) */}
+          <TabsContent value="apu" className="space-y-6 mt-6 w-full">
+            <APUTab
+              rfxId={rfxId}
+              result={apuResult}
+              isGenerating={isGeneratingApu}
+              isLoading={isLoadingApu}
+              error={apuError}
+              onGenerate={handleGenerateApu}
+              disabled={isFinalized}
             />
           </TabsContent>
         </Tabs>
