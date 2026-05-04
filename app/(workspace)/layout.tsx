@@ -4,7 +4,7 @@ import { ReactNode, useEffect } from "react";
 import AppSidebar from "@/components/layout/AppSidebar";
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import Breadcrumbs from "@/components/layout/navigation/Breadcrumbs";
 import { RFXCurrencyProvider } from "@/contexts/RFXCurrencyContext";
 import { CreditsProvider } from "@/contexts/CreditsContext";
@@ -18,7 +18,21 @@ interface WorkspaceLayoutProps {
 
 export default function WorkspaceLayout({ children }: WorkspaceLayoutProps) {
   const router = useRouter();
+  const pathname = usePathname();
   const { user, loading } = useAuth();
+
+  const currentView = (() => {
+    if (pathname.startsWith("/dashboard")) return "dashboard";
+    if (pathname.startsWith("/overview")) return "overview";
+    if (pathname.startsWith("/history")) return "history";
+    if (pathname.startsWith("/opportunities")) return "opportunities";
+    if (pathname.startsWith("/clients")) return "clients";
+    if (pathname.startsWith("/product-inventory")) return "product-inventory";
+    if (pathname.startsWith("/business-units")) return "business-units";
+    if (pathname.startsWith("/payments-settings")) return "payments-settings";
+    if (pathname.startsWith("/intake")) return "intake";
+    return undefined;
+  })();
 
   // ✅ Redirect to login in useEffect to avoid "setState in render" error
   useEffect(() => {
@@ -52,13 +66,17 @@ export default function WorkspaceLayout({ children }: WorkspaceLayoutProps) {
         <CreditsProvider>
           <OrganizationProvider>
             <AppSidebar
-              onNewRfx={() => router.push("/dashboard")}
+              onNewRfx={() => router.push("/intake")}
+              onNavigateToDashboard={() => router.push("/dashboard")}
               onNavigateToOverview={() => router.push("/overview")}
+              onNavigateToOpportunities={() => router.push("/opportunities")}
               onNavigateToHistory={() => router.push("/history")}
+              onNavigateToClients={() => router.push("/clients")}
               onNavigateToProductInventory={() => router.push("/product-inventory")}
-              onNavigateToBudgetSettings={() => router.push("/budget-settings")}
-              onSelectRfx={(id) => router.push(`/rfx-result-wrapper-v2/data/${id}`)}
-              currentView={undefined} // Will be removed after full migration
+              onNavigateToBusinessUnits={() => router.push("/business-units")}
+              onNavigateToPaymentSettings={() => router.push("/payments-settings")}
+              onSelectRfx={(id) => router.push(`/opportunities/${id}`)}
+              currentView={currentView}
             />
             <SidebarInset className="bg-background">
               <header className="flex h-14 shrink-0 items-center gap-2 border-b px-4 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">

@@ -13,7 +13,8 @@ import type { PricingConfigFormData } from "@/types/pricing-v2";
 import { getFrontendPricingConfig, updateFrontendPricingConfigOptimized } from "@/lib/api-pricing-backend-real";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { MessageSquare, ReceiptText, Settings2 } from "lucide-react";
+import { MessageSquare, ReceiptText, Settings2, TrendingUp } from "lucide-react";
+import Link from "next/link";
 
 interface ProductoIndividual {
   id: string;
@@ -1073,10 +1074,18 @@ export default function RfxDataPage() {
                 Presupuesto
               </TabsTrigger>
             </TabsList>
-            <Button variant="outline" className="gap-2" onClick={() => setIsChatOpen(true)}>
-              <MessageSquare className="h-4 w-4" />
-              Chat de Iteración
-            </Button>
+            <div className="flex gap-2">
+              <Button variant="outline" className="gap-2" asChild>
+                <Link href={`/opportunities/${id}`}>
+                  <TrendingUp className="h-4 w-4" />
+                  Ver en pipeline
+                </Link>
+              </Button>
+              <Button variant="outline" className="gap-2" onClick={() => setIsChatOpen(true)}>
+                <MessageSquare className="h-4 w-4" />
+                Chat de Iteración
+              </Button>
+            </div>
           </div>
 
           <TabsContent value="informacion" className="mt-0">

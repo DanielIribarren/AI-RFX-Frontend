@@ -16,9 +16,10 @@ interface FileUploaderProps {
   onRFXProcessed: (data: RFXResponse) => void
   isLoading: boolean
   allowTextOnly?: boolean  // 🆕 Allow text-only submissions
+  businessUnitId?: string | null
 }
 
-export default function FileUploader({ onFileProcessed, onRFXProcessed, isLoading, allowTextOnly = false }: FileUploaderProps) {
+export default function FileUploader({ onFileProcessed, onRFXProcessed, isLoading, allowTextOnly = false, businessUnitId }: FileUploaderProps) {
   const [fileName, setFileName] = useState<string | null>(null)
   const [fileError, setFileError] = useState<string | null>(null)
   const [uploadProgress, setUploadProgress] = useState(0)
@@ -110,11 +111,17 @@ export default function FileUploader({ onFileProcessed, onRFXProcessed, isLoadin
 
       // ✅ FIX: Generate valid UUID v4 instead of custom format
       const rfxId = crypto.randomUUID()
+      const requestedTipoRfx = businessUnitId ? null : "catering"
 
       // Build FormData with files[] and text content
       const form = new FormData()
       form.append("id", rfxId)
-      form.append("tipo_rfx", "catering")
+      if (requestedTipoRfx) {
+        form.append("tipo_rfx", requestedTipoRfx)
+      }
+      if (businessUnitId) {
+        form.append("business_unit_id", businessUnitId)
+      }
       
       // 🆕 Add text content if available
       if (hasText) {
@@ -132,7 +139,7 @@ export default function FileUploader({ onFileProcessed, onRFXProcessed, isLoadin
         textLength: textContent.length,
         fileCount: selectedFiles.length,
         files: selectedFiles.map(f => ({ name: f.name, sizeMB: (f.size/1024/1024).toFixed(2) })), 
-        tipo: "catering"
+        tipo: requestedTipoRfx ?? "derived_from_business_unit"
       })
 
       // Simulate upload progress with more realistic progression

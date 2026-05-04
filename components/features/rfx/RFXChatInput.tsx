@@ -41,38 +41,38 @@ interface ProcessingStep {
 const PROCESSING_STEPS: ProcessingStep[] = [
   {
     id: "read",
-    label: "Leyendo documento",
-    detail: "Analizando archivos adjuntos y contexto",
+    label: "Reading documents",
+    detail: "Parsing attachments and request context",
     duration: 500,
   },
   {
     id: "extract",
-    label: "Extrayendo información del RFX",
-    detail: "Detectando campos clave y estructura",
+    label: "Extracting request data",
+    detail: "Detecting key fields and structure",
     duration: 700,
   },
   {
     id: "ai",
-    label: "Identificando productos con IA",
-    detail: "Relacionando requerimientos del evento",
+    label: "Matching products with AI",
+    detail: "Connecting requirements to catalog candidates",
     duration: 2400,
   },
   {
     id: "catalog",
-    label: "Buscando precios en tu catálogo",
-    detail: "Validando coincidencias por producto",
+    label: "Checking your catalog",
+    detail: "Validating product matches and pricing",
     duration: 1600,
   },
   {
     id: "quality",
-    label: "Evaluando calidad",
-    detail: "Verificando completitud y consistencia",
+    label: "Evaluating quality",
+    detail: "Reviewing completeness and consistency",
     duration: 900,
   },
   {
     id: "save",
-    label: "Guardando propuesta",
-    detail: "Registrando resultado en historial",
+    label: "Preparing review session",
+    detail: "Saving the extracted draft for review",
     duration: 700,
   },
 ]
@@ -92,6 +92,7 @@ interface RfxChatInputProps {
   onFileProcessed: (text: string) => void | Promise<void>
   onRFXProcessed: (data: RFXResponse) => void | Promise<void>
   isLoading: boolean
+  businessUnitId?: string | null
 }
 
 interface AttachedFile {
@@ -100,7 +101,7 @@ interface AttachedFile {
   preview?: string
 }
 
-export default function RfxChatInput({ onFileProcessed, onRFXProcessed, isLoading }: RfxChatInputProps) {
+export default function RfxChatInput({ onFileProcessed, onRFXProcessed, isLoading, businessUnitId }: RfxChatInputProps) {
   const [message, setMessage] = useState("")
   const [attachedFiles, setAttachedFiles] = useState<AttachedFile[]>([])
   const [isProcessing, setIsProcessing] = useState(false)
@@ -172,14 +173,16 @@ export default function RfxChatInput({ onFileProcessed, onRFXProcessed, isLoadin
       setChipsVisible(0)
       setQualityScore(null)
 
-      for (const step of PROCESSING_STEPS) {
+      for (const [index, step] of PROCESSING_STEPS.entries()) {
         if (!isCurrentRun()) return
 
         setStepStates((prev) => ({ ...prev, [step.id]: "active" }))
         await sleep(step.duration)
 
         if (!isCurrentRun()) return
-        setStepStates((prev) => ({ ...prev, [step.id]: "done" }))
+        if (index < PROCESSING_STEPS.length - 1) {
+          setStepStates((prev) => ({ ...prev, [step.id]: "done" }))
+        }
       }
     }
 
@@ -379,11 +382,17 @@ export default function RfxChatInput({ onFileProcessed, onRFXProcessed, isLoadin
 
       // ✅ FIX: Generate valid UUID v4 instead of custom format
       const rfxId = crypto.randomUUID()
+      const requestedTipoRfx = businessUnitId ? null : "catering"
 
       // Build FormData with files and message (similar to FileUploader)
       const form = new FormData()
       form.append("id", rfxId)
-      form.append("tipo_rfx", "catering")
+      if (requestedTipoRfx) {
+        form.append("tipo_rfx", requestedTipoRfx)
+      }
+      if (businessUnitId) {
+        form.append("business_unit_id", businessUnitId)
+      }
       
       // Add text content if provided
       if (message.trim()) {
@@ -403,7 +412,7 @@ export default function RfxChatInput({ onFileProcessed, onRFXProcessed, isLoadin
           name: af.file.name, 
           sizeMB: (af.file.size/1024/1024).toFixed(2) 
         })),
-        tipo: "catering"
+        tipo: requestedTipoRfx ?? "derived_from_business_unit"
       })
 
       // Call the real API
@@ -443,7 +452,7 @@ export default function RfxChatInput({ onFileProcessed, onRFXProcessed, isLoadin
         // Call the parent component callbacks
         await sleep(450)
         await Promise.resolve(onRFXProcessed(response))
-        await Promise.resolve(onFileProcessed(message.trim() || "Documento RFX procesado exitosamente con IA"))
+        await Promise.resolve(onFileProcessed(message.trim() || "RFX processed successfully with AI"))
         
         console.log("✅ RFX procesado exitosamente:", {
           rfxId: response.data?.id,
@@ -456,7 +465,7 @@ export default function RfxChatInput({ onFileProcessed, onRFXProcessed, isLoadin
         setMessage("")
         setAttachedFiles([])
       } else {
-        throw new Error(response.error || response.message || "Error al procesar el documento RFX")
+        throw new Error(response.error || response.message || "Unable to process the RFX document")
       }
     } catch (error) {
       console.error("❌ Error processing RFX:", error)
@@ -465,7 +474,7 @@ export default function RfxChatInput({ onFileProcessed, onRFXProcessed, isLoadin
       handleAPIError(error)
       
       // Set user-friendly error message based on error type
-      let userMessage = "Error al procesar la solicitud RFX"
+      let userMessage = "Unable to process this RFX request"
       
       if (error instanceof APIError) {
         switch (error.status) {
@@ -570,13 +579,13 @@ export default function RfxChatInput({ onFileProcessed, onRFXProcessed, isLoadin
                     <Bot className="h-4 w-4" />
                   </div>
                   <div>
-                    <h3 className="text-base font-semibold text-gray-900">Procesando propuesta</h3>
-                    <p className="text-xs text-gray-500">Extracción y propuesta asistida por IA</p>
+                    <h3 className="text-base font-semibold text-gray-900">Processing opportunity draft</h3>
+                    <p className="text-xs text-gray-500">AI extraction, matching, and review prep</p>
                   </div>
                 </div>
                 <div className="rounded-full border border-[#bbf7d0] bg-[#dcfce7] px-3 py-1 text-xs font-semibold text-green-700">
                   <Loader2 className="h-3.5 w-3.5 inline mr-1 animate-spin" />
-                  En progreso
+                  In progress
                 </div>
               </div>
               <div className="mt-3">
@@ -587,8 +596,8 @@ export default function RfxChatInput({ onFileProcessed, onRFXProcessed, isLoadin
                   />
                 </div>
                 <div className="mt-2 flex items-center justify-between">
-                  <p className="text-xs text-gray-500">{completedSteps}/{PROCESSING_STEPS.length} pasos</p>
-                  <p className="text-xs font-medium text-[#7c3aed]">{activeStepLabel ? `Paso actual: ${activeStepLabel}` : "Finalizando"}</p>
+                  <p className="text-xs text-gray-500">{completedSteps}/{PROCESSING_STEPS.length} steps</p>
+                  <p className="text-xs font-medium text-[#7c3aed]">{activeStepLabel ? `Current step: ${activeStepLabel}` : "Finalizing"}</p>
                 </div>
               </div>
             </div>
@@ -652,7 +661,7 @@ export default function RfxChatInput({ onFileProcessed, onRFXProcessed, isLoadin
                         )}
 
                         {isCatalog && state !== "pending" && catalogProducts.length === 0 && (
-                          <p className="mt-2 text-sm text-gray-500">Esperando productos extraídos por el servicio...</p>
+                          <p className="mt-2 text-sm text-gray-500">Waiting for extracted products from the service...</p>
                         )}
 
                         {showQualityBar && (
@@ -668,7 +677,7 @@ export default function RfxChatInput({ onFileProcessed, onRFXProcessed, isLoadin
                               )}
                             </div>
                             <span className="text-sm font-semibold text-[#7c3aed]">
-                              {qualityScore !== null ? `${qualityScore}% calidad` : "Evaluando..."}
+                              {qualityScore !== null ? `${qualityScore}% quality` : "Evaluating..."}
                             </span>
                           </div>
                         )}

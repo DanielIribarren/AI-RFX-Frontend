@@ -1,208 +1,218 @@
 "use client";
 
-import { useState } from "react";
-import RfxChatInput from "@/components/features/rfx/RFXChatInput";
-import RFXReviewInlineChat from "@/components/features/rfx/RFXReviewInlineChat";
-import { useRouter, useSearchParams } from "next/navigation";
-import { api } from "@/lib/api";
-import type { RFXResponse } from "@/lib/api";
-import { getReviewState } from "@/lib/review-api";
-import { showErrorToast } from "@/lib/toast";
-import { useEffect } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
+import { Building2, FolderKanban, LayoutDashboard, Package } from "lucide-react";
+import { PageHeader } from "@/components/common";
+import { LoadingSpinner } from "@/components/common";
+import { BusinessUnitSwitcher } from "@/components/features/budy/BusinessUnitSwitcher";
+import { OpportunityKanban } from "@/components/features/budy/OpportunityKanban";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useOrganization } from "@/contexts/OrganizationContext";
+import { budyApi, type Opportunity, type SalesStage } from "@/lib/api-budy";
+import { isBudyWorkspaceEnabled } from "@/lib/budy-flags";
+
+function MetricCard({ title, value, caption }: { title: string; value: number | string; caption: string }) {
+  return (
+    <Card>
+      <CardHeader className="pb-2">
+        <CardTitle className="text-sm text-muted-foreground">{title}</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="text-2xl font-semibold">{value}</div>
+        <p className="mt-1 text-xs text-muted-foreground">{caption}</p>
+      </CardContent>
+    </Card>
+  );
+}
 
 export default function DashboardPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [reviewSession, setReviewSession] = useState<{ rfxId: string; entityType: "rfx" | "session"; data?: any } | null>(null);
-  const reviewRfxId = searchParams.get("review_rfx_id");
+  const {
+    organization,
+    businessUnits,
+    activeBusinessUnitId,
+    setActiveBusinessUnitId,
+    isLoading: organizationLoading,
+    isBusinessUnitsLoading,
+  } = useOrganization();
+  const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
+  const [bcvRate, setBcvRate] = useState<number | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
+
+  const budyEnabled = isBudyWorkspaceEnabled(organization);
+
+  const loadWorkspace = async (businessUnitId?: string) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const [opportunityList, rate] = await Promise.all([
+        budyApi.getOpportunities(businessUnitId ? { business_unit_id: businessUnitId } : undefined),
+        budyApi.getCurrentBCVRate().catch(() => null),
+      ]);
+      setOpportunities(opportunityList);
+      setBcvRate(rate?.rate ?? null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not load the Budy workspace");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    if (!reviewRfxId || reviewSession?.rfxId === reviewRfxId) return;
-
-    let cancelled = false;
-    const loadPendingReview = async () => {
-      try {
-        const reviewResp = await getReviewState(reviewRfxId, "rfx");
-        if (cancelled) return;
-
-        const reviewData = reviewResp?.data;
-        if (reviewData?.review_required && !reviewData?.review_confirmed) {
-          const inferredEntityType = (
-            reviewData?.entity_type === "session" ||
-            reviewData?.session_id === reviewRfxId
-              ? "session"
-              : "rfx"
-          ) as "rfx" | "session";
-
-          let payloadData: any = undefined;
-          if (inferredEntityType === "session") {
-            payloadData = reviewData?.preview_data;
-          } else {
-            const rfxResp = await api.getRFXById(reviewRfxId);
-            if (rfxResp.status === "success" && rfxResp.data) {
-              payloadData = rfxResp.data;
-            }
-          }
-
-          setReviewSession({ rfxId: reviewRfxId, entityType: inferredEntityType, data: payloadData });
-        }
-      } catch (error) {
-        console.error("Error loading pending review from query param:", error);
-      }
-    };
-
-    loadPendingReview();
-    return () => {
-      cancelled = true;
-    };
-  }, [reviewRfxId, reviewSession?.rfxId]);
-
-  const handleFileProcessed = async (text: string) => {
-    setIsAnalyzing(true);
-    try {
-      // Simulate analysis with timeout (legacy behavior)
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-      console.log("File processed:", text);
-      // Note: Real navigation happens in handleRFXProcessed
-    } catch (error) {
-      console.error("Error processing file:", error);
-    } finally {
-      setIsAnalyzing(false);
+    if (!organizationLoading && !isBusinessUnitsLoading) {
+      loadWorkspace(activeBusinessUnitId || undefined);
     }
+  }, [activeBusinessUnitId, isBusinessUnitsLoading, organizationLoading]);
+
+  const metrics = useMemo(() => {
+    const total = opportunities.length;
+    const paymentPending = opportunities.filter((item) =>
+      ["payment_pending", "partially_paid"].includes(item.sales_stage),
+    ).length;
+    const sent = opportunities.filter((item) =>
+      ["sent", "viewed"].includes(item.sales_stage),
+    ).length;
+    return { total, paymentPending, sent };
+  }, [opportunities]);
+
+  const handleBusinessUnitChange = (value: string) => {
+    setActiveBusinessUnitId(value);
+    startTransition(() => {
+      loadWorkspace(value);
+    });
   };
 
-  const handleRFXProcessed = async (response: RFXResponse) => {
-    console.log("RFX processed, navigating to results:", response);
-    
-    if (response.status === "success" && response.data?.id) {
-      const useReviewStep = Boolean(response.review_required) || response.next_step === "review_chat";
-      if (useReviewStep) {
-        const entityType = (
-          response.entity_type === "session" ||
-          (response.session_id && response.session_id === response.data.id)
-            ? "session"
-            : "rfx"
-        ) as "rfx" | "session";
-        setReviewSession({
-          rfxId: response.data.id,
-          entityType,
-          data: response.data,
-        });
-        return;
-      }
-
-      router.push(`/rfx-result-wrapper-v2/data/${response.data.id}`);
-    } else {
-      console.error("Error processing RFX:", response.message);
-      showErrorToast({
-        title: "Unable to process RFX",
-        message: response.message || "Unknown error",
-      });
-    }
+  const handleStageChange = async (opportunityId: string, stage: SalesStage) => {
+    await budyApi.updateOpportunity(opportunityId, { sales_stage: stage });
+    await loadWorkspace(activeBusinessUnitId || undefined);
   };
+
+  if (organizationLoading || isBusinessUnitsLoading || loading) {
+    return <LoadingSpinner text="Loading Budy workspace..." fullScreen />;
+  }
+
+  if (!budyEnabled) {
+    return (
+      <div className="p-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Budy rollout</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              This organization is not enabled for Budy yet. You can keep using intake in the meantime.
+            </p>
+            <Button onClick={() => router.push("/intake")}>Open intake</Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (organization && businessUnits.length === 0) {
+    return (
+      <div className="p-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Business units required</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Create at least one business unit before processing opportunities in Budy.
+            </p>
+            <Button onClick={() => router.push("/business-units")}>Open business units</Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 via-white to-purple-50/30 p-4">
-      <div className="w-full space-y-10">
-        {/* Header */}
-        <div className="text-center space-y-5">
-          <div className="flex items-center justify-center gap-3 animate-float">
-            <div className="bg-brand-gradient p-3 rounded-2xl shadow-lg">
-              <svg width="32" height="32" viewBox="0 0 24 24" fill="white">
-                <path d="M12 2L13.09 8.26L20 9L13.09 9.74L12 16L10.91 9.74L4 9L10.91 8.26L12 2Z" />
-              </svg>
-            </div>
-            <h1 className="text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-900 via-gray-800 to-primary">
-              RFX Analyzer
-            </h1>
-          </div>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            Process RFX documents with <span className="text-brand-gradient font-semibold">artificial intelligence</span>. 
-            Write specific instructions or attach files to get started.
-          </p>
+    <div className="space-y-6 p-6">
+      <PageHeader
+        title="Budy Workspace"
+        description="Manage Sabra's commercial flow from intake to execution in one place."
+        icon={LayoutDashboard}
+        actions={
+          <>
+            <Button variant="outline" onClick={() => router.push("/intake")}>
+              Open intake
+            </Button>
+            <Button onClick={() => router.push("/business-units")}>
+              Manage business units
+            </Button>
+          </>
+        }
+      />
+
+      <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+        <BusinessUnitSwitcher
+          businessUnits={businessUnits}
+          value={activeBusinessUnitId || ""}
+          onValueChange={handleBusinessUnitChange}
+          label="Active business unit"
+          disabled={businessUnits.length === 0}
+        />
+        <div className="flex flex-wrap items-center gap-2">
+          <Button variant="outline" onClick={() => router.push("/clients")}>
+            <Building2 className="mr-2 h-4 w-4" />
+            Clients
+          </Button>
+          <Button variant="outline" onClick={() => router.push("/product-inventory")}>
+            <Package className="mr-2 h-4 w-4" />
+            Product inventory
+          </Button>
+          <Button variant="outline" onClick={() => router.push("/history")}>
+            <FolderKanban className="mr-2 h-4 w-4" />
+            Full pipeline
+          </Button>
         </div>
-
-        {/* Feature Cards */}
-        <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-          <div className="group card-elevated-lg p-7 hover-lift hover-glow-brand cursor-default">
-            <div className="bg-gradient-to-br from-primary/10 to-primary/5 p-4 rounded-2xl mb-4 w-fit group-hover:scale-110 transition-transform duration-300">
-              <svg className="h-8 w-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                />
-              </svg>
-            </div>
-            <h3 className="font-bold text-gray-900 mb-2 text-lg">Smart Processing</h3>
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              Automatically extract key details from RFX documents using advanced AI.
-            </p>
-          </div>
-
-          <div className="group card-elevated-lg p-7 hover-lift hover-glow-brand cursor-default border-brand-accent">
-            <div className="bg-gradient-to-br from-primary to-primary-dark p-4 rounded-2xl mb-4 w-fit group-hover:scale-110 transition-transform duration-300 shadow-lg">
-              <svg className="h-8 w-8 text-background" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M13 10V3L4 14h7v7l9-11h-7z"
-                />
-              </svg>
-            </div>
-            <h3 className="font-bold text-gray-900 mb-2 text-lg flex items-center gap-2">
-              Automatic Generation
-              <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium">Popular</span>
-            </h3>
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              Create tailored business proposals based on detected requirements.
-            </p>
-          </div>
-
-          <div className="group card-elevated-lg p-7 hover-lift hover-glow-brand cursor-default">
-            <div className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 p-4 rounded-2xl mb-4 w-fit group-hover:scale-110 transition-transform duration-300">
-              <svg className="h-8 w-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-                />
-              </svg>
-            </div>
-            <h3 className="font-bold text-gray-900 mb-2 text-lg">Competitive Analysis</h3>
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              Identify competitive factors and key improvement opportunities.
-            </p>
-          </div>
-        </div>
-
-        {/* Chat Input */}
-        <div className="pt-2">
-          <RfxChatInput
-            onFileProcessed={handleFileProcessed}
-            onRFXProcessed={handleRFXProcessed}
-            isLoading={isAnalyzing}
-          />
-        </div>
-
-        {reviewSession && (
-          <div className="max-w-5xl mx-auto pt-4">
-            <RFXReviewInlineChat
-              rfxId={reviewSession.rfxId}
-              entityType={reviewSession.entityType}
-              initialData={reviewSession.data}
-              onConfirmed={(rfxId) => {
-                setReviewSession(null);
-                router.push(`/rfx-result-wrapper-v2/data/${rfxId}`);
-              }}
-            />
-          </div>
-        )}
       </div>
+
+      {error && <div className="text-sm text-red-600">{error}</div>}
+
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <MetricCard title="Open opportunities" value={metrics.total} caption="Active opportunities for the selected business unit" />
+        <MetricCard title="Sent proposals" value={metrics.sent} caption="Already sent or viewed by the client" />
+        <MetricCard title="Pending payments" value={metrics.paymentPending} caption="Accepted but not fully paid yet" />
+        <MetricCard
+          title="Official BCV rate"
+          value={bcvRate ? `${bcvRate.toFixed(2)} VES` : "Unavailable"}
+          caption="Used to show VES equivalents"
+        />
+      </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Commercial pipeline</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <OpportunityKanban
+            opportunities={opportunities}
+            onStageChange={handleStageChange}
+            onOpenOpportunity={(opportunityId) => router.push(`/opportunities/${opportunityId}`)}
+          />
+          {isPending && <p className="mt-4 text-sm text-muted-foreground">Updating the active business unit filter...</p>}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-sm">Quick start</CardTitle>
+        </CardHeader>
+        <CardContent className="text-sm text-muted-foreground">
+          <ol className="list-decimal list-inside space-y-1">
+            <li><strong>Intake</strong> — Upload a PDF to extract and price a request.</li>
+            <li><strong>Publish</strong> — Open the opportunity and click &quot;Publish proposal&quot; to get a shareable link.</li>
+            <li><strong>Send</strong> — Copy the link and share it via WhatsApp, email, or any channel.</li>
+            <li><strong>Track</strong> — See when the client views, accepts, and pays — all from this dashboard.</li>
+          </ol>
+        </CardContent>
+      </Card>
     </div>
   );
 }

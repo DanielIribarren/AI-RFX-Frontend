@@ -8,7 +8,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { Badge } from "@/components/ui/badge"
 import { X, Minimize2, Maximize2, Paperclip, Send, Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { api } from "@/lib/api"
+import { api, APIError } from "@/lib/api"
 import { toast } from "sonner"
 import { useCredits } from "@/contexts/CreditsContext"
 import { LowCreditsAlert } from "@/components/credits/LowCreditsAlert"
@@ -247,22 +247,29 @@ Write your request below ↓`,
 
     } catch (error) {
       console.error("Error sending message:", error)
+      const isTemporarilyUnavailable = error instanceof APIError && error.status === 503
+      const errorTitle = isTemporarilyUnavailable
+        ? "Conversational edits are temporarily unavailable right now."
+        : "Sorry, there was an error processing your request."
+      const errorDescription = isTemporarilyUnavailable
+        ? "You can keep updating products and request details manually in Data View while chat recovers."
+        : `${error instanceof Error ? error.message : "Unknown error"}`
 
       // Mensaje de error
       const errorMessage: ChatMessage = {
         id: crypto.randomUUID(),
         role: "assistant",
-        content: `❌ Lo siento, ocurrió un error al procesar tu solicitud.
+        content: `❌ ${errorTitle}
 
-${error instanceof Error ? error.message : "Error desconocido"}
-
-Por favor, intenta de nuevo o reformula tu solicitud.`,
+${errorDescription}`,
         timestamp: new Date().toISOString(),
         metadata: { type: "error" }
       }
 
       setMessages(prev => [...prev, errorMessage])
-      toast.error("Error al procesar mensaje")
+      toast.error(isTemporarilyUnavailable ? "Chat temporarily unavailable" : "Error processing message", {
+        description: errorDescription,
+      })
     } finally {
       setIsTyping(false)
     }

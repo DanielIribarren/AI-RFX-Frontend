@@ -25,7 +25,7 @@ export function middleware(request: NextRequest) {
   const refreshToken = request.cookies.get('refresh_token')?.value
   
   // Protected routes check
-  const protectedRoutes = ['/dashboard', '/history', '/budget-settings', '/profile', '/rfx-result-wrapper-v2', '/checkout']
+  const protectedRoutes = ['/dashboard', '/history', '/budget-settings', '/profile', '/rfx-result-wrapper-v2', '/checkout', '/opportunities', '/business-units', '/payments-settings', '/clients', '/product-inventory', '/intake', '/overview']
   const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route))
   
   if (isProtectedRoute && !accessToken && !refreshToken) {
@@ -50,6 +50,13 @@ export const config = {
     '/profile/:path*',
     '/rfx-result-wrapper-v2/:path*',
     '/checkout/:path*',
+    '/opportunities/:path*',
+    '/business-units/:path*',
+    '/payments-settings/:path*',
+    '/clients/:path*',
+    '/product-inventory/:path*',
+    '/intake/:path*',
+    '/overview/:path*',
     '/login',
     '/signup',
   ],

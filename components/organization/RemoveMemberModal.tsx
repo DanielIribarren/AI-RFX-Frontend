@@ -27,17 +27,19 @@ interface Props {
 }
 
 export function RemoveMemberModal({ member, organizationId, isOpen, onClose }: Props) {
-  const { removeMember, isRemoving } = useOrganizationMembers(organizationId);
+  const { removeMember, isRemoving } = useOrganizationMembers();
   
   const handleRemove = async () => {
     try {
-      await removeMember(member.user_id);
+      await removeMember(member.user_id, member.user.name || member.user.email);
       onClose();
     } catch (error) {
       // Error already handled by hook
       console.error('Failed to remove member:', error);
     }
   };
+
+  void organizationId;
   
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>

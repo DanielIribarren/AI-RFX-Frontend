@@ -174,9 +174,10 @@ export interface RfxInput {
 export interface RFXRequest {
   id: string;
   pdf_file?: File;
-  tipo_rfx?: 'catering' | 'suministros' | 'servicios' | 'construccion';
+  tipo_rfx?: 'catering' | 'services' | 'suministros' | 'servicios' | 'construccion';
   pdf_url?: string;
   contenido_extraido?: string;
+  business_unit_id?: string;
 }
 
 // Updated to match backend RFXResponse V2.0 with legacy fallback
@@ -228,6 +229,7 @@ export interface RFXResponse {
 export interface RFXReviewStateData {
   rfx_id: string;
   session_id?: string;
+  confirmed_rfx_id?: string;
   entity_type?: "rfx" | "session" | string;
   workflow_status: string;
   review_required: boolean;
@@ -236,6 +238,8 @@ export interface RFXReviewStateData {
   suggested_first_message?: string;
   requires_clarification?: boolean;
   status?: string;
+  preview_ready?: boolean;
+  preview_error?: string | null;
   preview_data?: Record<string, any>;
   recent_events?: Array<{
     role: "user" | "assistant" | "system";
@@ -513,10 +517,15 @@ export const api = {
       // Build FormData from RFXRequest object
       const formData = new FormData();
       formData.append('id', body.id);
-      formData.append('tipo_rfx', body.tipo_rfx ?? "catering");
+      if (body.tipo_rfx) {
+        formData.append('tipo_rfx', body.tipo_rfx);
+      } else if (!body.business_unit_id) {
+        formData.append('tipo_rfx', "catering");
+      }
       if (body.pdf_file) formData.append('pdf_file', body.pdf_file as File);
       if (body.pdf_url) formData.append('pdf_url', body.pdf_url);
       if (body.contenido_extraido) formData.append('contenido_extraido', body.contenido_extraido);
+      if (body.business_unit_id) formData.append('business_unit_id', body.business_unit_id);
       
       const response = await fetch(url, { 
         method: "POST", 
@@ -1079,64 +1088,6 @@ export const api = {
   },
 
   review: {
-    async getState(rfxId: string, entityType: "rfx" | "session" = "rfx"): Promise<RFXReviewStateResponse> {
-      try {
-        const url = entityType === "session"
-          ? `${API_BASE_URL}/api/rfx/session/${rfxId}/review/state`
-          : `${API_BASE_URL}/api/rfx/${rfxId}/review/state`;
-        const response = await fetchWithAuth(url);
-        return handleResponse<RFXReviewStateResponse>(response);
-      } catch (error) {
-        // Compatibilidad: si llegó session_id con entityType=rfx, reintentar por endpoint de sesión.
-        if (entityType === "rfx" && error instanceof APIError && error.status === 404) {
-          try {
-            const retryUrl = `${API_BASE_URL}/api/rfx/session/${rfxId}/review/state`;
-            const retryResponse = await fetchWithAuth(retryUrl);
-            return handleResponse<RFXReviewStateResponse>(retryResponse);
-          } catch (retryError) {
-            if (retryError instanceof APIError) {
-              throw retryError;
-            }
-            throw new APIError('Network error fetching review state', 0, 'NETWORK_ERROR');
-          }
-        }
-        if (error instanceof APIError) {
-          throw error;
-        }
-        throw new APIError('Network error fetching review state', 0, 'NETWORK_ERROR');
-      }
-    },
-
-    async confirm(rfxId: string, entityType: "rfx" | "session" = "rfx"): Promise<any> {
-      try {
-        const url = entityType === "session"
-          ? `${API_BASE_URL}/api/rfx/session/${rfxId}/review/confirm`
-          : `${API_BASE_URL}/api/rfx/${rfxId}/review/confirm`;
-        const response = await fetchWithAuth(url, {
-          method: 'POST'
-        });
-        return handleResponse<any>(response);
-      } catch (error) {
-        // Compatibilidad: si llegó session_id con entityType=rfx, reintentar por endpoint de sesión.
-        if (entityType === "rfx" && error instanceof APIError && error.status === 404) {
-          try {
-            const retryUrl = `${API_BASE_URL}/api/rfx/session/${rfxId}/review/confirm`;
-            const retryResponse = await fetchWithAuth(retryUrl, { method: 'POST' });
-            return handleResponse<any>(retryResponse);
-          } catch (retryError) {
-            if (retryError instanceof APIError) {
-              throw retryError;
-            }
-            throw new APIError('Network error confirming review', 0, 'NETWORK_ERROR');
-          }
-        }
-        if (error instanceof APIError) {
-          throw error;
-        }
-        throw new APIError('Network error confirming review', 0, 'NETWORK_ERROR');
-      }
-    },
-
     async reopen(rfxId: string): Promise<any> {
       try {
         const response = await fetchWithAuth(`${API_BASE_URL}/api/rfx/${rfxId}/review/reopen`, {

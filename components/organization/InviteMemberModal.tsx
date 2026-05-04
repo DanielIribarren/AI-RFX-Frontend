@@ -44,7 +44,7 @@ interface Props {
 }
 
 export function InviteMemberModal({ organizationId, isOpen, onClose }: Props) {
-  const { inviteMember, isInviting } = useOrganizationMembers(organizationId);
+  const { inviteMember, isInviting } = useOrganizationMembers();
   
   const { 
     register, 
@@ -61,6 +61,8 @@ export function InviteMemberModal({ organizationId, isOpen, onClose }: Props) {
   });
   
   const selectedRole = watch('role');
+
+  void organizationId;
   
   const onSubmit = async (data: FormData) => {
     try {

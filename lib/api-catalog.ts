@@ -45,6 +45,7 @@ export interface CatalogProduct {
   unit_cost: number
   unit_price: number
   unit: string
+  business_unit_id?: string | null
   margin?: number
   created_at: string
   updated_at: string
@@ -88,6 +89,13 @@ export interface SearchResult {
   confidence: number
 }
 
+export type CatalogScope = "business_unit" | "shared"
+
+export interface CatalogScopeOptions {
+  scope?: CatalogScope
+  businessUnitId?: string | null
+}
+
 // ============================================
 // ERROR HANDLING
 // ============================================
@@ -114,6 +122,17 @@ export class CatalogAPIClient {
     this.baseUrl = baseUrl
   }
 
+  private buildScopeParams(options?: CatalogScopeOptions): URLSearchParams {
+    const params = new URLSearchParams()
+    if (options?.scope) {
+      params.set("scope", options.scope)
+    }
+    if (options?.businessUnitId) {
+      params.set("business_unit_id", options.businessUnitId)
+    }
+    return params
+  }
+
   /**
    * 📤 Importar catálogo desde Excel/CSV
    * 
@@ -123,7 +142,8 @@ export class CatalogAPIClient {
    */
   async importCatalog(
     file: File,
-    onProgress?: (progress: number) => void
+    onProgress?: (progress: number) => void,
+    options?: CatalogScopeOptions,
   ): Promise<ImportResult> {
     try {
       // Validar archivo antes de enviar
@@ -150,6 +170,12 @@ export class CatalogAPIClient {
 
       const formData = new FormData()
       formData.append("file", file)
+      if (options?.scope) {
+        formData.append("scope", options.scope)
+      }
+      if (options?.businessUnitId) {
+        formData.append("business_unit_id", options.businessUnitId)
+      }
 
       // Simular progreso inicial
       onProgress?.(10)
@@ -208,13 +234,13 @@ export class CatalogAPIClient {
   async listProducts(
     page: number = 1,
     pageSize: number = 50,
-    search?: string
+    search?: string,
+    options?: CatalogScopeOptions,
   ): Promise<ProductsListResponse> {
     try {
-      const params = new URLSearchParams({
-        page: page.toString(),
-        page_size: pageSize.toString(),
-      })
+      const params = this.buildScopeParams(options)
+      params.set("page", page.toString())
+      params.set("page_size", pageSize.toString())
 
       if (search && search.trim()) {
         params.append("search", search.trim())
@@ -268,7 +294,7 @@ export class CatalogAPIClient {
    * @param query - Nombre del producto a buscar
    * @returns Producto encontrado o null
    */
-  async searchProduct(query: string): Promise<SearchResult | null> {
+  async searchProduct(query: string, options?: CatalogScopeOptions): Promise<SearchResult | null> {
     try {
       if (!query.trim()) {
         throw new CatalogAPIError("Search query cannot be empty", 400)
@@ -276,7 +302,8 @@ export class CatalogAPIClient {
 
       console.log(`🔍 Searching product: "${query}"`)
 
-      const params = new URLSearchParams({ query: query.trim() })
+      const params = this.buildScopeParams(options)
+      params.set("query", query.trim())
       const response = await fetchWithAuth(
         `${this.baseUrl}/api/catalog/search?${params.toString()}`
       )
@@ -327,17 +354,24 @@ export class CatalogAPIClient {
       unit_cost?: number
       unit_price?: number
       unit?: string
-    }
+    },
+    options?: CatalogScopeOptions,
   ): Promise<CatalogProduct> {
     try {
       console.log(`➕ Adding product:`, product)
+
+      const payload = {
+        ...product,
+        ...(options?.scope ? { scope: options.scope } : {}),
+        ...(options?.businessUnitId ? { business_unit_id: options.businessUnitId } : {}),
+      }
 
       const response = await fetchWithAuth(
         `${this.baseUrl}/api/catalog/products`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(product),
+          body: JSON.stringify(payload),
         }
       )
 
@@ -470,12 +504,14 @@ export class CatalogAPIClient {
    * 
    * @returns Número de productos eliminados
    */
-  async clearCatalog(): Promise<{ deleted_count: number; message: string }> {
+  async clearCatalog(options?: CatalogScopeOptions): Promise<{ deleted_count: number; message: string }> {
     try {
       console.log(`🗑️ Clearing entire catalog...`)
+      const params = this.buildScopeParams(options)
+      const suffix = params.toString() ? `?${params.toString()}` : ""
 
       const response = await fetchWithAuth(
-        `${this.baseUrl}/api/catalog/clear`,
+        `${this.baseUrl}/api/catalog/clear${suffix}`,
         { method: "DELETE" }
       )
 
@@ -512,11 +548,12 @@ export class CatalogAPIClient {
    * 
    * @returns Estadísticas del catálogo
    */
-  async getStats(): Promise<CatalogStats> {
+  async getStats(options?: CatalogScopeOptions): Promise<CatalogStats> {
     try {
       console.log(`📊 Fetching catalog stats`)
-
-      const response = await fetchWithAuth(`${this.baseUrl}/api/catalog/stats`)
+      const params = this.buildScopeParams(options)
+      const suffix = params.toString() ? `?${params.toString()}` : ""
+      const response = await fetchWithAuth(`${this.baseUrl}/api/catalog/stats${suffix}`)
 
       if (!response.ok) {
         const error = await response.json().catch(() => ({ message: "Failed to fetch stats" }))

@@ -22,9 +22,12 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Progress } from "@/components/ui/progress"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { DeleteConfirmationDialog } from "@/components/shared/DeleteConfirmationDialog"
 import { ProductFormDialog } from "@/components/shared/ProductFormDialog"
-import { catalogAPI, CatalogProduct, CatalogStats, ImportResult, CatalogAPIError } from "@/lib/api-catalog"
+import { BusinessUnitSwitcher } from "@/components/features/budy/BusinessUnitSwitcher"
+import { useOrganization } from "@/contexts/OrganizationContext"
+import { catalogAPI, CatalogProduct, CatalogStats, ImportResult, CatalogAPIError, type CatalogScope } from "@/lib/api-catalog"
 
 // ============================================
 // TYPES
@@ -50,12 +53,20 @@ interface UploadState {
 // ============================================
 
 export default function ProductInventoryPage() {
+  const {
+    organization,
+    businessUnits,
+    activeBusinessUnitId,
+    setActiveBusinessUnitId,
+    isBusinessUnitsLoading,
+  } = useOrganization()
   // Estado de productos
   const [products, setProducts] = useState<CatalogProduct[]>([])
   const [stats, setStats] = useState<CatalogStats | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState("")
   const [debouncedSearch, setDebouncedSearch] = useState("")
+  const [catalogScope, setCatalogScope] = useState<CatalogScope>("business_unit")
   
   // Paginación
   const [currentPage, setCurrentPage] = useState(1)
@@ -100,6 +111,17 @@ export default function ProductInventoryPage() {
   // Refs
   const fileInputRef = useRef<HTMLInputElement>(null)
   const searchTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined)
+  const getCatalogScopeOptions = useCallback(() => {
+    if (!organization) return undefined
+    if (catalogScope === "shared") {
+      return { scope: "shared" as const }
+    }
+    if (!activeBusinessUnitId) return undefined
+    return {
+      scope: "business_unit" as const,
+      businessUnitId: activeBusinessUnitId,
+    }
+  }, [activeBusinessUnitId, catalogScope, organization])
 
   // ============================================
   // EFFECTS
@@ -123,11 +145,16 @@ export default function ProductInventoryPage() {
     }
   }, [searchQuery])
 
+  const requiresBusinessUnitSetup = Boolean(organization && businessUnits.length === 0)
+  const hasCatalogContext = !organization || catalogScope === "shared" || Boolean(activeBusinessUnitId)
+
   // Cargar productos y stats al montar
   useEffect(() => {
-    loadProducts()
-    loadStats()
-  }, [currentPage, debouncedSearch])
+    if (!isBusinessUnitsLoading && !requiresBusinessUnitSetup && hasCatalogContext) {
+      loadProducts()
+      loadStats()
+    }
+  }, [activeBusinessUnitId, catalogScope, currentPage, debouncedSearch, hasCatalogContext, isBusinessUnitsLoading, requiresBusinessUnitSetup])
 
   // Auto-close toast
   useEffect(() => {
@@ -149,7 +176,8 @@ export default function ProductInventoryPage() {
       const response = await catalogAPI.listProducts(
         currentPage,
         pageSize,
-        debouncedSearch || undefined
+        debouncedSearch || undefined,
+        getCatalogScopeOptions(),
       )
       
       setProducts(response.products)
@@ -157,7 +185,7 @@ export default function ProductInventoryPage() {
       setTotalProducts(response.total)
     } catch (error) {
       console.error("Error loading products:", error)
-      showToast("error", "Error", "No se pudieron cargar los productos")
+      showToast("error", "Error", "Could not load products")
     } finally {
       setIsLoading(false)
     }
@@ -165,7 +193,7 @@ export default function ProductInventoryPage() {
 
   const loadStats = async () => {
     try {
-      const statsData = await catalogAPI.getStats()
+      const statsData = await catalogAPI.getStats(getCatalogScopeOptions())
       setStats(statsData)
     } catch (error) {
       console.error("Error loading stats:", error)
@@ -186,7 +214,7 @@ export default function ProductInventoryPage() {
     try {
       const result = await catalogAPI.importCatalog(file, (progress) => {
         setUploadState(prev => ({ ...prev, progress }))
-      })
+      }, getCatalogScopeOptions())
 
       setImportResult(result)
       
@@ -194,8 +222,8 @@ export default function ProductInventoryPage() {
       if (result.status === "success") {
         showToast(
           "success",
-          "Importación exitosa",
-          `${result.products_imported} productos importados, ${result.products_updated} actualizados`
+          "Import successful",
+          `${result.products_imported} products imported, ${result.products_updated} updated`
         )
         
         // Recargar productos y stats
@@ -204,8 +232,8 @@ export default function ProductInventoryPage() {
       } else {
         showToast(
           "error",
-          "Error en importación",
-          result.errors?.[0] || "Ocurrió un error durante la importación"
+          "Import error",
+          result.errors?.[0] || "An error occurred during import"
         )
       }
     } catch (error) {
@@ -214,7 +242,7 @@ export default function ProductInventoryPage() {
       if (error instanceof CatalogAPIError) {
         showToast("error", "Error", error.message)
       } else {
-        showToast("error", "Error", "No se pudo importar el archivo")
+        showToast("error", "Error", "Could not import the file")
       }
     } finally {
       setUploadState({
@@ -244,7 +272,7 @@ export default function ProductInventoryPage() {
     try {
       await catalogAPI.deleteProduct(deleteProductDialog.productId, deleteProductDialog.productName)
       
-      showToast("success", "Producto eliminado", `"${deleteProductDialog.productName}" ha sido eliminado`)
+      showToast("success", "Product deleted", `"${deleteProductDialog.productName}" has been removed`)
       
       // Cerrar dialog
       setDeleteProductDialog({ isOpen: false, productId: "", productName: "" })
@@ -258,7 +286,7 @@ export default function ProductInventoryPage() {
       if (error instanceof CatalogAPIError) {
         showToast("error", "Error", error.message)
       } else {
-        showToast("error", "Error", "No se pudo eliminar el producto")
+        showToast("error", "Error", "Could not delete the product")
       }
     } finally {
       setIsDeleting(false)
@@ -288,7 +316,7 @@ export default function ProductInventoryPage() {
         await catalogAPI.updateProduct(editingProduct.id, data)
         showToast("success", "Product updated", `"${data.product_name}" has been updated`)
       } else {
-        await catalogAPI.addProduct(data)
+        await catalogAPI.addProduct(data, getCatalogScopeOptions())
         showToast("success", "Product added", `"${data.product_name}" has been added to the catalog`)
       }
       setProductFormOpen(false)
@@ -314,12 +342,12 @@ export default function ProductInventoryPage() {
     setIsDeleting(true)
     
     try {
-      const result = await catalogAPI.clearCatalog()
+      const result = await catalogAPI.clearCatalog(getCatalogScopeOptions())
       
       showToast(
         "success", 
-        "Inventario eliminado", 
-        `${result.deleted_count} productos han sido eliminados`
+        "Catalog cleared", 
+        `${result.deleted_count} products were removed`
       )
       
       // Cerrar dialog
@@ -334,7 +362,7 @@ export default function ProductInventoryPage() {
       if (error instanceof CatalogAPIError) {
         showToast("error", "Error", error.message)
       } else {
-        showToast("error", "Error", "No se pudo eliminar el inventario")
+        showToast("error", "Error", "Could not clear the catalog")
       }
     } finally {
       setIsDeleting(false)
@@ -350,13 +378,14 @@ export default function ProductInventoryPage() {
   }
 
   const hasProducts = products.length > 0 || totalProducts > 0
+  const catalogScopeLabel = catalogScope === "shared" ? "Shared organization catalog" : "Business-unit catalog"
 
   return (
     <div className="flex-1 overflow-auto">
       <div className="container mx-auto p-6 max-w-7xl">
         {/* Header */}
         <div className="mb-6">
-          <div className="flex items-center justify-between mb-2">
+          <div className="mb-4 flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
             <div className="flex items-center gap-3">
               <div className="bg-brand-gradient p-2 rounded-lg shadow-sm">
                 <Package className="h-6 w-6 text-white" />
@@ -364,12 +393,12 @@ export default function ProductInventoryPage() {
               <div>
                 <h1 className="text-3xl font-bold text-gray-900">Product Inventory</h1>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Manage your product catalog and pricing database
+                  Manage the authoritative AI pricing catalog for the active business unit
                 </p>
               </div>
             </div>
             
-            {hasProducts && (
+            {hasProducts && !requiresBusinessUnitSetup && (
               <div className="flex items-center gap-2">
                 <Button 
                   variant="outline" 
@@ -404,7 +433,44 @@ export default function ProductInventoryPage() {
               </div>
             )}
           </div>
+
+          {organization && businessUnits.length > 0 && (
+            <div className="grid gap-4 rounded-2xl border bg-white/80 p-4 shadow-sm md:grid-cols-[minmax(0,280px)_220px]">
+              <BusinessUnitSwitcher
+                businessUnits={businessUnits}
+                value={activeBusinessUnitId || ""}
+                onValueChange={setActiveBusinessUnitId}
+                label="Active business unit"
+              />
+              <div className="space-y-2">
+                <p className="text-sm font-medium">Catalog scope</p>
+                <Select value={catalogScope} onValueChange={(value) => setCatalogScope(value as CatalogScope)}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="business_unit">Business-unit catalog</SelectItem>
+                    <SelectItem value="shared">Shared organization catalog</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <p className="text-sm text-muted-foreground md:col-span-2">
+                Matching order is area-first: the AI searches the active business unit catalog first, then shared organization products.
+                Current scope: {catalogScopeLabel}.
+              </p>
+            </div>
+          )}
         </div>
+
+        {requiresBusinessUnitSetup && (
+          <Alert className="mb-6" variant="destructive">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertTitle>Business unit required</AlertTitle>
+            <AlertDescription>
+              Create a business unit before importing or managing organization-owned products.
+            </AlertDescription>
+          </Alert>
+        )}
 
         {/* Stats Dashboard */}
         {stats && hasProducts && (
@@ -523,30 +589,36 @@ export default function ProductInventoryPage() {
                 Your products will be used to automatically match and price items in RFX requests.
               </p>
 
-              <div className="flex flex-col sm:flex-row gap-4 mb-8">
-                <label htmlFor="file-upload-empty">
-                  <Button size="lg" className="bg-brand-gradient text-white hover:brightness-95 hover:text-white shadow-lg hover:shadow-xl" asChild>
-                    <span>
-                      <Upload className="h-5 w-5 mr-2" />
-                      Upload Excel/CSV
-                    </span>
+              {!requiresBusinessUnitSetup ? (
+                <div className="flex flex-col sm:flex-row gap-4 mb-8">
+                  <label htmlFor="file-upload-empty">
+                    <Button size="lg" className="bg-brand-gradient text-white hover:brightness-95 hover:text-white shadow-lg hover:shadow-xl" asChild>
+                      <span>
+                        <Upload className="h-5 w-5 mr-2" />
+                        Upload Excel/CSV
+                      </span>
+                    </Button>
+                  </label>
+                  <input
+                    id="file-upload-empty"
+                    type="file"
+                    accept=".xlsx,.xls,.csv"
+                    className="hidden"
+                    onChange={handleFileUpload}
+                    disabled={uploadState.isUploading}
+                    ref={fileInputRef}
+                  />
+                  
+                  <Button variant="outline" size="lg" onClick={openAddProduct}>
+                    <Plus className="h-5 w-5 mr-2" />
+                    Add Product Manually
                   </Button>
-                </label>
-                <input
-                  id="file-upload-empty"
-                  type="file"
-                  accept=".xlsx,.xls,.csv"
-                  className="hidden"
-                  onChange={handleFileUpload}
-                  disabled={uploadState.isUploading}
-                  ref={fileInputRef}
-                />
-                
-                <Button variant="outline" size="lg" onClick={openAddProduct}>
-                  <Plus className="h-5 w-5 mr-2" />
-                  Add Product Manually
-                </Button>
-              </div>
+                </div>
+              ) : (
+                <p className="mb-8 text-sm text-muted-foreground">
+                  A business unit must exist before inventory can be uploaded or edited for the organization.
+                </p>
+              )}
 
               {/* File Format Info */}
               <Card className="w-full max-w-2xl bg-white">
@@ -810,7 +882,7 @@ export default function ProductInventoryPage() {
           isOpen={deleteProductDialog.isOpen}
           onClose={() => setDeleteProductDialog({ isOpen: false, productId: "", productName: "" })}
           onConfirm={confirmDeleteProduct}
-          title="Eliminar Producto"
+          title="Delete Product"
           itemName={deleteProductDialog.productName}
           isDeleting={isDeleting}
         />
@@ -820,8 +892,8 @@ export default function ProductInventoryPage() {
           isOpen={clearCatalogDialog}
           onClose={() => setClearCatalogDialog(false)}
           onConfirm={confirmClearCatalog}
-          title="Eliminar Todo el Inventario"
-          itemName={`todos los ${totalProducts} productos del catálogo`}
+          title="Clear Entire Catalog"
+          itemName={`all ${totalProducts} products in the current catalog scope`}
           isDeleting={isDeleting}
         />
 

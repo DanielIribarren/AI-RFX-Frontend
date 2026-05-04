@@ -198,6 +198,8 @@ export interface OrganizationContextType {
   // Current state
   organization: Organization | null;
   membership: OrganizationMember | null;
+  businessUnits?: Array<{ id: string; name: string; is_default?: boolean }>;
+  activeBusinessUnitId?: string | null;
   
   // Computed permissions
   permissions: RolePermissions;
@@ -210,6 +212,7 @@ export interface OrganizationContextType {
   switchOrganization: (orgId: string) => Promise<void>;
   leaveOrganization: () => Promise<void>;
   refreshOrganization: () => Promise<void>;
+  setActiveBusinessUnitId?: (id: string | null) => void;
   
   // Loading states
   isLoading: boolean;

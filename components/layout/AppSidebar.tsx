@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useImperativeHandle, forwardRef } from "react"
-import { Plus, MessageSquare, FileText, Clock, MoreHorizontal, ChevronLeft, CheckCircle, XCircle, AlertTriangle, Archive, Settings, Trash2, Package } from "lucide-react"
+import { Plus, MessageSquare, FileText, Clock, MoreHorizontal, ChevronLeft, CheckCircle, XCircle, AlertTriangle, Archive, Settings, Trash2, Package, LayoutDashboard, Users, BriefcaseBusiness, HandCoins, TrendingUp } from "lucide-react"
 import {
   Sidebar,
   SidebarContent,
@@ -53,12 +53,28 @@ interface RfxItem {
 
 interface AppSidebarProps {
   onNewRfx: () => void
+  onNavigateToDashboard?: () => void
   onNavigateToOverview?: () => void
+  onNavigateToOpportunities?: () => void
   onNavigateToHistory: () => void
+  onNavigateToClients?: () => void
   onNavigateToProductInventory?: () => void
-  onNavigateToBudgetSettings?: () => void
+  onNavigateToBusinessUnits?: () => void
+  onNavigateToPaymentSettings?: () => void
   onSelectRfx?: (rfxId: string) => void
-  currentView?: "main" | "results" | "overview" | "history" | "product-inventory" | "budget-settings" | undefined
+  currentView?:
+    | "dashboard"
+    | "overview"
+    | "history"
+    | "opportunities"
+    | "clients"
+    | "product-inventory"
+    | "business-units"
+    | "payments-settings"
+    | "intake"
+    | "main"
+    | "results"
+    | undefined
 }
 
 export interface AppSidebarRef {
@@ -136,7 +152,7 @@ const formatRelativeDate = (dateString: string) => {
 }
 
 const AppSidebar = forwardRef<AppSidebarRef, AppSidebarProps>(
-  ({ onNewRfx, onNavigateToOverview, onNavigateToHistory, onNavigateToProductInventory, onNavigateToBudgetSettings, onSelectRfx, currentView }, ref) => {
+  ({ onNewRfx, onNavigateToDashboard, onNavigateToOverview, onNavigateToOpportunities, onNavigateToHistory, onNavigateToClients, onNavigateToProductInventory, onNavigateToBusinessUnits, onNavigateToPaymentSettings, onSelectRfx, currentView }, ref) => {
     const { toggleSidebar } = useSidebar()
     
     // Estado de feedback inline (sin toasts)
@@ -281,7 +297,7 @@ const AppSidebar = forwardRef<AppSidebarRef, AppSidebarProps>(
       </SidebarHeader>
 
       <SidebarContent className="px-3 py-4">
-        {/* New RFX Button */}
+        {/* New intake Button */}
         <SidebarGroup className="mb-6">
           <SidebarGroupContent>
             <SidebarMenu>
@@ -291,7 +307,7 @@ const AppSidebar = forwardRef<AppSidebarRef, AppSidebarProps>(
                   className="w-full bg-brand-gradient text-background hover:text-background hover:brightness-95 font-semibold h-10 rounded-xl shadow-md hover:shadow-lg hover:scale-[1.02] transition-all duration-200 ease-out border-0"
                 >
                   <Plus className="h-4 w-4" />
-                  <span>New RFX</span>
+                  <span>New intake</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
@@ -309,6 +325,16 @@ const AppSidebar = forwardRef<AppSidebarRef, AppSidebarProps>(
             <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton
+                  onClick={onNavigateToDashboard}
+                  isActive={currentView === "dashboard"}
+                  className="w-full justify-start text-gray-700 hover:bg-primary/5 hover:text-primary h-9 rounded-lg transition-all duration-200 data-[active=true]:bg-primary/10 data-[active=true]:text-primary data-[active=true]:font-semibold"
+                >
+                  <LayoutDashboard className="h-4 w-4" />
+                  <span>Home</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton
                   onClick={onNavigateToOverview}
                   isActive={currentView === "overview"}
                   className="w-full justify-start text-gray-700 hover:bg-primary/5 hover:text-primary h-9 rounded-lg transition-all duration-200 data-[active=true]:bg-primary/10 data-[active=true]:text-primary data-[active=true]:font-semibold"
@@ -319,12 +345,32 @@ const AppSidebar = forwardRef<AppSidebarRef, AppSidebarProps>(
               </SidebarMenuItem>
               <SidebarMenuItem>
                 <SidebarMenuButton
+                  onClick={onNavigateToOpportunities}
+                  isActive={currentView === "opportunities"}
+                  className="w-full justify-start text-gray-700 hover:bg-primary/5 hover:text-primary h-9 rounded-lg transition-all duration-200 data-[active=true]:bg-primary/10 data-[active=true]:text-primary data-[active=true]:font-semibold"
+                >
+                  <TrendingUp className="h-4 w-4" />
+                  <span>Opportunities</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton
                   onClick={onNavigateToHistory}
                   isActive={currentView === "history"}
                   className="w-full justify-start text-gray-700 hover:bg-primary/5 hover:text-primary h-9 rounded-lg transition-all duration-200 data-[active=true]:bg-primary/10 data-[active=true]:text-primary data-[active=true]:font-semibold"
                 >
                   <MessageSquare className="h-4 w-4" />
-                  <span>RFX History</span>
+                  <span>Pipeline</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  onClick={onNavigateToClients}
+                  isActive={currentView === "clients"}
+                  className="w-full justify-start text-gray-700 hover:bg-primary/5 hover:text-primary h-9 rounded-lg transition-all duration-200 data-[active=true]:bg-primary/10 data-[active=true]:text-primary data-[active=true]:font-semibold"
+                >
+                  <Users className="h-4 w-4" />
+                  <span>Clients</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
@@ -339,21 +385,41 @@ const AppSidebar = forwardRef<AppSidebarRef, AppSidebarProps>(
               </SidebarMenuItem>
               <SidebarMenuItem>
                 <SidebarMenuButton
-                  onClick={onNavigateToBudgetSettings}
-                  isActive={currentView === "budget-settings"}
+                  onClick={onNavigateToBusinessUnits}
+                  isActive={currentView === "business-units"}
+                  className="w-full justify-start text-gray-700 hover:bg-primary/5 hover:text-primary h-9 rounded-lg transition-all duration-200 data-[active=true]:bg-primary/10 data-[active=true]:text-primary data-[active=true]:font-semibold"
+                >
+                  <BriefcaseBusiness className="h-4 w-4" />
+                  <span>Business Units</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  onClick={onNavigateToPaymentSettings}
+                  isActive={currentView === "payments-settings"}
+                  className="w-full justify-start text-gray-700 hover:bg-primary/5 hover:text-primary h-9 rounded-lg transition-all duration-200 data-[active=true]:bg-primary/10 data-[active=true]:text-primary data-[active=true]:font-semibold"
+                >
+                  <HandCoins className="h-4 w-4" />
+                  <span>Payments</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  onClick={onNewRfx}
+                  isActive={currentView === "intake"}
                   className="w-full justify-start text-gray-700 hover:bg-primary/5 hover:text-primary h-9 rounded-lg transition-all duration-200 data-[active=true]:bg-primary/10 data-[active=true]:text-primary data-[active=true]:font-semibold"
                 >
                   <Settings className="h-4 w-4" />
-                  <span>Budget Settings</span>
+                  <span>Intake</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* Recent RFX */}
+        {/* Recent opportunities */}
         <SidebarGroup>
-          <SidebarGroupLabel className="text-xs font-semibold text-gray-900 mb-3 px-0 uppercase tracking-wider">Recents</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-xs font-semibold text-gray-900 mb-3 px-0 uppercase tracking-wider">Recent Opportunities</SidebarGroupLabel>
           
           {/* Feedback inline banner */}
           {feedback && (
@@ -389,7 +455,7 @@ const AppSidebar = forwardRef<AppSidebarRef, AppSidebarProps>(
               </div>
             ) : !recentRfx || recentRfx.length === 0 ? (
               <div className="px-2 py-4 text-center group-data-[collapsible=icon]:hidden">
-                <div className="text-xs text-muted-foreground/60">No recent RFX</div>
+                <div className="text-xs text-muted-foreground/60">No recent opportunities</div>
               </div>
             ) : (
               <SidebarMenu>
@@ -455,10 +521,10 @@ const AppSidebar = forwardRef<AppSidebarRef, AppSidebarProps>(
       <AlertDialog open={Boolean(deleteCandidate)} onOpenChange={(open) => !open && setDeleteCandidate(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete RFX</AlertDialogTitle>
+            <AlertDialogTitle>Delete Opportunity</AlertDialogTitle>
             <AlertDialogDescription>
               This action cannot be undone. It will permanently delete
-              {deleteCandidate?.title ? ` "${deleteCandidate.title}"` : " this RFX"}.
+              {deleteCandidate?.title ? ` "${deleteCandidate.title}"` : " this opportunity"}.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
