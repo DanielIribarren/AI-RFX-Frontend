@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode, useEffect } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import AppSidebar from "@/components/layout/AppSidebar";
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
@@ -20,6 +20,17 @@ export default function WorkspaceLayout({ children }: WorkspaceLayoutProps) {
   const router = useRouter();
   const pathname = usePathname();
   const { user, loading } = useAuth();
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const mql = window.matchMedia("(max-width: 1023px)");
+    const apply = (matches: boolean) => setSidebarOpen(!matches);
+    apply(mql.matches);
+    const handler = (event: MediaQueryListEvent) => apply(event.matches);
+    mql.addEventListener("change", handler);
+    return () => mql.removeEventListener("change", handler);
+  }, []);
 
   const currentView = (() => {
     if (pathname.startsWith("/dashboard")) return "dashboard";
@@ -61,7 +72,7 @@ export default function WorkspaceLayout({ children }: WorkspaceLayoutProps) {
   }
 
   return (
-    <SidebarProvider>
+    <SidebarProvider open={sidebarOpen} onOpenChange={setSidebarOpen}>
       <RFXCurrencyProvider>
         <CreditsProvider>
           <OrganizationProvider>

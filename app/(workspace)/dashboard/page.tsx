@@ -132,7 +132,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-6 p-4 lg:p-6 xl:p-8">
       <PageHeader
         title="Budy Workspace"
         description="Manage Sabra's commercial flow from intake to execution in one place."
@@ -149,7 +149,7 @@ export default function DashboardPage() {
         }
       />
 
-      <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <BusinessUnitSwitcher
           businessUnits={businessUnits}
           value={activeBusinessUnitId || ""}
@@ -175,7 +175,7 @@ export default function DashboardPage() {
 
       {error && <div className="text-sm text-red-600">{error}</div>}
 
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <MetricCard title="Open opportunities" value={metrics.total} caption="Active opportunities for the selected business unit" />
         <MetricCard title="Sent proposals" value={metrics.sent} caption="Already sent or viewed by the client" />
         <MetricCard title="Pending payments" value={metrics.paymentPending} caption="Accepted but not fully paid yet" />

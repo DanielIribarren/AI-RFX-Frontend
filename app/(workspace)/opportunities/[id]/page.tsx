@@ -132,7 +132,7 @@ export default function OpportunityDetailPage() {
   };
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-6 p-4 lg:p-6 xl:p-8">
       <div className="flex items-center gap-2 mb-2">
         <Button variant="ghost" size="sm" asChild>
           <Link href="/opportunities">

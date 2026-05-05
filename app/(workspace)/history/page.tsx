@@ -58,7 +58,7 @@ export default function HistoryPage() {
   }
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-6 p-4 lg:p-6 xl:p-8">
       <PageHeader
         title="Opportunity pipeline"
         description="Move opportunities through the commercial cycle without relying on the legacy RFX history view."

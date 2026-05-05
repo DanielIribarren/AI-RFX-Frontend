@@ -135,33 +135,39 @@ export function OpportunityTable({
           </p>
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-md border">
+        <div className="rounded-md border">
           <Table>
             <TableHeader>
               <TableRow className="bg-muted/40">
-                <TableHead className="min-w-[280px]">Opportunity</TableHead>
-                <TableHead className="min-w-[180px]">Client</TableHead>
-                <TableHead className="min-w-[170px]">Stage</TableHead>
-                <TableHead className="min-w-[120px] text-right">Value</TableHead>
-                <TableHead className="min-w-[140px]">Service date</TableHead>
-                <TableHead className="min-w-[120px]">Industry</TableHead>
-                <TableHead className="w-[120px] text-right">Actions</TableHead>
+                <TableHead>Opportunity</TableHead>
+                <TableHead className="hidden md:table-cell">Client</TableHead>
+                <TableHead className="whitespace-nowrap">Stage</TableHead>
+                <TableHead className="whitespace-nowrap text-right">Value</TableHead>
+                <TableHead className="hidden whitespace-nowrap xl:table-cell">Service date</TableHead>
+                <TableHead className="hidden whitespace-nowrap 2xl:table-cell">Industry</TableHead>
+                <TableHead className="w-[80px] text-right sm:w-[110px]">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filtered.map((opportunity) => (
                 <TableRow key={opportunity.id} className="hover:bg-muted/30">
-                  <TableCell className="font-medium">
+                  <TableCell className="max-w-[1px] font-medium">
                     <button
                       type="button"
                       onClick={() => onOpenOpportunity?.(opportunity.id)}
-                      className="text-left hover:underline"
+                      className="block w-full truncate text-left hover:underline"
+                      title={opportunity.title}
                     >
                       {opportunity.title}
                     </button>
+                    <div className="mt-0.5 truncate text-xs text-muted-foreground md:hidden">
+                      {opportunity.client.name || "—"}
+                    </div>
                   </TableCell>
-                  <TableCell className="text-sm text-muted-foreground">
-                    {opportunity.client.name || "—"}
+                  <TableCell className="hidden max-w-[1px] text-sm text-muted-foreground md:table-cell">
+                    <div className="truncate" title={opportunity.client.name || ""}>
+                      {opportunity.client.name || "—"}
+                    </div>
                   </TableCell>
                   <TableCell>
                     {onStageChange ? (
@@ -171,7 +177,7 @@ export function OpportunityTable({
                       >
                         <SelectTrigger
                           className={cn(
-                            "h-8 w-[160px] border text-xs font-medium",
+                            "h-8 w-[150px] border text-xs font-medium",
                             STAGE_BADGE_CLASS[opportunity.sales_stage],
                           )}
                         >
@@ -191,16 +197,16 @@ export function OpportunityTable({
                       </Badge>
                     )}
                   </TableCell>
-                  <TableCell className="text-right font-medium tabular-nums">
+                  <TableCell className="whitespace-nowrap text-right font-medium tabular-nums">
                     {formatMoney(opportunity.proposal?.total_cost)}
                   </TableCell>
-                  <TableCell className="text-sm text-muted-foreground">
+                  <TableCell className="hidden whitespace-nowrap text-sm text-muted-foreground xl:table-cell">
                     <div className="flex items-center gap-1.5">
                       <CalendarDays className="h-3.5 w-3.5" />
                       <span>{formatDate(opportunity.service?.service_start_at)}</span>
                     </div>
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="hidden 2xl:table-cell">
                     {opportunity.industry_context ? (
                       <Badge variant="outline" className="text-xs">
                         {opportunity.industry_context}
@@ -214,9 +220,10 @@ export function OpportunityTable({
                       variant="ghost"
                       size="sm"
                       onClick={() => onOpenOpportunity?.(opportunity.id)}
+                      aria-label="Open opportunity"
                     >
-                      <ExternalLink className="mr-1.5 h-3.5 w-3.5" />
-                      Open
+                      <ExternalLink className="h-3.5 w-3.5 sm:mr-1.5" />
+                      <span className="hidden sm:inline">Open</span>
                     </Button>
                   </TableCell>
                 </TableRow>
