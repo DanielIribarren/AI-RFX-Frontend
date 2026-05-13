@@ -354,10 +354,23 @@ export interface RFXHistoryItem {
   processing_status?: 'in_progress' | 'processed';
   commercial_status?: 'not_sent' | 'sent' | 'accepted' | 'rejected';
   agentic_status?: 'in_progress' | 'processed' | 'sent' | 'accepted';
+  rfx_status?: string;
+  // Rich fields returned by /api/rfx/latest and /api/rfx/history
+  priority?: 'low' | 'medium' | 'high' | 'urgent';
+  company_name?: string;
+  requester_name?: string;
+  estimated_budget?: number;
+  actual_cost?: number;
+  delivery_date?: string;
+  submission_deadline?: string;
+  currency?: string;
+  location?: string;
+  description?: string;
   // Optional timestamps for last activity resolution
   updated_at?: string;
   last_activity_at?: string;
   last_updated?: string;
+  created_at?: string;
   // New field: user who processed the RFX
   processed_by?: {
     id: string;

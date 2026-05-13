@@ -42,6 +42,7 @@ export default function WorkspaceLayout({ children }: WorkspaceLayoutProps) {
     if (pathname.startsWith("/business-units")) return "business-units";
     if (pathname.startsWith("/payments-settings")) return "payments-settings";
     if (pathname.startsWith("/intake")) return "intake";
+    if (pathname.startsWith("/rfx")) return "rfx";
     return undefined;
   })();
 
@@ -80,13 +81,12 @@ export default function WorkspaceLayout({ children }: WorkspaceLayoutProps) {
               onNewRfx={() => router.push("/intake")}
               onNavigateToDashboard={() => router.push("/dashboard")}
               onNavigateToOverview={() => router.push("/overview")}
-              onNavigateToOpportunities={() => router.push("/opportunities")}
-              onNavigateToHistory={() => router.push("/history")}
               onNavigateToClients={() => router.push("/clients")}
               onNavigateToProductInventory={() => router.push("/product-inventory")}
               onNavigateToBusinessUnits={() => router.push("/business-units")}
               onNavigateToPaymentSettings={() => router.push("/payments-settings")}
-              onSelectRfx={(id) => router.push(`/opportunities/${id}`)}
+              onNavigateToRfx={() => router.push("/rfx")}
+              onSelectRfx={(id) => router.push(`/rfx-result-wrapper-v2/data/${id}`)}
               currentView={currentView}
             />
             <SidebarInset className="bg-background">

@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useImperativeHandle, forwardRef } from "react"
-import { Plus, MessageSquare, FileText, Clock, MoreHorizontal, ChevronLeft, CheckCircle, XCircle, AlertTriangle, Archive, Settings, Trash2, Package, LayoutDashboard, Users, BriefcaseBusiness, HandCoins, TrendingUp } from "lucide-react"
+import { Plus, FileText, Clock, MoreHorizontal, ChevronLeft, CheckCircle, XCircle, AlertTriangle, Archive, Settings, Trash2, Package, LayoutDashboard, Users, BriefcaseBusiness, HandCoins, ClipboardList } from "lucide-react"
 import {
   Sidebar,
   SidebarContent,
@@ -56,11 +56,12 @@ interface AppSidebarProps {
   onNavigateToDashboard?: () => void
   onNavigateToOverview?: () => void
   onNavigateToOpportunities?: () => void
-  onNavigateToHistory: () => void
+  onNavigateToHistory?: () => void
   onNavigateToClients?: () => void
   onNavigateToProductInventory?: () => void
   onNavigateToBusinessUnits?: () => void
   onNavigateToPaymentSettings?: () => void
+  onNavigateToRfx?: () => void
   onSelectRfx?: (rfxId: string) => void
   currentView?:
     | "dashboard"
@@ -72,6 +73,7 @@ interface AppSidebarProps {
     | "business-units"
     | "payments-settings"
     | "intake"
+    | "rfx"
     | "main"
     | "results"
     | undefined
@@ -152,7 +154,7 @@ const formatRelativeDate = (dateString: string) => {
 }
 
 const AppSidebar = forwardRef<AppSidebarRef, AppSidebarProps>(
-  ({ onNewRfx, onNavigateToDashboard, onNavigateToOverview, onNavigateToOpportunities, onNavigateToHistory, onNavigateToClients, onNavigateToProductInventory, onNavigateToBusinessUnits, onNavigateToPaymentSettings, onSelectRfx, currentView }, ref) => {
+  ({ onNewRfx, onNavigateToDashboard, onNavigateToOverview, onNavigateToClients, onNavigateToProductInventory, onNavigateToBusinessUnits, onNavigateToPaymentSettings, onNavigateToRfx, onSelectRfx, currentView }, ref) => {
     const { toggleSidebar } = useSidebar()
     
     // Estado de feedback inline (sin toasts)
@@ -345,22 +347,12 @@ const AppSidebar = forwardRef<AppSidebarRef, AppSidebarProps>(
               </SidebarMenuItem>
               <SidebarMenuItem>
                 <SidebarMenuButton
-                  onClick={onNavigateToOpportunities}
-                  isActive={currentView === "opportunities"}
+                  onClick={onNavigateToRfx}
+                  isActive={currentView === "rfx"}
                   className="w-full justify-start text-gray-700 hover:bg-primary/5 hover:text-primary h-9 rounded-lg transition-all duration-200 data-[active=true]:bg-primary/10 data-[active=true]:text-primary data-[active=true]:font-semibold"
                 >
-                  <TrendingUp className="h-4 w-4" />
-                  <span>Opportunities</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  onClick={onNavigateToHistory}
-                  isActive={currentView === "history"}
-                  className="w-full justify-start text-gray-700 hover:bg-primary/5 hover:text-primary h-9 rounded-lg transition-all duration-200 data-[active=true]:bg-primary/10 data-[active=true]:text-primary data-[active=true]:font-semibold"
-                >
-                  <MessageSquare className="h-4 w-4" />
-                  <span>Pipeline</span>
+                  <ClipboardList className="h-4 w-4" />
+                  <span>Intakes</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
