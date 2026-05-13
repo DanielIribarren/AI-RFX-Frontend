@@ -86,7 +86,7 @@ export default function WorkspaceLayout({ children }: WorkspaceLayoutProps) {
               onNavigateToBusinessUnits={() => router.push("/business-units")}
               onNavigateToPaymentSettings={() => router.push("/payments-settings")}
               onNavigateToRfx={() => router.push("/rfx")}
-              onSelectRfx={(id) => router.push(`/rfx-result-wrapper-v2/data/${id}`)}
+              onSelectRfx={(id) => router.push(`/opportunities/${id}`)}
               currentView={currentView}
             />
             <SidebarInset className="bg-background">

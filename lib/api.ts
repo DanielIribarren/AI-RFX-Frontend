@@ -204,6 +204,8 @@ export interface RFXResponse {
     estimated_budget?: number;
     actual_cost?: number;
     status?: 'draft' | 'in_progress' | 'completed' | 'cancelled' | 'expired';
+    rfx_code?: string;
+    priority?: 'low' | 'medium' | 'high' | 'urgent';
     received_at?: string;
     metadata_json?: any;
     

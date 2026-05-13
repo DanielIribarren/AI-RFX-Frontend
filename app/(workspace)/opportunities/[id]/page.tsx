@@ -2,7 +2,19 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { ArrowLeft, Check, CheckCircle2, Copy, ExternalLink, FileText, Send } from "lucide-react";
+import {
+  ArrowLeft,
+  Check,
+  CheckCircle2,
+  Copy,
+  ExternalLink,
+  FileText,
+  Send,
+  Calculator,
+  CalendarClock,
+  TrendingUp,
+  AlertCircle,
+} from "lucide-react";
 import Link from "next/link";
 import { LoadingSpinner, PageHeader } from "@/components/common";
 import { CommercialProgressTracker } from "@/components/features/budy/CommercialProgressTracker";
@@ -12,7 +24,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { budyApi, SALES_STAGE_LABELS, type BusinessUnit, type OpportunityDetail, type SalesStage } from "@/lib/api-budy";
+import { api, type RFXResponse } from "@/lib/api";
 import { useOrganization } from "@/contexts/OrganizationContext";
+
+const PRIORITY_CONFIG = {
+  low:    { label: "Low",    cls: "border-slate-200 bg-slate-50 text-slate-600" },
+  medium: { label: "Normal", cls: "border-blue-200 bg-blue-50 text-blue-600" },
+  high:   { label: "High",   cls: "border-amber-200 bg-amber-50 text-amber-700" },
+  urgent: { label: "Urgent", cls: "border-red-200 bg-red-50 text-red-600" },
+} as const;
 
 function formatMoney(value: number | undefined) {
   return new Intl.NumberFormat("en-US", {
@@ -22,11 +42,17 @@ function formatMoney(value: number | undefined) {
   }).format(value || 0);
 }
 
+function formatDate(iso: string | undefined) {
+  if (!iso) return null;
+  return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+}
+
 export default function OpportunityDetailPage() {
   const params = useParams<{ id: string }>();
   const opportunityId = params.id;
   const { setActiveBusinessUnitId } = useOrganization();
   const [opportunity, setOpportunity] = useState<OpportunityDetail | null>(null);
+  const [rfxData, setRfxData] = useState<RFXResponse["data"] | null>(null);
   const [businessUnits, setBusinessUnits] = useState<BusinessUnit[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -38,12 +64,14 @@ export default function OpportunityDetailPage() {
     try {
       setLoading(true);
       setError(null);
-      const [detail, units] = await Promise.all([
+      const [detail, units, rfxResult] = await Promise.all([
         budyApi.getOpportunity(opportunityId),
         budyApi.getBusinessUnits(),
+        api.getRFXById(opportunityId).catch(() => null),
       ]);
       setOpportunity(detail);
       setBusinessUnits(units);
+      if (rfxResult?.data) setRfxData(rfxResult.data);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not load the opportunity");
     } finally {
@@ -94,7 +122,6 @@ export default function OpportunityDetailPage() {
       setError(`Cannot publish: ${publishGateIssues.join(", ")}`);
       return;
     }
-
     try {
       setPublishing(true);
       await budyApi.publishProposal(opportunity.proposal!.id!, {
@@ -131,52 +158,123 @@ export default function OpportunityDetailPage() {
     }
   };
 
+  const priority = rfxData?.priority;
+  const priorityCfg = priority ? PRIORITY_CONFIG[priority] : null;
+  const rfxCode = rfxData?.rfx_code;
+  const deliveryDate = formatDate(rfxData?.delivery_date);
+  const estimatedBudget = rfxData?.estimated_budget;
+  const actualCost = rfxData?.actual_cost;
+  const budgetDiff = estimatedBudget != null && actualCost != null ? estimatedBudget - actualCost : null;
+
   return (
     <div className="space-y-6 p-4 lg:p-6 xl:p-8">
-      <div className="flex items-center gap-2 mb-2">
+      {/* Breadcrumb nav */}
+      <div className="flex items-center gap-2">
         <Button variant="ghost" size="sm" asChild>
-          <Link href="/opportunities">
+          <Link href="/rfx">
             <ArrowLeft className="mr-1 h-4 w-4" />
-            Opportunities
+            Intakes
           </Link>
         </Button>
-        <span className="text-muted-foreground">·</span>
-        <Button variant="ghost" size="sm" asChild>
+        {rfxCode && (
+          <>
+            <span className="text-muted-foreground">·</span>
+            <span className="font-mono text-xs text-muted-foreground bg-muted px-2 py-1 rounded">{rfxCode}</span>
+          </>
+        )}
+      </div>
+
+      {/* Header with metadata chips */}
+      <div className="space-y-3">
+        <PageHeader
+          title={opportunity.title}
+          description={`${opportunity.client.name || "Unnamed client"} · ${selectedBusinessUnit?.name || "No business unit assigned"}`}
+          actions={
+            <>
+              {publicUrl && (
+                <>
+                  <Button variant="outline" onClick={handleCopyLink}>
+                    {copied ? <Check className="mr-2 h-4 w-4" /> : <Copy className="mr-2 h-4 w-4" />}
+                    {copied ? "Link copied!" : "Copy public link"}
+                  </Button>
+                  <Button variant="outline" asChild>
+                    <a href={publicUrl} target="_blank" rel="noreferrer">
+                      <ExternalLink className="mr-2 h-4 w-4" />
+                      Preview
+                    </a>
+                  </Button>
+                </>
+              )}
+              {!publicUrl && (
+                <Button onClick={handlePublish} disabled={publishing || !hasPublishableProposal}>
+                  <Send className="mr-2 h-4 w-4" />
+                  {publishing ? "Publishing..." : "Publish proposal"}
+                </Button>
+              )}
+            </>
+          }
+        />
+
+        {/* Metadata chips row */}
+        <div className="flex flex-wrap items-center gap-2">
+          {priorityCfg && (
+            <Badge variant="outline" className={`text-xs font-medium ${priorityCfg.cls}`}>
+              {priorityCfg.label} priority
+            </Badge>
+          )}
+          {deliveryDate && (
+            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+              <CalendarClock className="h-3.5 w-3.5" />
+              <span>Delivery {deliveryDate}</span>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Action bar */}
+      <div className="flex flex-wrap gap-2 rounded-lg border bg-muted/30 p-3">
+        <Button variant="outline" size="sm" asChild>
           <Link href={`/rfx-result-wrapper-v2/data/${opportunityId}`}>
-            <FileText className="mr-1 h-4 w-4" />
-            RFX data
+            <FileText className="mr-2 h-4 w-4" />
+            Edit data &amp; pricing
+          </Link>
+        </Button>
+        <Button variant="outline" size="sm" asChild>
+          <Link href={`/rfx-result-wrapper-v2/data/${opportunityId}?tab=presupuesto`}>
+            <Calculator className="mr-2 h-4 w-4" />
+            Budget / APU
           </Link>
         </Button>
       </div>
 
-      <PageHeader
-        title={opportunity.title}
-        description={`${opportunity.client.name || "Unnamed client"} · ${selectedBusinessUnit?.name || "No business unit assigned"}`}
-        actions={
-          <>
-            {publicUrl && (
-              <>
-                <Button variant="outline" onClick={handleCopyLink}>
-                  {copied ? <Check className="mr-2 h-4 w-4" /> : <Copy className="mr-2 h-4 w-4" />}
-                  {copied ? "Link copied!" : "Copy public link"}
-                </Button>
-                <Button variant="outline" asChild>
-                  <a href={publicUrl} target="_blank" rel="noreferrer">
-                    <ExternalLink className="mr-2 h-4 w-4" />
-                    Preview
-                  </a>
-                </Button>
-              </>
-            )}
-            {!publicUrl && (
-              <Button onClick={handlePublish} disabled={publishing || !hasPublishableProposal}>
-                <Send className="mr-2 h-4 w-4" />
-                {publishing ? "Publishing..." : "Publish proposal"}
-              </Button>
-            )}
-          </>
-        }
-      />
+      {/* Financial KPI bar */}
+      {(estimatedBudget != null || actualCost != null) && (
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          {estimatedBudget != null && (
+            <div className="rounded-lg border bg-card p-3 text-sm">
+              <div className="text-xs uppercase tracking-wide text-muted-foreground mb-1">Estimated budget</div>
+              <div className="font-semibold">{formatMoney(estimatedBudget)}</div>
+            </div>
+          )}
+          {actualCost != null && (
+            <div className="rounded-lg border bg-card p-3 text-sm">
+              <div className="text-xs uppercase tracking-wide text-muted-foreground mb-1">Actual cost</div>
+              <div className="font-semibold">{formatMoney(actualCost)}</div>
+            </div>
+          )}
+          {budgetDiff != null && (
+            <div className={`rounded-lg border p-3 text-sm ${budgetDiff >= 0 ? "border-emerald-200 bg-emerald-50" : "border-red-200 bg-red-50"}`}>
+              <div className="flex items-center gap-1 text-xs uppercase tracking-wide text-muted-foreground mb-1">
+                {budgetDiff >= 0 ? <TrendingUp className="h-3 w-3 text-emerald-600" /> : <AlertCircle className="h-3 w-3 text-red-600" />}
+                Margin
+              </div>
+              <div className={`font-semibold ${budgetDiff >= 0 ? "text-emerald-700" : "text-red-700"}`}>
+                {budgetDiff >= 0 ? "+" : ""}{formatMoney(budgetDiff)}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {error && <div className="text-sm text-red-600">{error}</div>}
 

@@ -284,7 +284,7 @@ export function RFXDataTable() {
   const toggleGroup = (key: AgenticStatus) =>
     setCollapsed((prev) => ({ ...prev, [key]: !prev[key] }))
 
-  const openRfx = (id: string) => router.push(`/rfx-result-wrapper-v2/data/${id}`)
+  const openRfx = (id: string) => router.push(`/opportunities/${id}`)
 
   const confirmDelete = async () => {
     if (!deleteDialog) return
