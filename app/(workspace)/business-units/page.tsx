@@ -44,10 +44,6 @@ const EMPTY_FORM = {
   name: "",
   slug: "",
   industry_context: "corporate_catering",
-  brand_name: "",
-  brand_tagline: "",
-  support_email: "",
-  logo_url: "",
 };
 
 export default function BusinessUnitsPage() {
@@ -83,10 +79,6 @@ export default function BusinessUnitsPage() {
       name: unit.name || "",
       slug: unit.slug || "",
       industry_context: unit.industry_context || "services",
-      brand_name: unit.brand_name || "",
-      brand_tagline: unit.brand_tagline || "",
-      support_email: unit.support_email || "",
-      logo_url: unit.logo_url || "",
     });
     setError(null);
   };
@@ -124,7 +116,7 @@ export default function BusinessUnitsPage() {
     <div className="space-y-6 p-6">
       <PageHeader
         title="Services"
-        description="Each service controls AI context, payment methods, branding, and reporting for one line of business."
+        description="Each service defines a processing flow (catering, construction) for the AI pipeline."
         icon={BriefcaseBusiness}
       />
 
@@ -184,40 +176,6 @@ export default function BusinessUnitsPage() {
                   Drives the processing flow. Construction activates the scope-extraction agent for partidas (APU).
                 </p>
               </div>
-              <div className="space-y-2">
-                <Label>Display brand name</Label>
-                <Input
-                  value={form.brand_name}
-                  onChange={(event) => setForm((current) => ({ ...current, brand_name: event.target.value }))}
-                  placeholder="e.g. BizBites by Sabra"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Brand tagline</Label>
-                <Input
-                  value={form.brand_tagline}
-                  onChange={(event) => setForm((current) => ({ ...current, brand_tagline: event.target.value }))}
-                  placeholder="e.g. Catering made simple"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Logo URL</Label>
-                <Input
-                  value={form.logo_url}
-                  onChange={(event) => setForm((current) => ({ ...current, logo_url: event.target.value }))}
-                  placeholder="https://..."
-                />
-                <p className="text-xs text-muted-foreground">Shown on public proposals. Upload image to storage and paste the URL.</p>
-              </div>
-              <div className="space-y-2">
-                <Label>Support email</Label>
-                <Input
-                  type="email"
-                  value={form.support_email}
-                  onChange={(event) => setForm((current) => ({ ...current, support_email: event.target.value }))}
-                  placeholder="sales@yourdomain.com"
-                />
-              </div>
               <div className="flex gap-2">
                 <Button type="submit" className="flex-1">
                   {isEditing ? "Save changes" : "Create service"}
@@ -241,9 +199,7 @@ export default function BusinessUnitsPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Service</TableHead>
-                  <TableHead>Brand name</TableHead>
                   <TableHead>Service type</TableHead>
-                  <TableHead>Contact</TableHead>
                   <TableHead className="w-10"></TableHead>
                 </TableRow>
               </TableHeader>
@@ -251,15 +207,10 @@ export default function BusinessUnitsPage() {
                 {businessUnits.map((unit) => (
                   <TableRow key={unit.id} className={editingUnit?.id === unit.id ? "bg-muted/50" : undefined}>
                     <TableCell className="font-medium">
-                      {unit.logo_url && (
-                        <img src={unit.logo_url} alt="" className="h-5 w-5 rounded object-contain inline-block mr-2" />
-                      )}
                       {unit.name}
                       {unit.is_default && <span className="ml-2 text-xs text-muted-foreground">Default</span>}
                     </TableCell>
-                    <TableCell>{unit.brand_name || unit.name}</TableCell>
                     <TableCell>{SERVICE_LABELS[unit.industry_context] || unit.industry_context}</TableCell>
-                    <TableCell>{unit.support_email || <span className="text-muted-foreground text-xs">No email</span>}</TableCell>
                     <TableCell>
                       <Button variant="ghost" size="icon" onClick={() => startEdit(unit)} title="Edit">
                         <Pencil className="h-4 w-4" />
