@@ -193,6 +193,10 @@ export interface RFXResponse {
   data?: {
     id: string;
     // V2.0 structure (primary)
+    business_unit_id?: string;
+    industry_context?: string;
+    /** Spanish display label resolved server-side; fall back to industry_context. */
+    industry_label?: string;
     email?: string;
     requester_name?: string;
     company_name?: string;

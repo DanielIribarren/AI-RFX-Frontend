@@ -27,6 +27,12 @@ export interface BusinessUnit {
   slug: string;
   description?: string;
   industry_context: string;
+  /**
+   * Spanish display label resolved server-side from industry_context
+   * (e.g. "construction_ve" -> "Construcción"). Optional because older
+   * responses or legacy data may omit it; fall back to industry_context.
+   */
+  industry_label?: string;
   brand_name?: string;
   brand_tagline?: string;
   primary_color?: string;
@@ -76,6 +82,8 @@ export interface Opportunity {
   sales_stage: SalesStage;
   origin_channel: string;
   industry_context: string;
+  /** Spanish display label resolved server-side; fall back to industry_context. */
+  industry_label?: string;
   business_unit_id?: string | null;
   client: {
     id?: string;

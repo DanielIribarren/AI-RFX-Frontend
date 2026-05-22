@@ -80,7 +80,8 @@ export function OpportunityTable({
         return (
           opp.title.toLowerCase().includes(term) ||
           opp.client.name?.toLowerCase().includes(term) ||
-          opp.industry_context?.toLowerCase().includes(term)
+          opp.industry_context?.toLowerCase().includes(term) ||
+          opp.industry_label?.toLowerCase().includes(term)
         );
       })
       .sort((a, b) => {
@@ -209,7 +210,7 @@ export function OpportunityTable({
                   <TableCell className="hidden 2xl:table-cell">
                     {opportunity.industry_context ? (
                       <Badge variant="outline" className="text-xs">
-                        {opportunity.industry_context}
+                        {opportunity.industry_label || opportunity.industry_context}
                       </Badge>
                     ) : (
                       <span className="text-xs text-muted-foreground">—</span>

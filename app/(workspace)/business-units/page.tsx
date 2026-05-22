@@ -135,13 +135,16 @@ export default function BusinessUnitsPage() {
                 <p className="text-xs text-muted-foreground">{isEditing ? "Slug cannot be changed after creation." : "Used in internal routes and configuration."}</p>
               </div>
               <div className="space-y-2">
-                <Label>Industry context</Label>
+                <Label>Tipo de solicitud</Label>
                 <Input
                   value={form.industry_context}
                   onChange={(event) => setForm((current) => ({ ...current, industry_context: event.target.value }))}
-                  placeholder="e.g. corporate_catering, food_safety_testing"
+                  placeholder="e.g. corporate_catering, construction_ve"
                 />
-                <p className="text-xs text-muted-foreground">Helps Budy understand what this unit sells.</p>
+                <p className="text-xs text-muted-foreground">
+                  Identificador interno que define el flujo (catering, construcción, etc).
+                  El nombre en español lo muestra automáticamente la app.
+                </p>
               </div>
               <div className="space-y-2">
                 <Label>Display brand name</Label>
@@ -201,7 +204,7 @@ export default function BusinessUnitsPage() {
                 <TableRow>
                   <TableHead>Business unit</TableHead>
                   <TableHead>Brand name</TableHead>
-                  <TableHead>Context</TableHead>
+                  <TableHead>Tipo de solicitud</TableHead>
                   <TableHead>Contact</TableHead>
                   <TableHead className="w-10"></TableHead>
                 </TableRow>
@@ -217,7 +220,7 @@ export default function BusinessUnitsPage() {
                       {unit.is_default && <span className="ml-2 text-xs text-muted-foreground">Default</span>}
                     </TableCell>
                     <TableCell>{unit.brand_name || unit.name}</TableCell>
-                    <TableCell>{unit.industry_context}</TableCell>
+                    <TableCell>{unit.industry_label || unit.industry_context}</TableCell>
                     <TableCell>{unit.support_email || <span className="text-muted-foreground text-xs">No email</span>}</TableCell>
                     <TableCell>
                       <Button variant="ghost" size="icon" onClick={() => startEdit(unit)} title="Edit">
