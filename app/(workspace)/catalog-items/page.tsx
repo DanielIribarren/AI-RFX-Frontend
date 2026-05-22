@@ -81,14 +81,14 @@ export default function CatalogItemsPage() {
   }
 
   if (organization && businessUnits.length === 0) {
-    return <div className="p-6 text-sm text-muted-foreground">Create a business unit before creating catalog items.</div>;
+    return <div className="p-6 text-sm text-muted-foreground">Create a service before creating catalog items.</div>;
   }
 
   return (
     <div className="space-y-6 p-6">
       <PageHeader
         title="Catalog items"
-        description="Future commercial offers by business unit. This is not the AI pricing catalog in Phase 1."
+        description="Future commercial offers by service. This is not the AI pricing catalog in Phase 1."
         icon={BriefcaseBusiness}
       />
 
@@ -114,7 +114,7 @@ export default function CatalogItemsPage() {
                 businessUnits={businessUnits}
                 value={form.business_unit_id}
                 onValueChange={(value) => setForm((current) => ({ ...current, business_unit_id: value }))}
-                label="Business unit"
+                label="Service"
                 includeAll={false}
               />
               <div className="space-y-2">

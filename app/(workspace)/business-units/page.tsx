@@ -7,14 +7,43 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useOrganization } from "@/contexts/OrganizationContext";
 import { budyApi, type BusinessUnit } from "@/lib/api-budy";
 
+// Service types offered in the UI dropdown. Values are the stable
+// internal industry_context ids that the backend's INDUSTRY_PROFILES
+// dict (backend/services/business_unit_context.py) understands; labels
+// are the English names shown to the user. Only the two Sabra-relevant
+// types are exposed in the dropdown; existing business_units with other
+// values in the DB still render via SERVICE_LABELS below.
+const SERVICE_TYPES = [
+  { value: "corporate_catering", label: "Catering" },
+  { value: "construction_ve", label: "Construction" },
+] as const;
+
+// English label lookup used by the table cell. Covers every
+// industry_context the backend may return, so legacy BUs still display
+// readable text even when the user can't pick them from the dropdown.
+const SERVICE_LABELS: Record<string, string> = {
+  corporate_catering: "Catering",
+  construction_ve: "Construction",
+  food_safety_testing: "Food safety",
+  industrial_food_management: "Industrial food",
+  services: "General services",
+};
+
 const EMPTY_FORM = {
   name: "",
   slug: "",
-  industry_context: "services",
+  industry_context: "corporate_catering",
   brand_name: "",
   brand_tagline: "",
   support_email: "",
@@ -38,7 +67,7 @@ export default function BusinessUnitsPage() {
       setError(null);
       await refreshBusinessUnits();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load business units");
+      setError(err instanceof Error ? err.message : "Failed to load services");
     } finally {
       setLoading(false);
     }
@@ -81,12 +110,12 @@ export default function BusinessUnitsPage() {
       setForm({ ...EMPTY_FORM });
       await loadUnits();
     } catch (err) {
-      setError(err instanceof Error ? err.message : editingUnit ? "Failed to update business unit" : "Failed to create business unit");
+      setError(err instanceof Error ? err.message : editingUnit ? "Failed to update service" : "Failed to create service");
     }
   };
 
   if (loading || isBusinessUnitsLoading) {
-    return <LoadingSpinner text="Loading business units..." fullScreen />;
+    return <LoadingSpinner text="Loading services..." fullScreen />;
   }
 
   const isEditing = editingUnit !== null;
@@ -94,8 +123,8 @@ export default function BusinessUnitsPage() {
   return (
     <div className="space-y-6 p-6">
       <PageHeader
-        title="Business units"
-        description="These internal lines control AI context, payment methods, branding, and reporting."
+        title="Services"
+        description="Each service controls AI context, payment methods, branding, and reporting for one line of business."
         icon={BriefcaseBusiness}
       />
 
@@ -105,7 +134,7 @@ export default function BusinessUnitsPage() {
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
-              <CardTitle>{isEditing ? `Edit: ${editingUnit.name}` : "New business unit"}</CardTitle>
+              <CardTitle>{isEditing ? `Edit: ${editingUnit.name}` : "New service"}</CardTitle>
               {isEditing && (
                 <Button variant="ghost" size="icon" onClick={cancelEdit}>
                   <X className="h-4 w-4" />
@@ -116,7 +145,7 @@ export default function BusinessUnitsPage() {
           <CardContent>
             <form className="space-y-4" onSubmit={handleSubmit}>
               <div className="space-y-2">
-                <Label>Business unit name</Label>
+                <Label>Service name</Label>
                 <Input
                   value={form.name}
                   onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))}
@@ -135,15 +164,24 @@ export default function BusinessUnitsPage() {
                 <p className="text-xs text-muted-foreground">{isEditing ? "Slug cannot be changed after creation." : "Used in internal routes and configuration."}</p>
               </div>
               <div className="space-y-2">
-                <Label>Tipo de solicitud</Label>
-                <Input
+                <Label>Type of service</Label>
+                <Select
                   value={form.industry_context}
-                  onChange={(event) => setForm((current) => ({ ...current, industry_context: event.target.value }))}
-                  placeholder="e.g. corporate_catering, construction_ve"
-                />
+                  onValueChange={(value) => setForm((current) => ({ ...current, industry_context: value }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a service type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {SERVICE_TYPES.map((type) => (
+                      <SelectItem key={type.value} value={type.value}>
+                        {type.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 <p className="text-xs text-muted-foreground">
-                  Identificador interno que define el flujo (catering, construcción, etc).
-                  El nombre en español lo muestra automáticamente la app.
+                  Drives the processing flow. Construction activates the scope-extraction agent for partidas (APU).
                 </p>
               </div>
               <div className="space-y-2">
@@ -182,7 +220,7 @@ export default function BusinessUnitsPage() {
               </div>
               <div className="flex gap-2">
                 <Button type="submit" className="flex-1">
-                  {isEditing ? "Save changes" : "Create business unit"}
+                  {isEditing ? "Save changes" : "Create service"}
                 </Button>
                 {isEditing && (
                   <Button type="button" variant="outline" onClick={cancelEdit}>
@@ -196,15 +234,15 @@ export default function BusinessUnitsPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Configured business units</CardTitle>
+            <CardTitle>Configured services</CardTitle>
           </CardHeader>
           <CardContent>
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Business unit</TableHead>
+                  <TableHead>Service</TableHead>
                   <TableHead>Brand name</TableHead>
-                  <TableHead>Tipo de solicitud</TableHead>
+                  <TableHead>Service type</TableHead>
                   <TableHead>Contact</TableHead>
                   <TableHead className="w-10"></TableHead>
                 </TableRow>
@@ -220,7 +258,7 @@ export default function BusinessUnitsPage() {
                       {unit.is_default && <span className="ml-2 text-xs text-muted-foreground">Default</span>}
                     </TableCell>
                     <TableCell>{unit.brand_name || unit.name}</TableCell>
-                    <TableCell>{unit.industry_label || unit.industry_context}</TableCell>
+                    <TableCell>{SERVICE_LABELS[unit.industry_context] || unit.industry_context}</TableCell>
                     <TableCell>{unit.support_email || <span className="text-muted-foreground text-xs">No email</span>}</TableCell>
                     <TableCell>
                       <Button variant="ghost" size="icon" onClick={() => startEdit(unit)} title="Edit">

@@ -91,14 +91,14 @@ export default function PaymentSettingsPage() {
   }
 
   if (organization && businessUnits.length === 0) {
-    return <div className="p-6 text-sm text-muted-foreground">Create a business unit before configuring payment methods.</div>;
+    return <div className="p-6 text-sm text-muted-foreground">Create a service before configuring payment methods.</div>;
   }
 
   return (
     <div className="space-y-6 p-6">
       <PageHeader
         title="Payment settings"
-        description="Define how each business unit gets paid and what the client sees on the public proposal."
+        description="Define how each service gets paid and what the client sees on the public proposal."
         icon={HandCoins}
       />
 
@@ -124,7 +124,7 @@ export default function PaymentSettingsPage() {
                 businessUnits={businessUnits}
                 value={form.business_unit_id}
                 onValueChange={(value) => setForm((current) => ({ ...current, business_unit_id: value }))}
-                label="Business unit"
+                label="Service"
                 includeAll={false}
               />
               <div className="space-y-2">

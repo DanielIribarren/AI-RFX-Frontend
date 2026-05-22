@@ -118,13 +118,13 @@ export default function DashboardPage() {
       <div className="p-6">
         <Card>
           <CardHeader>
-            <CardTitle>Business units required</CardTitle>
+            <CardTitle>Services required</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-sm text-muted-foreground">
-              Create at least one business unit before processing opportunities in Budy.
+              Create at least one service before processing opportunities in Budy.
             </p>
-            <Button onClick={() => router.push("/business-units")}>Open business units</Button>
+            <Button onClick={() => router.push("/business-units")}>Open services</Button>
           </CardContent>
         </Card>
       </div>
@@ -143,7 +143,7 @@ export default function DashboardPage() {
               Open intake
             </Button>
             <Button onClick={() => router.push("/business-units")}>
-              Manage business units
+              Manage services
             </Button>
           </>
         }
@@ -154,7 +154,7 @@ export default function DashboardPage() {
           businessUnits={businessUnits}
           value={activeBusinessUnitId || ""}
           onValueChange={handleBusinessUnitChange}
-          label="Active business unit"
+          label="Active service"
           disabled={businessUnits.length === 0}
         />
         <div className="flex flex-wrap items-center gap-2">
@@ -176,7 +176,7 @@ export default function DashboardPage() {
       {error && <div className="text-sm text-red-600">{error}</div>}
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <MetricCard title="Open opportunities" value={metrics.total} caption="Active opportunities for the selected business unit" />
+        <MetricCard title="Open opportunities" value={metrics.total} caption="Active opportunities for the selected service" />
         <MetricCard title="Sent proposals" value={metrics.sent} caption="Already sent or viewed by the client" />
         <MetricCard title="Pending payments" value={metrics.paymentPending} caption="Accepted but not fully paid yet" />
         <MetricCard
@@ -196,7 +196,7 @@ export default function DashboardPage() {
             onStageChange={handleStageChange}
             onOpenOpportunity={(opportunityId) => router.push(`/opportunities/${opportunityId}`)}
           />
-          {isPending && <p className="mt-4 text-sm text-muted-foreground">Updating the active business unit filter...</p>}
+          {isPending && <p className="mt-4 text-sm text-muted-foreground">Updating the active service filter...</p>}
         </CardContent>
       </Card>
 

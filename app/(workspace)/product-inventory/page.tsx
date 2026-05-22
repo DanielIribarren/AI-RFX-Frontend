@@ -393,7 +393,7 @@ export default function ProductInventoryPage() {
               <div>
                 <h1 className="text-3xl font-bold text-gray-900">Product Inventory</h1>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Manage the authoritative AI pricing catalog for the active business unit
+                  Manage the authoritative AI pricing catalog for the active service
                 </p>
               </div>
             </div>
@@ -440,7 +440,7 @@ export default function ProductInventoryPage() {
                 businessUnits={businessUnits}
                 value={activeBusinessUnitId || ""}
                 onValueChange={setActiveBusinessUnitId}
-                label="Active business unit"
+                label="Active service"
               />
               <div className="space-y-2">
                 <p className="text-sm font-medium">Catalog scope</p>
@@ -449,13 +449,13 @@ export default function ProductInventoryPage() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="business_unit">Business-unit catalog</SelectItem>
+                    <SelectItem value="business_unit">Service catalog</SelectItem>
                     <SelectItem value="shared">Shared organization catalog</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <p className="text-sm text-muted-foreground md:col-span-2">
-                Matching order is area-first: the AI searches the active business unit catalog first, then shared organization products.
+                Matching order is service-first: the AI searches the active service catalog first, then shared organization products.
                 Current scope: {catalogScopeLabel}.
               </p>
             </div>
@@ -465,9 +465,9 @@ export default function ProductInventoryPage() {
         {requiresBusinessUnitSetup && (
           <Alert className="mb-6" variant="destructive">
             <AlertTriangle className="h-4 w-4" />
-            <AlertTitle>Business unit required</AlertTitle>
+            <AlertTitle>Service required</AlertTitle>
             <AlertDescription>
-              Create a business unit before importing or managing organization-owned products.
+              Create a service before importing or managing organization-owned products.
             </AlertDescription>
           </Alert>
         )}
@@ -616,7 +616,7 @@ export default function ProductInventoryPage() {
                 </div>
               ) : (
                 <p className="mb-8 text-sm text-muted-foreground">
-                  A business unit must exist before inventory can be uploaded or edited for the organization.
+                  A service must exist before inventory can be uploaded or edited for the organization.
                 </p>
               )}
 

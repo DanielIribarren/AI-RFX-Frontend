@@ -18,9 +18,9 @@ export function BusinessUnitSwitcher({
   businessUnits,
   value,
   onValueChange,
-  label = "Business unit",
+  label = "Service",
   includeAll = false,
-  allLabel = "All business units",
+  allLabel = "All services",
   disabled = false,
 }: BusinessUnitSwitcherProps) {
   return (
@@ -28,7 +28,7 @@ export function BusinessUnitSwitcher({
       <Label>{label}</Label>
       <Select value={value} onValueChange={onValueChange} disabled={disabled}>
         <SelectTrigger className="w-full md:w-[280px]">
-          <SelectValue placeholder="Select a business unit" />
+          <SelectValue placeholder="Select a service" />
         </SelectTrigger>
         <SelectContent>
           {includeAll && (

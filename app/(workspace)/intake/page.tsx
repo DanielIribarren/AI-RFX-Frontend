@@ -109,7 +109,7 @@ export default function IntakePage() {
               businessUnits={businessUnits}
               value={activeBusinessUnitId || ""}
               onValueChange={setActiveBusinessUnitId}
-              label="Business unit for this intake"
+              label="Service for this intake"
             />
             <p className="mt-3 text-sm text-muted-foreground">
               This selection controls extraction context, catalog matching, branding, and payment settings for the resulting opportunity.
@@ -119,7 +119,7 @@ export default function IntakePage() {
 
         {requiresBusinessUnitSetup && (
           <div className="mx-auto max-w-5xl rounded-2xl border border-amber-200 bg-amber-50 p-5 text-sm text-amber-900">
-            Create a business unit before uploading organization-owned RFX documents. Intake is blocked until one is available.
+            Create a service before uploading organization-owned RFX documents. Intake is blocked until one is available.
           </div>
         )}
 

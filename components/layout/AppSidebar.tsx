@@ -382,7 +382,7 @@ const AppSidebar = forwardRef<AppSidebarRef, AppSidebarProps>(
                   className="w-full justify-start text-gray-700 hover:bg-primary/5 hover:text-primary h-9 rounded-lg transition-all duration-200 data-[active=true]:bg-primary/10 data-[active=true]:text-primary data-[active=true]:font-semibold"
                 >
                   <BriefcaseBusiness className="h-4 w-4" />
-                  <span>Business Units</span>
+                  <span>Services</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>

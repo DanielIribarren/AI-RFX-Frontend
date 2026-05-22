@@ -265,7 +265,7 @@ export function PublicProposalViewer({ token }: PublicProposalViewerProps) {
               </CardHeader>
               <CardContent className="space-y-4">
                 {data.payment_methods.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">This business unit does not have payment methods configured yet.</p>
+                  <p className="text-sm text-muted-foreground">This service does not have payment methods configured yet.</p>
                 ) : (
                   data.payment_methods.map((method: PaymentMethod) => (
                     <div key={method.id} className="rounded-lg border p-3 text-sm">

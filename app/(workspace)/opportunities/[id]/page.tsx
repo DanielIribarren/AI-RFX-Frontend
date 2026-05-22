@@ -188,7 +188,7 @@ export default function OpportunityDetailPage() {
       <div className="space-y-3">
         <PageHeader
           title={opportunity.title}
-          description={`${opportunity.client.name || "Unnamed client"} · ${selectedBusinessUnit?.name || "No business unit assigned"}`}
+          description={`${opportunity.client.name || "Unnamed client"} · ${selectedBusinessUnit?.name || "No service assigned"}`}
           actions={
             <>
               {publicUrl && (
