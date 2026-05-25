@@ -6,20 +6,34 @@ import RFXReviewInlineChat from "@/components/features/rfx/RFXReviewInlineChat";
 import { useRouter, useSearchParams } from "next/navigation";
 import type { RFXResponse } from "@/lib/api";
 import { showErrorToast } from "@/lib/toast";
-import { BusinessUnitSwitcher } from "@/components/features/budy/BusinessUnitSwitcher";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useOrganization } from "@/contexts/OrganizationContext";
+
+// Service types that map to backend industry_context ids. Catering and
+// Construction are the two flows Sabra actually runs; Construction is
+// what activates the scope-extraction agent for partidas (APU).
+const SERVICE_TYPES = [
+  { value: "corporate_catering", label: "Catering" },
+  { value: "construction_ve", label: "Construction" },
+] as const;
+type ServiceTypeValue = (typeof SERVICE_TYPES)[number]["value"];
 
 export default function IntakePage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const {
     organization,
-    businessUnits,
     activeBusinessUnitId,
-    setActiveBusinessUnitId,
-    isBusinessUnitsLoading,
   } = useOrganization();
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [serviceType, setServiceType] = useState<ServiceTypeValue>("corporate_catering");
   const [reviewSession, setReviewSession] = useState<{ rfxId: string; entityType: "rfx" | "session"; data?: any } | null>(null);
   const reviewRfxId = searchParams.get("review_rfx_id");
   const reviewEntityTypeParam = searchParams.get("review_entity_type");
@@ -80,10 +94,6 @@ export default function IntakePage() {
     }
   };
 
-  const requiresBusinessUnitSetup = Boolean(
-    organization && !isBusinessUnitsLoading && businessUnits.length === 0,
-  );
-
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 via-white to-primary/10 p-4">
       <div className="w-full space-y-10">
@@ -103,23 +113,24 @@ export default function IntakePage() {
           </p>
         </div>
 
-        {organization && businessUnits.length > 0 && (
-          <div className="mx-auto max-w-5xl rounded-2xl border bg-white/80 p-5 shadow-sm">
-            <BusinessUnitSwitcher
-              businessUnits={businessUnits}
-              value={activeBusinessUnitId || ""}
-              onValueChange={setActiveBusinessUnitId}
-              label="Service for this intake"
-            />
-            <p className="mt-3 text-sm text-muted-foreground">
-              This selection controls extraction context, catalog matching, branding, and payment settings for the resulting opportunity.
+        {organization && (
+          <div className="mx-auto max-w-5xl rounded-2xl border bg-white/80 p-5 shadow-sm space-y-2">
+            <Label>Type of service</Label>
+            <Select value={serviceType} onValueChange={(value) => setServiceType(value as ServiceTypeValue)}>
+              <SelectTrigger className="w-full md:w-[320px]">
+                <SelectValue placeholder="Select a service type" />
+              </SelectTrigger>
+              <SelectContent>
+                {SERVICE_TYPES.map((type) => (
+                  <SelectItem key={type.value} value={type.value}>
+                    {type.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-sm text-muted-foreground">
+              Drives the processing flow. Construction activates the scope-extraction agent for partidas (APU).
             </p>
-          </div>
-        )}
-
-        {requiresBusinessUnitSetup && (
-          <div className="mx-auto max-w-5xl rounded-2xl border border-amber-200 bg-amber-50 p-5 text-sm text-amber-900">
-            Create a service before uploading organization-owned RFX documents. Intake is blocked until one is available.
           </div>
         )}
 
@@ -174,8 +185,9 @@ export default function IntakePage() {
               <RfxChatInput
                 onFileProcessed={handleFileProcessed}
                 onRFXProcessed={handleRFXProcessed}
-                isLoading={isAnalyzing || requiresBusinessUnitSetup}
+                isLoading={isAnalyzing}
                 businessUnitId={activeBusinessUnitId || undefined}
+                industryContext={serviceType}
               />
             </div>
           </>

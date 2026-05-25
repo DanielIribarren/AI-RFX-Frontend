@@ -93,6 +93,14 @@ interface RfxChatInputProps {
   onRFXProcessed: (data: RFXResponse) => void | Promise<void>
   isLoading: boolean
   businessUnitId?: string | null
+  /**
+   * Internal industry_context id to send with the upload (e.g.
+   * "corporate_catering", "construction_ve"). When provided, it
+   * overrides whatever the selected business unit has stored. This is
+   * how the new intake UX lets María pick "Catering" or "Construction"
+   * directly without exposing the business unit concept.
+   */
+  industryContext?: string | null
 }
 
 interface AttachedFile {
@@ -101,7 +109,7 @@ interface AttachedFile {
   preview?: string
 }
 
-export default function RfxChatInput({ onFileProcessed, onRFXProcessed, isLoading, businessUnitId }: RfxChatInputProps) {
+export default function RfxChatInput({ onFileProcessed, onRFXProcessed, isLoading, businessUnitId, industryContext }: RfxChatInputProps) {
   const [message, setMessage] = useState("")
   const [attachedFiles, setAttachedFiles] = useState<AttachedFile[]>([])
   const [isProcessing, setIsProcessing] = useState(false)
@@ -382,7 +390,15 @@ export default function RfxChatInput({ onFileProcessed, onRFXProcessed, isLoadin
 
       // ✅ FIX: Generate valid UUID v4 instead of custom format
       const rfxId = crypto.randomUUID()
-      const requestedTipoRfx = businessUnitId ? null : "catering"
+      // Map the explicit service type (when provided) to the legacy tipo_rfx
+      // hint the backend uses for personal (no-org) uploads. Org uploads
+      // resolve tipo_rfx server-side from industry_context.
+      const requestedTipoRfx = (() => {
+        if (industryContext === "construction_ve") return "construccion"
+        if (industryContext === "corporate_catering") return "catering"
+        if (businessUnitId) return null
+        return "catering"
+      })()
 
       // Build FormData with files and message (similar to FileUploader)
       const form = new FormData()
@@ -392,6 +408,11 @@ export default function RfxChatInput({ onFileProcessed, onRFXProcessed, isLoadin
       }
       if (businessUnitId) {
         form.append("business_unit_id", businessUnitId)
+      }
+      if (industryContext) {
+        // Backend lets this override the BU's stored industry_context so
+        // the user's explicit choice on the intake form wins.
+        form.append("industry_context", industryContext)
       }
       
       // Add text content if provided

@@ -375,6 +375,13 @@ const AppSidebar = forwardRef<AppSidebarRef, AppSidebarProps>(
                   <span>Product Inventory</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
+              {/*
+                Services (business-units) nav item hidden — the intake form
+                now asks for the service type directly via the dropdown, so
+                an admin page to "configure services" stopped being part of
+                María's flow. The route still works for admins via direct URL.
+                Path B (drop the table) is tracked separately; see
+                docs/PATH_B_BUSINESS_UNITS_REMOVAL.md.
               <SidebarMenuItem>
                 <SidebarMenuButton
                   onClick={onNavigateToBusinessUnits}
@@ -385,6 +392,7 @@ const AppSidebar = forwardRef<AppSidebarRef, AppSidebarProps>(
                   <span>Services</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
+              */}
               <SidebarMenuItem>
                 <SidebarMenuButton
                   onClick={onNavigateToPaymentSettings}
