@@ -1318,6 +1318,8 @@ export default function RfxResultsWrapperV2({
           // Chat panel control
           isChatOpen={isChatOpen}
           onChatToggle={() => setIsChatOpen(!isChatOpen)}
+          // Scope agent output (rendered above the tabs when present)
+          scope={backendData?.data?.scope_json ?? null}
         />
 
         {/* Chat Panel - rendered at wrapper level for full-screen access */}

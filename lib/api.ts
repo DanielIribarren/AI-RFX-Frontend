@@ -180,6 +180,58 @@ export interface RFXRequest {
   business_unit_id?: string;
 }
 
+// ─── Scope agent output (mirrors backend/models/scope_models.py) ──────────
+// Populated only when industry_context == "construction_ve" and the scope
+// agent ran successfully. ScopePanel hides itself when scope_json is null.
+
+export type ScopeMode = "preservar" | "mixto" | "expansivo";
+export type ScopeOrigen = "documento_cliente" | "inferido";
+export type ScopeConfianza = "high" | "medium" | "low";
+
+export interface ScopeRendimientoEstimado {
+  valor: number;
+  unidad_por_dia: string;
+  personal_minimo: string;
+  justificacion: string;
+}
+
+export interface ScopeComponentesEsperados {
+  materiales_clave: string[];
+  equipos_clave: string[];
+  mano_obra_clave: string[];
+}
+
+export interface PartidaScope {
+  numero: string;
+  capitulo: string;
+  capitulo_titulo: string;
+  codigo_covenin?: string | null;
+  descripcion_tecnica: string;
+  descripcion_corta: string;
+  unidad: string;
+  cantidad: number;
+  cantidad_es_estimada: boolean;
+  proceso_requerido: string;
+  condiciones_especiales?: string | null;
+  rendimiento_estimado: ScopeRendimientoEstimado;
+  componentes_esperados: ScopeComponentesEsperados;
+  origen_dato: ScopeOrigen;
+  confianza: ScopeConfianza;
+  notas_para_costeo?: string | null;
+}
+
+export interface ScopeOutput {
+  rfx_id: string;
+  project_name: string;
+  client_company: string;
+  project_summary: string;
+  scope_mode: ScopeMode;
+  partidas: PartidaScope[];
+  scope_assumptions: string[];
+  missing_information: string[];
+  prompt_version?: string;
+}
+
 // Updated to match backend RFXResponse V2.0 with legacy fallback
 export interface RFXResponse {
   status: "success" | "error";
@@ -197,6 +249,12 @@ export interface RFXResponse {
     industry_context?: string;
     /** Spanish display label resolved server-side; fall back to industry_context. */
     industry_label?: string;
+    /**
+     * Scope agent output. Present only on construction_ve RFX runs where
+     * ENABLE_SCOPE_AGENT was true at extract time. ScopePanel renders this
+     * when non-null.
+     */
+    scope_json?: ScopeOutput | null;
     email?: string;
     requester_name?: string;
     company_name?: string;

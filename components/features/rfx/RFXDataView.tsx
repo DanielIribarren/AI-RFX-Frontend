@@ -6,9 +6,12 @@ import { CheckCircle, Briefcase, BarChart3, FileText, Archive, MessageSquare } f
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import DataExtractionContent from "@/components/features/products/DataExtractionContent"
 import ProcessedFilesContent from "@/components/features/rfx/ProcessedFilesContent"
+import { ScopePanel } from "@/components/features/rfx/ScopePanel"
+import { ScopePanelBoundary } from "@/components/features/rfx/ScopePanelBoundary"
 import { StatusBadge } from "@/components/ui/status-badge"
 import { EditableTitle } from "@/components/ui/editable-title"
 import { cn } from "@/lib/utils"
+import type { ScopeOutput } from "@/lib/api"
 
 interface ExtractedData {
   solicitante: string
@@ -74,6 +77,13 @@ interface RFXDataViewProps {
   // Chat panel control (managed by parent)
   isChatOpen?: boolean
   onChatToggle?: () => void
+
+  /**
+   * Construction scope agent output. Renders the ScopePanel above the
+   * tabs when present (construction_ve RFXs with the scope agent flag
+   * on at extract time). Hidden entirely otherwise.
+   */
+  scope?: ScopeOutput | null
 }
 
 export default function RFXDataView({
@@ -102,6 +112,7 @@ export default function RFXDataView({
   // Chat panel control
   isChatOpen = false,
   onChatToggle,
+  scope,
   // Low-impact currency props (not in interface to avoid breaking changes)
   ...additionalProps
 }: RFXDataViewProps & any) {
@@ -182,6 +193,13 @@ export default function RFXDataView({
           )}
         </div>
       </div>
+
+      {/* Construction scope (only when the scope agent produced output) */}
+      {scope && (
+        <ScopePanelBoundary>
+          <ScopePanel scope={scope} />
+        </ScopePanelBoundary>
+      )}
 
       {/* Tabs Navigation */}
       <Tabs defaultValue="datos-extraidos" className="space-y-6">
