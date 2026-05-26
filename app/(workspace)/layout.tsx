@@ -41,6 +41,8 @@ export default function WorkspaceLayout({ children }: WorkspaceLayoutProps) {
     if (pathname.startsWith("/product-inventory")) return "product-inventory";
     if (pathname.startsWith("/business-units")) return "business-units";
     if (pathname.startsWith("/payments-settings")) return "payments-settings";
+    if (pathname.startsWith("/proposals/new")) return "intake";
+    if (pathname.startsWith("/proposals")) return "rfx";
     if (pathname.startsWith("/intake")) return "intake";
     if (pathname.startsWith("/rfx")) return "rfx";
     return undefined;
@@ -78,7 +80,7 @@ export default function WorkspaceLayout({ children }: WorkspaceLayoutProps) {
         <CreditsProvider>
           <OrganizationProvider>
             <AppSidebar
-              onNewRfx={() => router.push("/intake")}
+              onNewRfx={() => router.push("/proposals/new")}
               onNavigateToDashboard={() => router.push("/dashboard")}
               onNavigateToOverview={() => router.push("/overview")}
               onNavigateToClients={() => router.push("/clients")}

@@ -109,7 +109,7 @@ export default function HomePage() {
               <FolderKanban className="mr-2 h-4 w-4" />
               All proposals
             </Button>
-            <Button onClick={() => router.push("/intake")}>
+            <Button onClick={() => router.push("/proposals/new")}>
               <Plus className="mr-2 h-4 w-4" />
               New proposal
             </Button>

@@ -486,7 +486,7 @@ export default function RfxChatInput({ onFileProcessed, onRFXProcessed, isLoadin
         setMessage("")
         setAttachedFiles([])
       } else {
-        throw new Error(response.error || response.message || "Unable to process the RFX document")
+        throw new Error(response.error || response.message || "Unable to process this proposal document")
       }
     } catch (error) {
       console.error("❌ Error processing RFX:", error)
@@ -495,14 +495,14 @@ export default function RfxChatInput({ onFileProcessed, onRFXProcessed, isLoadin
       handleAPIError(error)
       
       // Set user-friendly error message based on error type
-      let userMessage = "Unable to process this RFX request"
+      let userMessage = "Unable to process this proposal request"
       
       if (error instanceof APIError) {
         switch (error.status) {
           case 400:
             // 🆕 Enhanced error message for file requirement
             if (error.message?.includes("File upload is required") || error.message?.includes("No file provided")) {
-              userMessage = "A file is required by the backend. Attach an RFX document (PDF, DOCX, or TXT) to continue."
+              userMessage = "A file is required. Attach a source document (PDF, DOCX, or TXT) to continue."
             } else {
               userMessage = "Input data is invalid or required fields are missing. Verify files are valid PDF, DOCX, or TXT."
             }
@@ -571,19 +571,19 @@ export default function RfxChatInput({ onFileProcessed, onRFXProcessed, isLoadin
         {serviceStatus === 'checking' && (
           <>
             <div className="animate-spin h-3 w-3 border border-input border-t-blue-600 rounded-full"></div>
-            <span className="text-muted-foreground">Checking RFX service...</span>
+            <span className="text-muted-foreground">Checking service…</span>
           </>
         )}
         {serviceStatus === "online" && (
           <>
             <CheckCircle className="h-3 w-3 text-green-500" />
-            <span className="text-green-600">RFX service connected</span>
+            <span className="text-green-600">Service connected</span>
           </>
         )}
         {serviceStatus === "offline" && (
           <>
             <WifiOff className="h-3 w-3 text-red-500" />
-            <span className="text-destructive">RFX service unavailable</span>
+            <span className="text-destructive">Service unavailable</span>
           </>
         )}
       </div>
@@ -809,7 +809,7 @@ export default function RfxChatInput({ onFileProcessed, onRFXProcessed, isLoadin
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Describe tu RFX o adjunta documentos para procesarlos con IA..."
+              placeholder="Describe the request or attach documents to extract with AI…"
               className="min-h-[60px] max-h-[200px] resize-none border-0 shadow-none focus-visible:ring-0 text-base placeholder:text-muted-foreground/60 transition-[opacity,transform] duration-200 ease-out"
               disabled={isProcessing || isLoading}
             />
@@ -863,7 +863,7 @@ export default function RfxChatInput({ onFileProcessed, onRFXProcessed, isLoadin
               <Alert variant="destructive">
                 <WifiOff className="h-4 w-4" />
                 <AlertDescription>
-                  The RFX service is unavailable. Check your connection.
+                  The service is unavailable. Check your connection.
                 </AlertDescription>
               </Alert>
             </div>
@@ -874,7 +874,7 @@ export default function RfxChatInput({ onFileProcessed, onRFXProcessed, isLoadin
       {/* Helper Text */}
       <div className="text-center">
         <p className="text-xs text-muted-foreground">
-          You can write specific instructions and attach RFX documents (PDF, DOCX, TXT, images, Excel)
+          You can write specific instructions and attach source documents (PDF, DOCX, TXT, images, Excel)
         </p>
         <p className="text-xs text-muted-foreground/60 mt-1">
           Press <kbd className="px-1 py-0.5 bg-muted rounded text-xs">Enter</kbd> to send,

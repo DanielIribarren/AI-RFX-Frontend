@@ -53,7 +53,7 @@ export default function ProposalsPage() {
         description="All proposals across stages. Filter by status or search by client, title, or industry."
         icon={FileText}
         actions={
-          <Button onClick={() => router.push("/intake")}>
+          <Button onClick={() => router.push("/proposals/new")}>
             <Plus className="mr-2 h-4 w-4" />
             New proposal
           </Button>

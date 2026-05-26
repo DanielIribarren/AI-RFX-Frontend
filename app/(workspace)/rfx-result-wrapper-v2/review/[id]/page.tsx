@@ -107,7 +107,7 @@ export default function RfxReviewPage() {
           </p>
           <div className="mt-4 flex gap-3">
             <Button asChild variant="outline">
-              <Link href="/intake">Back to Intake</Link>
+              <Link href="/proposals/new">Back to new proposal</Link>
             </Button>
             <Button asChild>
               <Link href="/dashboard">Go to Dashboard</Link>
@@ -135,7 +135,7 @@ export default function RfxReviewPage() {
           router.push(`/rfx-result-wrapper-v2/data/${finalRfxId}`);
         }}
         onStartOver={() => {
-          router.replace("/intake");
+          router.replace("/proposals/new");
         }}
       />
     </div>
