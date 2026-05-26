@@ -1,7 +1,7 @@
 "use client"
 
-import { useState, useEffect, useCallback, useRef } from "react"
-import { Package, Upload, FileSpreadsheet, Plus, Search, Filter, Download, Trash2, Edit, AlertCircle, CheckCircle2, XCircle, Loader2, TrendingUp, DollarSign, Percent, AlertTriangle } from "lucide-react"
+import { useState, useEffect, useRef } from "react"
+import { Package, Upload, FileSpreadsheet, Plus, Search, Filter, Download, Trash2, Edit, AlertCircle, CheckCircle2, XCircle, Loader2, TrendingUp, DollarSign, Percent } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -22,12 +22,9 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Progress } from "@/components/ui/progress"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { DeleteConfirmationDialog } from "@/components/shared/DeleteConfirmationDialog"
 import { ProductFormDialog } from "@/components/shared/ProductFormDialog"
-import { BusinessUnitSwitcher } from "@/components/features/budy/BusinessUnitSwitcher"
-import { useOrganization } from "@/contexts/OrganizationContext"
-import { catalogAPI, CatalogProduct, CatalogStats, ImportResult, CatalogAPIError, type CatalogScope } from "@/lib/api-catalog"
+import { catalogAPI, CatalogProduct, CatalogStats, ImportResult, CatalogAPIError } from "@/lib/api-catalog"
 
 // ============================================
 // TYPES
@@ -53,21 +50,14 @@ interface UploadState {
 // ============================================
 
 export default function ProductInventoryPage() {
-  const {
-    organization,
-    businessUnits,
-    activeBusinessUnitId,
-    setActiveBusinessUnitId,
-    isBusinessUnitsLoading,
-  } = useOrganization()
   // Estado de productos
   const [products, setProducts] = useState<CatalogProduct[]>([])
   const [stats, setStats] = useState<CatalogStats | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState("")
   const [debouncedSearch, setDebouncedSearch] = useState("")
-  const [catalogScope, setCatalogScope] = useState<CatalogScope>("business_unit")
-  
+
+
   // Paginación
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
@@ -111,17 +101,6 @@ export default function ProductInventoryPage() {
   // Refs
   const fileInputRef = useRef<HTMLInputElement>(null)
   const searchTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined)
-  const getCatalogScopeOptions = useCallback(() => {
-    if (!organization) return undefined
-    if (catalogScope === "shared") {
-      return { scope: "shared" as const }
-    }
-    if (!activeBusinessUnitId) return undefined
-    return {
-      scope: "business_unit" as const,
-      businessUnitId: activeBusinessUnitId,
-    }
-  }, [activeBusinessUnitId, catalogScope, organization])
 
   // ============================================
   // EFFECTS
@@ -145,16 +124,11 @@ export default function ProductInventoryPage() {
     }
   }, [searchQuery])
 
-  const requiresBusinessUnitSetup = Boolean(organization && businessUnits.length === 0)
-  const hasCatalogContext = !organization || catalogScope === "shared" || Boolean(activeBusinessUnitId)
-
   // Cargar productos y stats al montar
   useEffect(() => {
-    if (!isBusinessUnitsLoading && !requiresBusinessUnitSetup && hasCatalogContext) {
-      loadProducts()
-      loadStats()
-    }
-  }, [activeBusinessUnitId, catalogScope, currentPage, debouncedSearch, hasCatalogContext, isBusinessUnitsLoading, requiresBusinessUnitSetup])
+    loadProducts()
+    loadStats()
+  }, [currentPage, debouncedSearch])
 
   // Auto-close toast
   useEffect(() => {
@@ -177,7 +151,6 @@ export default function ProductInventoryPage() {
         currentPage,
         pageSize,
         debouncedSearch || undefined,
-        getCatalogScopeOptions(),
       )
       
       setProducts(response.products)
@@ -193,7 +166,7 @@ export default function ProductInventoryPage() {
 
   const loadStats = async () => {
     try {
-      const statsData = await catalogAPI.getStats(getCatalogScopeOptions())
+      const statsData = await catalogAPI.getStats()
       setStats(statsData)
     } catch (error) {
       console.error("Error loading stats:", error)
@@ -214,7 +187,7 @@ export default function ProductInventoryPage() {
     try {
       const result = await catalogAPI.importCatalog(file, (progress) => {
         setUploadState(prev => ({ ...prev, progress }))
-      }, getCatalogScopeOptions())
+      })
 
       setImportResult(result)
       
@@ -316,7 +289,7 @@ export default function ProductInventoryPage() {
         await catalogAPI.updateProduct(editingProduct.id, data)
         showToast("success", "Product updated", `"${data.product_name}" has been updated`)
       } else {
-        await catalogAPI.addProduct(data, getCatalogScopeOptions())
+        await catalogAPI.addProduct(data)
         showToast("success", "Product added", `"${data.product_name}" has been added to the catalog`)
       }
       setProductFormOpen(false)
@@ -342,7 +315,7 @@ export default function ProductInventoryPage() {
     setIsDeleting(true)
     
     try {
-      const result = await catalogAPI.clearCatalog(getCatalogScopeOptions())
+      const result = await catalogAPI.clearCatalog()
       
       showToast(
         "success", 
@@ -378,7 +351,6 @@ export default function ProductInventoryPage() {
   }
 
   const hasProducts = products.length > 0 || totalProducts > 0
-  const catalogScopeLabel = catalogScope === "shared" ? "Shared organization catalog" : "Business-unit catalog"
 
   return (
     <div className="flex-1 overflow-auto">
@@ -398,10 +370,10 @@ export default function ProductInventoryPage() {
               </div>
             </div>
             
-            {hasProducts && !requiresBusinessUnitSetup && (
+            {hasProducts && (
               <div className="flex items-center gap-2">
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   size="sm"
                   onClick={handleClearCatalog}
                   className="text-destructive hover:text-destructive hover:bg-red-50"
@@ -433,44 +405,7 @@ export default function ProductInventoryPage() {
               </div>
             )}
           </div>
-
-          {organization && businessUnits.length > 0 && (
-            <div className="grid gap-4 rounded-2xl border bg-white/80 p-4 shadow-sm md:grid-cols-[minmax(0,280px)_220px]">
-              <BusinessUnitSwitcher
-                businessUnits={businessUnits}
-                value={activeBusinessUnitId || ""}
-                onValueChange={setActiveBusinessUnitId}
-                label="Active service"
-              />
-              <div className="space-y-2">
-                <p className="text-sm font-medium">Catalog scope</p>
-                <Select value={catalogScope} onValueChange={(value) => setCatalogScope(value as CatalogScope)}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="business_unit">Service catalog</SelectItem>
-                    <SelectItem value="shared">Shared organization catalog</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <p className="text-sm text-muted-foreground md:col-span-2">
-                Matching order is service-first: the AI searches the active service catalog first, then shared organization products.
-                Current scope: {catalogScopeLabel}.
-              </p>
-            </div>
-          )}
         </div>
-
-        {requiresBusinessUnitSetup && (
-          <Alert className="mb-6" variant="destructive">
-            <AlertTriangle className="h-4 w-4" />
-            <AlertTitle>Service required</AlertTitle>
-            <AlertDescription>
-              Create a service before importing or managing organization-owned products.
-            </AlertDescription>
-          </Alert>
-        )}
 
         {/* Stats Dashboard */}
         {stats && hasProducts && (
@@ -589,36 +524,30 @@ export default function ProductInventoryPage() {
                 Your products will be used to automatically match and price items in RFX requests.
               </p>
 
-              {!requiresBusinessUnitSetup ? (
-                <div className="flex flex-col sm:flex-row gap-4 mb-8">
-                  <label htmlFor="file-upload-empty">
-                    <Button size="lg" className="bg-brand-gradient text-white hover:brightness-95 hover:text-white shadow-lg hover:shadow-xl" asChild>
-                      <span>
-                        <Upload className="h-5 w-5 mr-2" />
-                        Upload Excel/CSV
-                      </span>
-                    </Button>
-                  </label>
-                  <input
-                    id="file-upload-empty"
-                    type="file"
-                    accept=".xlsx,.xls,.csv"
-                    className="hidden"
-                    onChange={handleFileUpload}
-                    disabled={uploadState.isUploading}
-                    ref={fileInputRef}
-                  />
-                  
-                  <Button variant="outline" size="lg" onClick={openAddProduct}>
-                    <Plus className="h-5 w-5 mr-2" />
-                    Add Product Manually
+              <div className="flex flex-col sm:flex-row gap-4 mb-8">
+                <label htmlFor="file-upload-empty">
+                  <Button size="lg" className="bg-brand-gradient text-white hover:brightness-95 hover:text-white shadow-lg hover:shadow-xl" asChild>
+                    <span>
+                      <Upload className="h-5 w-5 mr-2" />
+                      Upload Excel/CSV
+                    </span>
                   </Button>
-                </div>
-              ) : (
-                <p className="mb-8 text-sm text-muted-foreground">
-                  A service must exist before inventory can be uploaded or edited for the organization.
-                </p>
-              )}
+                </label>
+                <input
+                  id="file-upload-empty"
+                  type="file"
+                  accept=".xlsx,.xls,.csv"
+                  className="hidden"
+                  onChange={handleFileUpload}
+                  disabled={uploadState.isUploading}
+                  ref={fileInputRef}
+                />
+
+                <Button variant="outline" size="lg" onClick={openAddProduct}>
+                  <Plus className="h-5 w-5 mr-2" />
+                  Add Product Manually
+                </Button>
+              </div>
 
               {/* File Format Info */}
               <Card className="w-full max-w-2xl bg-white">
@@ -893,7 +822,7 @@ export default function ProductInventoryPage() {
           onClose={() => setClearCatalogDialog(false)}
           onConfirm={confirmClearCatalog}
           title="Clear Entire Catalog"
-          itemName={`all ${totalProducts} products in the current catalog scope`}
+          itemName={`all ${totalProducts} products`}
           isDeleting={isDeleting}
         />
 
