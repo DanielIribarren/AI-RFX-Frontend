@@ -12,7 +12,7 @@
  *   ~/.gstack/projects/DanielIribarren-AI-RFX-Frontend/danielairibarren-main-design-20260526-102729.md
  */
 
-import { API_BASE_URL, fetchWithAuth } from "@/lib/api-client";
+import { api } from "@/lib/api";
 import { budyApi, type Opportunity, type OpportunityDetail } from "@/lib/api-budy";
 import type { ProposalStage } from "@/lib/proposal-stage";
 
@@ -49,14 +49,6 @@ export interface ProposalMetrics {
   }>;
 }
 
-async function handleJsonResponse<T>(response: Response): Promise<T> {
-  const payload = await response.json().catch(() => ({}));
-  if (!response.ok) {
-    throw new Error(payload.message || response.statusText || "Request failed");
-  }
-  return (payload.data ?? payload) as T;
-}
-
 export const proposalsApi = {
   /**
    * List proposals (optionally filtered by service or stage).
@@ -81,27 +73,20 @@ export const proposalsApi = {
 
   /**
    * Aggregated dashboard metrics for the Home screen.
-   * Wraps the legacy /api/rfx/metrics/overview endpoint and remaps the
-   * payload into proposal vocabulary. Backend rename is a separate task.
+   * Delegates to the legacy /api/rfx/metrics/overview endpoint via
+   * api.getRFXMetricsOverview and remaps the payload into proposal
+   * vocabulary. Backend rename is a separate task.
+   *
+   * Scope: org-wide. No per-service (business_unit_id) filter — business
+   * units are not actively segmented in the product today. Add the filter
+   * only if multi-service reporting becomes a real need.
    */
   async getMetrics(rangeDays: number = 30): Promise<ProposalMetrics> {
-    const response = await fetchWithAuth(
-      `${API_BASE_URL}/api/rfx/metrics/overview?range_days=${rangeDays}`,
-    );
-    const raw = await handleJsonResponse<{
-      range_days: number;
-      kpis: {
-        total_rfx: number;
-        in_progress: number;
-        processed: number;
-        sent: number;
-        accepted: number;
-        acceptance_rate: number;
-      };
-      funnel: { processed: number; sent: number; accepted: number };
-      timeseries: ProposalMetrics["timeseries"];
-    }>(response);
-
+    const response = await api.getRFXMetricsOverview(rangeDays);
+    if (response.status !== "success") {
+      throw new Error(response.message || "Failed to load proposal metrics");
+    }
+    const raw = response.data;
     return {
       range_days: raw.range_days,
       kpis: {

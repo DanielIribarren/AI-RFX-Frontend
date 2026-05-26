@@ -98,8 +98,13 @@ export function getProposalStageGroup(stage: ProposalStage): ProposalStageGroup 
   return "lost";
 }
 
-/** True for stages that count toward "active opportunities" KPIs. */
-export function isProposalActive(stage: ProposalStage): boolean {
+/**
+ * True for stages in the `open` group (draft, sent, viewed) — proposals that
+ * have not yet been accepted or cancelled. Drives the "Open proposals" KPI.
+ * NOTE: this is narrower than "active" in business sense; deals in execution
+ * are classified `won` because acceptance has already happened.
+ */
+export function isProposalOpen(stage: ProposalStage): boolean {
   return getProposalStageGroup(stage) === "open";
 }
 
