@@ -1,38 +1,51 @@
 "use client";
 
 /**
- * /proposals — master list view (Phase 3 of the Proposal unification).
+ * /proposals — master list view.
  *
- * Replaces the legacy /rfx ("Intakes") screen. Backend still returns the
- * Budy Opportunity shape and the /opportunities/[id] detail URL still
- * works, so row clicks route to /opportunities/[id] for now — Phase 5
- * renames that detail route to /proposals/[id].
+ * Wraps ProposalsTable with the page chrome and connects it to the
+ * proposalsApi for data + the legacy api.deleteRFX for deletion until
+ * Phase-5+ adds proposalsApi.delete on the backend.
  */
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { FileText, Plus } from "lucide-react";
-import { LoadingSpinner, PageHeader } from "@/components/common";
+import { PageHeader } from "@/components/common";
 import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { ProposalsTable } from "@/components/features/proposals/ProposalsTable";
 import { proposalsApi, type Proposal } from "@/lib/api-proposals";
+import { api, APIError } from "@/lib/api";
+import { showErrorToast, showSuccessToast } from "@/lib/toast";
 
 export default function ProposalsPage() {
   const router = useRouter();
   const [proposals, setProposals] = useState<Proposal[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState(false);
+  const [deleteCandidate, setDeleteCandidate] = useState<{
+    id: string;
+    title: string;
+  } | null>(null);
 
   const loadProposals = async () => {
     try {
       setLoading(true);
-      setError(null);
+      setError(false);
       const data = await proposalsApi.list();
       setProposals(data);
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Could not load proposals",
-      );
+    } catch {
+      setError(true);
     } finally {
       setLoading(false);
     }
@@ -42,15 +55,32 @@ export default function ProposalsPage() {
     loadProposals();
   }, []);
 
-  if (loading && proposals.length === 0) {
-    return <LoadingSpinner text="Loading proposals…" fullScreen />;
-  }
+  const handleDelete = async () => {
+    if (!deleteCandidate) return;
+    try {
+      await api.deleteRFX(deleteCandidate.id);
+      localStorage.removeItem("sidebar-recent-proposals");
+      setProposals((prev) => prev.filter((p) => p.id !== deleteCandidate.id));
+      showSuccessToast({
+        title: "Proposal deleted",
+        message: `"${deleteCandidate.title}" was deleted successfully.`,
+      });
+    } catch (err) {
+      const message =
+        err instanceof APIError && err.status === 403
+          ? "Only the creator can delete this proposal."
+          : "Could not delete the proposal.";
+      showErrorToast({ title: "Delete failed", message });
+    } finally {
+      setDeleteCandidate(null);
+    }
+  };
 
   return (
     <div className="space-y-6 p-4 lg:p-6 xl:p-8">
       <PageHeader
         title="Proposals"
-        description="All proposals across stages. Filter by status or search by client, title, or industry."
+        description="All proposals across stages. Filter by status or search by client, title, or code."
         icon={FileText}
         actions={
           <Button onClick={() => router.push("/proposals/new")}>
@@ -60,16 +90,41 @@ export default function ProposalsPage() {
         }
       />
 
-      {error && (
-        <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-          {error}
-        </div>
-      )}
-
       <ProposalsTable
         proposals={proposals}
+        isLoading={loading}
+        error={error}
         onOpenProposal={(id) => router.push(`/opportunities/${id}`)}
+        onDeleteProposal={(id, title) => setDeleteCandidate({ id, title })}
+        onRefresh={loadProposals}
       />
+
+      <AlertDialog
+        open={Boolean(deleteCandidate)}
+        onOpenChange={(open) => !open && setDeleteCandidate(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete proposal</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. It will permanently delete
+              {deleteCandidate?.title
+                ? ` "${deleteCandidate.title}"`
+                : " this proposal"}
+              .
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={handleDelete}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

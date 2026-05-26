@@ -1,32 +1,38 @@
 "use client";
 
 /**
- * Workspace Home (Phase 2 of the Proposal unification).
+ * Workspace Home — metrics + the same rich Proposals table used in /proposals.
  *
- * Replaces the legacy /dashboard ("Budy Workspace") and /overview ("RFX
- * Overview") screens with a single dashboard that consumes the unified
- * Proposal vocabulary from `lib/api-proposals`. Old routes still exist
- * during Phase 2-4; Phase 5 deletes them and updates the sidebar.
- *
- * URL is kept at /dashboard to preserve existing bookmarks and avoid
- * touching login redirects this round. The Next.js root group `app/page.tsx`
- * already owns "/" (marketing landing), so the workspace home cannot be a
- * sibling route file — /dashboard is the practical home URL.
+ * URL stays at /dashboard to keep existing bookmarks and avoid touching the
+ * login redirect. The Next.js root group `app/page.tsx` owns "/" (marketing
+ * landing), so the workspace home cannot be a sibling route file.
  */
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { LayoutDashboard, Plus, FolderKanban } from "lucide-react";
-import { LoadingSpinner, PageHeader } from "@/components/common";
+import { LayoutDashboard, Plus } from "lucide-react";
+import { PageHeader } from "@/components/common";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { proposalsApi, type Proposal, type ProposalMetrics } from "@/lib/api-proposals";
 import { isProposalOpen } from "@/lib/proposal-stage";
 import {
   FunnelCard,
   TrendCard,
 } from "@/components/features/proposals/ProposalCharts";
-import { ActionRequiredTable } from "@/components/features/proposals/ActionRequiredTable";
+import { ProposalsTable } from "@/components/features/proposals/ProposalsTable";
+import { api, APIError } from "@/lib/api";
+import { showErrorToast, showSuccessToast } from "@/lib/toast";
 
 const METRICS_RANGE_DAYS = 30;
 
@@ -63,22 +69,24 @@ export default function HomePage() {
   const [metrics, setMetrics] = useState<ProposalMetrics | null>(null);
   const [proposals, setProposals] = useState<Proposal[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState(false);
+  const [deleteCandidate, setDeleteCandidate] = useState<{
+    id: string;
+    title: string;
+  } | null>(null);
 
   const loadWorkspace = async () => {
     try {
       setLoading(true);
-      setError(null);
+      setError(false);
       const [metricsData, proposalList] = await Promise.all([
         proposalsApi.getMetrics(METRICS_RANGE_DAYS),
         proposalsApi.list(),
       ]);
       setMetrics(metricsData);
       setProposals(proposalList);
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Could not load the workspace",
-      );
+    } catch {
+      setError(true);
     } finally {
       setLoading(false);
     }
@@ -93,9 +101,26 @@ export default function HomePage() {
     [proposals],
   );
 
-  if (loading && !metrics) {
-    return <LoadingSpinner text="Loading workspace…" fullScreen />;
-  }
+  const handleDelete = async () => {
+    if (!deleteCandidate) return;
+    try {
+      await api.deleteRFX(deleteCandidate.id);
+      localStorage.removeItem("sidebar-recent-proposals");
+      setProposals((prev) => prev.filter((p) => p.id !== deleteCandidate.id));
+      showSuccessToast({
+        title: "Proposal deleted",
+        message: `"${deleteCandidate.title}" was deleted successfully.`,
+      });
+    } catch (err) {
+      const message =
+        err instanceof APIError && err.status === 403
+          ? "Only the creator can delete this proposal."
+          : "Could not delete the proposal.";
+      showErrorToast({ title: "Delete failed", message });
+    } finally {
+      setDeleteCandidate(null);
+    }
+  };
 
   return (
     <div className="space-y-6 p-4 lg:p-6 xl:p-8">
@@ -104,24 +129,12 @@ export default function HomePage() {
         description="Pipeline metrics and proposals that need your attention."
         icon={LayoutDashboard}
         actions={
-          <>
-            <Button variant="outline" onClick={() => router.push("/proposals")}>
-              <FolderKanban className="mr-2 h-4 w-4" />
-              All proposals
-            </Button>
-            <Button onClick={() => router.push("/proposals/new")}>
-              <Plus className="mr-2 h-4 w-4" />
-              New proposal
-            </Button>
-          </>
+          <Button onClick={() => router.push("/proposals/new")}>
+            <Plus className="mr-2 h-4 w-4" />
+            New proposal
+          </Button>
         }
       />
-
-      {error && (
-        <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-          {error}
-        </div>
-      )}
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <MetricCard
@@ -154,11 +167,41 @@ export default function HomePage() {
         />
       </div>
 
-      <ActionRequiredTable
+      <ProposalsTable
         proposals={proposals}
-        onOpen={(id) => router.push(`/opportunities/${id}`)}
-        onViewAll={() => router.push("/proposals")}
+        isLoading={loading}
+        error={error}
+        onOpenProposal={(id) => router.push(`/opportunities/${id}`)}
+        onDeleteProposal={(id, title) => setDeleteCandidate({ id, title })}
+        onRefresh={loadWorkspace}
       />
+
+      <AlertDialog
+        open={Boolean(deleteCandidate)}
+        onOpenChange={(open) => !open && setDeleteCandidate(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete proposal</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. It will permanently delete
+              {deleteCandidate?.title
+                ? ` "${deleteCandidate.title}"`
+                : " this proposal"}
+              .
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={handleDelete}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
