@@ -105,7 +105,7 @@ export default function HomePage() {
         icon={LayoutDashboard}
         actions={
           <>
-            <Button variant="outline" onClick={() => router.push("/rfx")}>
+            <Button variant="outline" onClick={() => router.push("/proposals")}>
               <FolderKanban className="mr-2 h-4 w-4" />
               All proposals
             </Button>
@@ -157,7 +157,7 @@ export default function HomePage() {
       <ActionRequiredTable
         proposals={proposals}
         onOpen={(id) => router.push(`/opportunities/${id}`)}
-        onViewAll={() => router.push("/rfx")}
+        onViewAll={() => router.push("/proposals")}
       />
     </div>
   );
