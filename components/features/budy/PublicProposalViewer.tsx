@@ -2,6 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { budyApi, type PaymentMethod, type PublicProposalData } from "@/lib/api-budy";
+import {
+  PAYMENT_METHOD_FIELDS,
+  PAYMENT_METHOD_FIELD_LABELS,
+  PAYMENT_METHOD_LABELS,
+  type PaymentMethodFieldKey,
+  type PaymentMethodType,
+} from "@/constants/payment-methods";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -32,7 +39,7 @@ export function PublicProposalViewer({ token }: PublicProposalViewerProps) {
   const [submittingPayment, setSubmittingPayment] = useState(false);
   const [acceptedName, setAcceptedName] = useState("");
   const [acceptedEmail, setAcceptedEmail] = useState("");
-  const [paymentMethodId, setPaymentMethodId] = useState("");
+  const [paymentMethodType, setPaymentMethodType] = useState<string>("");
   const [payerName, setPayerName] = useState("");
   const [payerEmail, setPayerEmail] = useState("");
   const [amountUsd, setAmountUsd] = useState("");
@@ -47,7 +54,7 @@ export function PublicProposalViewer({ token }: PublicProposalViewerProps) {
       const payload = await budyApi.getPublicProposal(token);
       setData(payload);
       if (payload.payment_methods[0]) {
-        setPaymentMethodId(payload.payment_methods[0].id);
+        setPaymentMethodType(payload.payment_methods[0].method_type);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not load the proposal");
@@ -81,7 +88,7 @@ export function PublicProposalViewer({ token }: PublicProposalViewerProps) {
   };
 
   const handlePaymentSubmit = async () => {
-    if (!paymentMethodId || !amountUsd) {
+    if (!paymentMethodType || !amountUsd) {
       setError("Select a payment method and enter the amount");
       return;
     }
@@ -89,7 +96,7 @@ export function PublicProposalViewer({ token }: PublicProposalViewerProps) {
     try {
       setSubmittingPayment(true);
       const formData = new FormData();
-      formData.append("payment_method_id", paymentMethodId);
+      formData.append("payment_method_type", paymentMethodType);
       formData.append("payer_name", payerName);
       formData.append("payer_email", payerEmail);
       formData.append("amount_usd", amountUsd);
@@ -261,26 +268,36 @@ export function PublicProposalViewer({ token }: PublicProposalViewerProps) {
 
             <Card>
               <CardHeader>
-                <CardTitle>Payment instructions</CardTitle>
+                <CardTitle>Instrucciones de pago</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 {data.payment_methods.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">This service does not have payment methods configured yet.</p>
+                  <p className="text-sm text-muted-foreground">
+                    Aún no hay métodos de pago configurados para esta organización.
+                  </p>
                 ) : (
-                  data.payment_methods.map((method: PaymentMethod) => (
-                    <div key={method.id} className="rounded-lg border p-3 text-sm">
-                      <div className="font-medium">{method.display_name}</div>
-                      <div className="mt-1 text-muted-foreground">{method.method_type}</div>
-                      {method.account_holder && <div>Account holder: {method.account_holder}</div>}
-                      {method.bank_name && <div>Bank or platform: {method.bank_name}</div>}
-                      {method.phone && <div>Phone: {method.phone}</div>}
-                      {method.email && <div>Email: {method.email}</div>}
-                      {method.account_number && <div>Account: {method.account_number}</div>}
-                      {method.instructions && (
-                        <div className="mt-2 text-muted-foreground">{method.instructions}</div>
-                      )}
-                    </div>
-                  ))
+                  data.payment_methods.map((method: PaymentMethod) => {
+                    const type = method.method_type as PaymentMethodType;
+                    const label = PAYMENT_METHOD_LABELS[type] ?? method.method_type;
+                    const fields = PAYMENT_METHOD_FIELDS[type] ?? [];
+                    return (
+                      <div key={method.id} className="rounded-lg border p-3 text-sm">
+                        <div className="font-medium">{label}</div>
+                        {fields.map((field: PaymentMethodFieldKey) => {
+                          const value = method[field];
+                          if (!value) return null;
+                          return (
+                            <div key={field} className="mt-1">
+                              <span className="text-muted-foreground">
+                                {PAYMENT_METHOD_FIELD_LABELS[field]}:
+                              </span>{" "}
+                              {value}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    );
+                  })
                 )}
               </CardContent>
             </Card>
@@ -292,15 +309,15 @@ export function PublicProposalViewer({ token }: PublicProposalViewerProps) {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
-                    <Label>Payment method</Label>
-                    <Select value={paymentMethodId} onValueChange={setPaymentMethodId}>
+                    <Label>Método de pago</Label>
+                    <Select value={paymentMethodType} onValueChange={setPaymentMethodType}>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select a payment method" />
+                        <SelectValue placeholder="Selecciona un método de pago" />
                       </SelectTrigger>
                       <SelectContent>
                         {data.payment_methods.map((method) => (
-                          <SelectItem key={method.id} value={method.id}>
-                            {method.display_name}
+                          <SelectItem key={method.id} value={method.method_type}>
+                            {PAYMENT_METHOD_LABELS[method.method_type as PaymentMethodType] ?? method.method_type}
                           </SelectItem>
                         ))}
                       </SelectContent>

@@ -1,216 +1,328 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
-import { HandCoins } from "lucide-react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
+import { HandCoins, Pencil, Plus, Trash2 } from "lucide-react";
 import { LoadingSpinner, PageHeader } from "@/components/common";
-import { BusinessUnitSwitcher } from "@/components/features/budy/BusinessUnitSwitcher";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import { useOrganization } from "@/contexts/OrganizationContext";
 import { budyApi, type PaymentMethod } from "@/lib/api-budy";
+import {
+  PAYMENT_METHOD_FIELDS,
+  PAYMENT_METHOD_FIELD_LABELS,
+  PAYMENT_METHOD_LABELS,
+  PAYMENT_METHOD_TYPES,
+  type PaymentMethodFieldKey,
+  type PaymentMethodType,
+} from "@/constants/payment-methods";
+
+type FormState = {
+  method_type: PaymentMethodType;
+  account_holder: string;
+  bank_name: string;
+  phone: string;
+  national_id: string;
+  email: string;
+  account_number: string;
+  instructions: string;
+  is_active: boolean;
+};
+
+const EMPTY_FORM: FormState = {
+  method_type: "pago_movil",
+  account_holder: "",
+  bank_name: "",
+  phone: "",
+  national_id: "",
+  email: "",
+  account_number: "",
+  instructions: "",
+  is_active: true,
+};
+
+function methodToForm(method: PaymentMethod): FormState {
+  return {
+    method_type: method.method_type as PaymentMethodType,
+    account_holder: method.account_holder ?? "",
+    bank_name: method.bank_name ?? "",
+    phone: method.phone ?? "",
+    national_id: method.national_id ?? "",
+    email: method.email ?? "",
+    account_number: method.account_number ?? "",
+    instructions: method.instructions ?? "",
+    is_active: method.is_active,
+  };
+}
+
+function summarizeMethod(method: PaymentMethod): string {
+  return (
+    method.email ||
+    method.phone ||
+    method.account_number ||
+    method.account_holder ||
+    "Sin datos"
+  );
+}
 
 export default function PaymentSettingsPage() {
-  const {
-    organization,
-    businessUnits,
-    activeBusinessUnitId,
-    setActiveBusinessUnitId,
-    isBusinessUnitsLoading,
-  } = useOrganization();
-  const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
+  const [methods, setMethods] = useState<PaymentMethod[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [form, setForm] = useState({
-    business_unit_id: "",
-    method_type: "pago_movil",
-    display_name: "",
-    account_holder: "",
-    bank_name: "",
-    phone: "",
-    national_id: "",
-    email: "",
-    account_number: "",
-    instructions: "",
-  });
+  const [editing, setEditing] = useState<PaymentMethod | null>(null);
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [form, setForm] = useState<FormState>(EMPTY_FORM);
+  const [saving, setSaving] = useState(false);
+  const [deletingType, setDeletingType] = useState<string | null>(null);
 
-  const loadData = async (businessUnitId?: string) => {
+  const configuredTypes = useMemo(() => new Set(methods.map((m) => m.method_type)), [methods]);
+
+  const availableTypes = useMemo<PaymentMethodType[]>(() => {
+    if (editing) {
+      return [editing.method_type as PaymentMethodType];
+    }
+    return PAYMENT_METHOD_TYPES.filter((type) => !configuredTypes.has(type));
+  }, [configuredTypes, editing]);
+
+  const visibleFields: PaymentMethodFieldKey[] = useMemo(() => {
+    return PAYMENT_METHOD_FIELDS[form.method_type] ?? [];
+  }, [form.method_type]);
+
+  const loadMethods = async () => {
     try {
       setLoading(true);
       setError(null);
-      const methods = await budyApi.getPaymentMethods(businessUnitId || undefined);
-      setPaymentMethods(methods);
-      if (!form.business_unit_id && businessUnitId) {
-        setForm((current) => ({ ...current, business_unit_id: businessUnitId }));
-      }
+      const data = await budyApi.getPaymentMethods();
+      setMethods(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not load payment settings");
+      setError(err instanceof Error ? err.message : "No se pudieron cargar los métodos de pago");
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    if (!isBusinessUnitsLoading) {
-      loadData(activeBusinessUnitId || undefined);
-    }
-  }, [activeBusinessUnitId, isBusinessUnitsLoading]);
+    loadMethods();
+  }, []);
 
-  useEffect(() => {
-    if (activeBusinessUnitId) {
-      setForm((current) => ({ ...current, business_unit_id: activeBusinessUnitId }));
+  const openCreate = () => {
+    const firstAvailable = PAYMENT_METHOD_TYPES.find((type) => !configuredTypes.has(type));
+    if (!firstAvailable) {
+      setError("Ya configuraste los cuatro métodos disponibles.");
+      return;
     }
-  }, [activeBusinessUnitId]);
+    setEditing(null);
+    setForm({ ...EMPTY_FORM, method_type: firstAvailable });
+    setIsFormOpen(true);
+    setError(null);
+  };
+
+  const openEdit = (method: PaymentMethod) => {
+    setEditing(method);
+    setForm(methodToForm(method));
+    setIsFormOpen(true);
+    setError(null);
+  };
+
+  const closeForm = () => {
+    setIsFormOpen(false);
+    setEditing(null);
+    setForm(EMPTY_FORM);
+  };
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
     try {
-      await budyApi.createPaymentMethod(form);
-      setForm((current) => ({
-        ...current,
-        display_name: "",
-        account_holder: "",
-        bank_name: "",
-        phone: "",
-        national_id: "",
-        email: "",
-        account_number: "",
-        instructions: "",
-      }));
-      await loadData(activeBusinessUnitId || undefined);
+      setSaving(true);
+      setError(null);
+      const payload: Partial<PaymentMethod> = {
+        is_active: form.is_active,
+      };
+      for (const field of visibleFields) {
+        payload[field] = form[field];
+      }
+      await budyApi.upsertPaymentMethod(form.method_type, payload);
+      await loadMethods();
+      closeForm();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not save the payment method");
+      setError(err instanceof Error ? err.message : "No se pudo guardar el método de pago");
+    } finally {
+      setSaving(false);
     }
   };
 
-  if (loading || isBusinessUnitsLoading) {
-    return <LoadingSpinner text="Loading payment settings..." fullScreen />;
-  }
+  const handleDelete = async (methodType: string) => {
+    if (!window.confirm(`¿Eliminar el método "${PAYMENT_METHOD_LABELS[methodType as PaymentMethodType] ?? methodType}"?`)) {
+      return;
+    }
+    try {
+      setDeletingType(methodType);
+      setError(null);
+      await budyApi.deletePaymentMethod(methodType);
+      await loadMethods();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "No se pudo eliminar el método de pago");
+    } finally {
+      setDeletingType(null);
+    }
+  };
 
-  if (organization && businessUnits.length === 0) {
-    return <div className="p-6 text-sm text-muted-foreground">Create a service before configuring payment methods.</div>;
+  if (loading) {
+    return <LoadingSpinner text="Cargando configuración de pagos..." fullScreen />;
   }
 
   return (
     <div className="space-y-6 p-6">
       <PageHeader
-        title="Payment settings"
-        description="Define how each service gets paid and what the client sees on the public proposal."
+        title="Métodos de pago"
+        description="Configura los datos de cobro que verá el cliente en la propuesta pública."
         icon={HandCoins}
       />
 
-      <BusinessUnitSwitcher
-        businessUnits={businessUnits}
-        value={activeBusinessUnitId || ""}
-        onValueChange={(value) => {
-          setActiveBusinessUnitId(value);
-          loadData(value);
-        }}
-      />
+      {error && <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</div>}
 
-      {error && <div className="text-sm text-red-600">{error}</div>}
+      <div className="flex items-center justify-between">
+        <p className="text-sm text-muted-foreground">
+          {methods.length === 0
+            ? "Aún no tienes métodos de pago configurados."
+            : `${methods.length} de ${PAYMENT_METHOD_TYPES.length} métodos configurados.`}
+        </p>
+        <Button onClick={openCreate} disabled={methods.length >= PAYMENT_METHOD_TYPES.length}>
+          <Plus className="mr-2 h-4 w-4" />
+          Agregar método de pago
+        </Button>
+      </div>
 
-      <div className="grid gap-6 xl:grid-cols-[400px_minmax(0,1fr)]">
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        {methods.map((method) => (
+          <Card key={method.id}>
+            <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
+              <div>
+                <CardTitle className="text-base">
+                  {PAYMENT_METHOD_LABELS[method.method_type as PaymentMethodType] ?? method.method_type}
+                </CardTitle>
+                <p className="mt-1 text-xs text-muted-foreground">{summarizeMethod(method)}</p>
+              </div>
+              <Badge variant={method.is_active ? "default" : "secondary"}>
+                {method.is_active ? "Activo" : "Inactivo"}
+              </Badge>
+            </CardHeader>
+            <CardContent className="space-y-2 pt-2 text-sm">
+              {PAYMENT_METHOD_FIELDS[method.method_type as PaymentMethodType]?.map((field) => {
+                const value = method[field];
+                if (!value) return null;
+                return (
+                  <div key={field}>
+                    <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                      {PAYMENT_METHOD_FIELD_LABELS[field]}
+                    </div>
+                    <div className="text-sm text-foreground">{value}</div>
+                  </div>
+                );
+              })}
+              <div className="flex gap-2 pt-2">
+                <Button variant="outline" size="sm" onClick={() => openEdit(method)}>
+                  <Pencil className="mr-2 h-3.5 w-3.5" />
+                  Editar
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleDelete(method.method_type)}
+                  disabled={deletingType === method.method_type}
+                >
+                  <Trash2 className="mr-2 h-3.5 w-3.5" />
+                  {deletingType === method.method_type ? "Eliminando..." : "Eliminar"}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {isFormOpen && (
         <Card>
           <CardHeader>
-            <CardTitle>New payment method</CardTitle>
+            <CardTitle>{editing ? "Editar método de pago" : "Nuevo método de pago"}</CardTitle>
           </CardHeader>
           <CardContent>
             <form className="space-y-4" onSubmit={handleSubmit}>
-              <BusinessUnitSwitcher
-                businessUnits={businessUnits}
-                value={form.business_unit_id}
-                onValueChange={(value) => setForm((current) => ({ ...current, business_unit_id: value }))}
-                label="Service"
-                includeAll={false}
-              />
               <div className="space-y-2">
-                <Label>Method type</Label>
-                <Input
+                <Label>Tipo de pago</Label>
+                <Select
                   value={form.method_type}
-                  onChange={(event) => setForm((current) => ({ ...current, method_type: event.target.value }))}
-                  placeholder="e.g. pago_movil, bank_transfer, zelle"
+                  onValueChange={(value) =>
+                    setForm((current) => ({ ...current, method_type: value as PaymentMethodType }))
+                  }
+                  disabled={Boolean(editing)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecciona un tipo" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availableTypes.map((type) => (
+                      <SelectItem key={type} value={type}>
+                        {PAYMENT_METHOD_LABELS[type]}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {visibleFields.map((field) =>
+                field === "instructions" ? (
+                  <div key={field} className="space-y-2">
+                    <Label>{PAYMENT_METHOD_FIELD_LABELS[field]}</Label>
+                    <Textarea
+                      value={form[field]}
+                      onChange={(event) =>
+                        setForm((current) => ({ ...current, [field]: event.target.value }))
+                      }
+                    />
+                  </div>
+                ) : (
+                  <div key={field} className="space-y-2">
+                    <Label>{PAYMENT_METHOD_FIELD_LABELS[field]}</Label>
+                    <Input
+                      type={field === "email" ? "email" : "text"}
+                      value={form[field]}
+                      onChange={(event) =>
+                        setForm((current) => ({ ...current, [field]: event.target.value }))
+                      }
+                    />
+                  </div>
+                )
+              )}
+
+              <div className="flex items-center justify-between rounded-md border p-3">
+                <div>
+                  <Label className="text-sm font-medium">Activo</Label>
+                  <p className="text-xs text-muted-foreground">
+                    Si lo desactivas, el cliente no verá este método en la propuesta.
+                  </p>
+                </div>
+                <Switch
+                  checked={form.is_active}
+                  onCheckedChange={(checked) => setForm((current) => ({ ...current, is_active: checked }))}
                 />
               </div>
-              <div className="space-y-2">
-                <Label>Display name</Label>
-                <Input
-                  value={form.display_name}
-                  onChange={(event) => setForm((current) => ({ ...current, display_name: event.target.value }))}
-                  placeholder="e.g. Pago Movil Banesco"
-                  required
-                />
+
+              <div className="flex justify-end gap-2">
+                <Button type="button" variant="outline" onClick={closeForm}>
+                  Cancelar
+                </Button>
+                <Button type="submit" disabled={saving}>
+                  {saving ? "Guardando..." : "Guardar"}
+                </Button>
               </div>
-              <div className="space-y-2">
-                <Label>Account holder</Label>
-                <Input value={form.account_holder} onChange={(event) => setForm((current) => ({ ...current, account_holder: event.target.value }))} />
-              </div>
-              <div className="space-y-2">
-                <Label>Bank or platform</Label>
-                <Input value={form.bank_name} onChange={(event) => setForm((current) => ({ ...current, bank_name: event.target.value }))} />
-              </div>
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="space-y-2">
-                  <Label>Phone</Label>
-                  <Input value={form.phone} onChange={(event) => setForm((current) => ({ ...current, phone: event.target.value }))} />
-                </div>
-                <div className="space-y-2">
-                  <Label>National ID or tax ID</Label>
-                  <Input value={form.national_id} onChange={(event) => setForm((current) => ({ ...current, national_id: event.target.value }))} />
-                </div>
-              </div>
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="space-y-2">
-                  <Label>Email</Label>
-                  <Input type="email" value={form.email} onChange={(event) => setForm((current) => ({ ...current, email: event.target.value }))} />
-                </div>
-                <div className="space-y-2">
-                  <Label>Account number</Label>
-                  <Input value={form.account_number} onChange={(event) => setForm((current) => ({ ...current, account_number: event.target.value }))} />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label>Client instructions</Label>
-                <Textarea value={form.instructions} onChange={(event) => setForm((current) => ({ ...current, instructions: event.target.value }))} />
-              </div>
-              <Button type="submit" className="w-full">
-                Save payment method
-              </Button>
             </form>
           </CardContent>
         </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Configured methods</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Type</TableHead>
-                  <TableHead>Destination</TableHead>
-                  <TableHead>Status</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {paymentMethods.map((method) => (
-                  <TableRow key={method.id}>
-                    <TableCell className="font-medium">{method.display_name}</TableCell>
-                    <TableCell>{method.method_type}</TableCell>
-                    <TableCell>{method.email || method.phone || method.account_number || "Configured"}</TableCell>
-                    <TableCell>{method.is_active ? "Active" : "Inactive"}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
-      </div>
+      )}
     </div>
   );
 }

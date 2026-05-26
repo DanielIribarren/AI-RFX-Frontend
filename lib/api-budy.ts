@@ -120,9 +120,8 @@ export interface Opportunity {
 
 export interface PaymentMethod {
   id: string;
-  business_unit_id: string;
+  organization_id: string;
   method_type: string;
-  display_name: string;
   account_holder?: string;
   bank_name?: string;
   phone?: string;
@@ -130,7 +129,6 @@ export interface PaymentMethod {
   email?: string;
   account_number?: string;
   instructions?: string;
-  sort_order: number;
   is_active: boolean;
 }
 
@@ -147,7 +145,7 @@ export interface PaymentSubmission {
   proof_file_url?: string;
   submitted_at: string;
   confirmed_at?: string;
-  payment_methods?: PaymentMethod;
+  payment_method_type: string;
 }
 
 export interface OpportunityDetail extends Opportunity {
@@ -291,30 +289,21 @@ export const budyApi = {
     return handleJsonResponse(response);
   },
 
-  async getPaymentMethods(businessUnitId?: string): Promise<PaymentMethod[]> {
-    const suffix = businessUnitId ? `?business_unit_id=${encodeURIComponent(businessUnitId)}` : "";
-    const response = await fetchWithAuth(`${API_BASE_URL}/api/payment-methods${suffix}`);
+  async getPaymentMethods(): Promise<PaymentMethod[]> {
+    const response = await fetchWithAuth(`${API_BASE_URL}/api/payment-methods`);
     return handleJsonResponse(response);
   },
 
-  async createPaymentMethod(payload: Partial<PaymentMethod>): Promise<PaymentMethod> {
-    const response = await fetchWithAuth(`${API_BASE_URL}/api/payment-methods`, {
-      method: "POST",
+  async upsertPaymentMethod(methodType: string, payload: Partial<PaymentMethod>): Promise<PaymentMethod> {
+    const response = await fetchWithAuth(`${API_BASE_URL}/api/payment-methods/${methodType}`, {
+      method: "PUT",
       body: JSON.stringify(payload),
     });
     return handleJsonResponse(response);
   },
 
-  async updatePaymentMethod(id: string, payload: Partial<PaymentMethod>): Promise<PaymentMethod> {
-    const response = await fetchWithAuth(`${API_BASE_URL}/api/payment-methods/${id}`, {
-      method: "PATCH",
-      body: JSON.stringify(payload),
-    });
-    return handleJsonResponse(response);
-  },
-
-  async deletePaymentMethod(id: string): Promise<void> {
-    const response = await fetchWithAuth(`${API_BASE_URL}/api/payment-methods/${id}`, {
+  async deletePaymentMethod(methodType: string): Promise<void> {
+    const response = await fetchWithAuth(`${API_BASE_URL}/api/payment-methods/${methodType}`, {
       method: "DELETE",
     });
     await handleJsonResponse(response);

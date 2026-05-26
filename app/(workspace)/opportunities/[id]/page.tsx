@@ -24,6 +24,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { budyApi, SALES_STAGE_LABELS, type BusinessUnit, type OpportunityDetail, type SalesStage } from "@/lib/api-budy";
+import { getPaymentMethodLabel } from "@/constants/payment-methods";
 import { api, type RFXResponse } from "@/lib/api";
 import { useOrganization } from "@/contexts/OrganizationContext";
 
@@ -436,9 +437,9 @@ export default function OpportunityDetailPage() {
                             Reference: {payment.payment_reference}
                           </div>
                         )}
-                        {payment.payment_methods?.display_name && (
+                        {payment.payment_method_type && (
                           <div className="text-xs text-muted-foreground">
-                            Method: {payment.payment_methods.display_name}
+                            Método: {getPaymentMethodLabel(payment.payment_method_type)}
                           </div>
                         )}
                       </div>
