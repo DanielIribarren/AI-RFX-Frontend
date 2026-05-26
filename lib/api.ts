@@ -525,6 +525,63 @@ export interface RFXMetricsOverviewResponse {
 }
 
 // Enhanced API client with better error handling
+// ===== Change History / Document Store (Phase 1) =====
+
+export interface RFXDocumentRow {
+  id: string
+  rfx_id: string
+  version: number
+  kind: 'source' | 'amendment' | 'attachment'
+  filename: string
+  mime_type: string
+  size_bytes: number
+  uploaded_by?: string | null
+  uploaded_at: string
+}
+
+export interface TimelineEventItem {
+  type: 'event'
+  ts: string
+  event_type: string
+  description?: string | null
+  old_values?: Record<string, unknown> | null
+  new_values?: Record<string, unknown> | null
+  performed_by?: string | null
+  id?: string
+}
+
+export interface TimelineCollapsedItem {
+  type: 'event_collapsed'
+  ts: string
+  event_type: string
+  count: number
+  description: string
+  span_start: string
+  span_end: string
+  children_ids: string[]
+}
+
+export interface TimelineDocumentItem {
+  type: 'document'
+  ts: string
+  document_id: string
+  version: number
+  kind: 'source' | 'amendment' | 'attachment'
+  filename: string
+  mime_type: string
+  size_bytes: number
+  uploaded_by?: string | null
+}
+
+export type TimelineItem = TimelineEventItem | TimelineCollapsedItem | TimelineDocumentItem
+
+export interface TimelineResponse {
+  status: 'success'
+  items: TimelineItem[]
+  has_more: boolean
+  next_cursor: string | null
+}
+
 export class APIError extends Error {
   constructor(
     message: string,
@@ -652,7 +709,11 @@ export const api = {
     }
   },
 
-  // NEW: Get latest RFX with optimized pagination and JWT
+  /**
+   * @deprecated Legacy RFX list — use `proposalsApi.list()` from
+   * `@/lib/api-proposals` instead. Removed in Phase 5 of the Proposal
+   * unification (see design doc 2026-05-26).
+   */
   async getLatestRFX(limit: number = 10): Promise<RFXLatestResponse> {
     try {
       const url = `${API_BASE_URL}/api/rfx/latest?limit=${limit}`;
@@ -666,7 +727,11 @@ export const api = {
     }
   },
 
-  // NEW: Load more RFX with offset-based pagination and JWT
+  /**
+   * @deprecated Legacy RFX pagination — use `proposalsApi.list()` from
+   * `@/lib/api-proposals` (paginate server-side via Budy opportunity API).
+   * Removed in Phase 5 of the Proposal unification.
+   */
   async loadMoreRFX(offset: number, limit: number = 10): Promise<RFXLatestResponse> {
     try {
       const url = `${API_BASE_URL}/api/rfx/load-more?offset=${offset}&limit=${limit}`;
@@ -680,7 +745,12 @@ export const api = {
     }
   },
 
-  // Metrics overview for dashboard analytics
+  /**
+   * @deprecated Direct callers should use `proposalsApi.getMetrics()` from
+   * `@/lib/api-proposals` which returns the proposal-vocabulary shape.
+   * This raw endpoint is kept temporarily because `proposalsApi.getMetrics`
+   * delegates to it; once the backend route is renamed, this goes away.
+   */
   async getRFXMetricsOverview(rangeDays: number = 30): Promise<RFXMetricsOverviewResponse> {
     try {
       const url = `${API_BASE_URL}/api/rfx/metrics/overview?range_days=${rangeDays}`;
@@ -694,7 +764,11 @@ export const api = {
     }
   },
 
-  // Get recent RFX for sidebar (limited to 12 items) with JWT
+  /**
+   * @deprecated Sidebar recent list — use `proposalsApi.list()` with a
+   * client-side sort+slice, or expose a `proposalsApi.listRecent()` shortcut
+   * if it stays a stable UI pattern. Removed in Phase 5.
+   */
   async getRecentRFX(): Promise<{ status: string; message: string; data: RecentRFXItem[] }> {
     try {
       const response = await fetchWithAuth(`${API_BASE_URL}/api/rfx/recent`);
@@ -982,7 +1056,11 @@ export const api = {
     }
   },
 
-  // ✅ Delete RFX (only if owner) with JWT - Uses secure endpoint
+  /**
+   * @deprecated Use a future `proposalsApi.archive()` or `proposalsApi.delete()`
+   * once Phase 5 adds it. Direct callers should migrate when archiving moves
+   * into the proposal layer.
+   */
   async deleteRFX(rfxId: string): Promise<{ status: string; message: string }> {
     try {
       console.log(`🗑️ API: Deleting RFX ${rfxId}`);
@@ -1178,7 +1256,54 @@ export const api = {
         throw new APIError('Network error reopening review', 0, 'NETWORK_ERROR');
       }
     }
-  }
+  },
+
+  documents: {
+    async getTimeline(
+      rfxId: string,
+      opts: { cursor?: string; includeAll?: boolean; pageSize?: number } = {}
+    ): Promise<TimelineResponse> {
+      try {
+        const params = new URLSearchParams();
+        if (opts.cursor) params.set('cursor', opts.cursor);
+        if (opts.includeAll) params.set('include_all', 'true');
+        if (opts.pageSize) params.set('page_size', String(opts.pageSize));
+        const qs = params.toString();
+        const url = `${API_BASE_URL}/api/rfx/${rfxId}/timeline${qs ? `?${qs}` : ''}`;
+        const response = await fetchWithAuth(url);
+        return handleResponse<TimelineResponse>(response);
+      } catch (error) {
+        if (error instanceof APIError) throw error;
+        throw new APIError('Network error fetching timeline', 0, 'NETWORK_ERROR');
+      }
+    },
+
+    async upload(
+      rfxId: string,
+      file: File,
+      kind: 'amendment' | 'attachment' = 'amendment'
+    ): Promise<{ status: string; document: RFXDocumentRow }> {
+      try {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('kind', kind);
+        const response = await fetchWithAuth(`${API_BASE_URL}/api/rfx/${rfxId}/documents`, {
+          method: 'POST',
+          body: formData,
+        });
+        return handleResponse<{ status: string; document: RFXDocumentRow }>(response);
+      } catch (error) {
+        if (error instanceof APIError) throw error;
+        throw new APIError('Network error uploading document', 0, 'NETWORK_ERROR');
+      }
+    },
+
+    downloadUrl(rfxId: string, docId: string): string {
+      // The backend returns a 302 to a signed URL. Browsers follow the redirect
+      // transparently when used as an <a href> target.
+      return `${API_BASE_URL}/api/rfx/${rfxId}/documents/${docId}/download`;
+    },
+  },
 };
 
 // Helper function for using the API in React components

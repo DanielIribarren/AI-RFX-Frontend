@@ -2,10 +2,10 @@
 
 import { Button } from "@/components/ui/button"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { CheckCircle, Briefcase, BarChart3, FileText, Archive, MessageSquare } from "lucide-react"
+import { CheckCircle, Briefcase, BarChart3, FileText, History, MessageSquare } from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import DataExtractionContent from "@/components/features/products/DataExtractionContent"
-import ProcessedFilesContent from "@/components/features/rfx/ProcessedFilesContent"
+import ChangeHistoryContent from "@/components/features/rfx/ChangeHistoryContent"
 import { ScopePanel } from "@/components/features/rfx/ScopePanel"
 import { ScopePanelBoundary } from "@/components/features/rfx/ScopePanelBoundary"
 import { StatusBadge } from "@/components/ui/status-badge"
@@ -208,9 +208,9 @@ export default function RFXDataView({
             <FileText className="h-4 w-4" />
             Datos Extraídos
           </TabsTrigger>
-          <TabsTrigger value="archivos-procesados" className="gap-2 flex-1">
-            <Archive className="h-4 w-4" />
-            Archivos Procesados
+          <TabsTrigger value="historial" className="gap-2 flex-1">
+            <History className="h-4 w-4" />
+            Historial
           </TabsTrigger>
         </TabsList>
 
@@ -243,10 +243,9 @@ export default function RFXDataView({
           />
         </TabsContent>
 
-        <TabsContent value="archivos-procesados" className="space-y-6 mt-6">
-          <ProcessedFilesContent
+        <TabsContent value="historial" className="space-y-6 mt-6">
+          <ChangeHistoryContent
             rfxId={rfxId}
-            receivedAt={fechaCreacion}
             isDisabled={isFinalized}
           />
         </TabsContent>
