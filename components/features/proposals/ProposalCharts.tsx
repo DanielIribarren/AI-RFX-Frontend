@@ -96,9 +96,9 @@ export function TrendCard({ data, rangeDays = 30 }: TrendCardProps) {
   return (
     <Card>
       <CardHeader className="pb-2">
-        <CardTitle className="text-base">Daily intake trend</CardTitle>
+        <CardTitle className="text-base">New proposals · daily</CardTitle>
         <p className="text-xs text-muted-foreground">
-          {totalCreated} new proposals · last {rangeDays} days
+          {totalCreated} created in the last {rangeDays} days
         </p>
       </CardHeader>
       <CardContent>
