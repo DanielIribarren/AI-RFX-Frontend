@@ -10,7 +10,7 @@
  * vocabulary and consumes the Budy Opportunity shape via proposalsApi.
  */
 
-import { Fragment, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import {
   AlertCircle,
   Archive,
@@ -18,6 +18,7 @@ import {
   Calendar,
   CheckCircle,
   ChevronDown,
+  ChevronLeft,
   ChevronRight,
   Clock,
   DollarSign,
@@ -255,6 +256,11 @@ export function ProposalsTable({
   const [stageFilter, setStageFilter] = useState<ProposalStage | "all">("all");
   const [groupFilter, setGroupFilter] = useState<GroupFilter>("all");
   const [collapsed, setCollapsed] = useState<Partial<Record<ProposalStage, boolean>>>({});
+  const [page, setPage] = useState<Partial<Record<ProposalStage, number>>>({});
+
+  useEffect(() => {
+    setPage({});
+  }, [search, stageFilter, groupFilter]);
 
   const groupCounts = useMemo(() => {
     const counts: Record<GroupFilter, number> = {
@@ -454,6 +460,12 @@ export function ProposalsTable({
                   return null;
                 }
 
+                const pageSize = 20;
+                const totalPages = Math.max(1, Math.ceil(rows.length / pageSize));
+                const currentPage = Math.min(page[config.key] ?? 0, totalPages - 1);
+                const pageRows = rows.slice(currentPage * pageSize, currentPage * pageSize + pageSize);
+                const showPager = rows.length > pageSize;
+
                 return (
                   <Fragment key={config.key}>
                     <GroupHeader
@@ -464,7 +476,7 @@ export function ProposalsTable({
                     />
 
                     {!isCollapsed &&
-                      rows.map((p) => (
+                      pageRows.map((p) => (
                         <TableRow
                           key={p.id}
                           className="hover:bg-muted/30 cursor-pointer text-sm group"
@@ -548,6 +560,46 @@ export function ProposalsTable({
                           </TableCell>
                         </TableRow>
                       ))}
+
+                    {!isCollapsed && showPager && (
+                      <TableRow className={cn("border-b", config.rowClass)}>
+                        <TableCell colSpan={8} className="py-1.5 px-4">
+                          <div className="flex items-center justify-end gap-2 text-xs">
+                            <span className="tabular-nums opacity-70">
+                              {currentPage * pageSize + 1}–
+                              {Math.min((currentPage + 1) * pageSize, rows.length)} of {rows.length}
+                            </span>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-6 w-6"
+                              disabled={currentPage === 0}
+                              onClick={() =>
+                                setPage((prev) => ({ ...prev, [config.key]: currentPage - 1 }))
+                              }
+                              title="Previous page"
+                            >
+                              <ChevronLeft className="h-3.5 w-3.5" />
+                            </Button>
+                            <span className="tabular-nums font-medium">
+                              {currentPage + 1} / {totalPages}
+                            </span>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-6 w-6"
+                              disabled={currentPage >= totalPages - 1}
+                              onClick={() =>
+                                setPage((prev) => ({ ...prev, [config.key]: currentPage + 1 }))
+                              }
+                              title="Next page"
+                            >
+                              <ChevronRight className="h-3.5 w-3.5" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    )}
                   </Fragment>
                 );
               })}
